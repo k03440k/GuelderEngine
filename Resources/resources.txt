@@ -1,0 +1,5 @@
+shaders
+{
+	vertex = "./Resources/shaders/vertex.shader";
+	fragment = "./Resources/shaders/fragment.shader";
+}
