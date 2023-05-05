@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../includes/GuelderEngine/GuelderEngine.hpp"
 #include "../includes/GuelderEngine/Utils/Utils.hpp"
 //#include "../../includes/Engine3DCore/Events/Event.hpp"
 #include <functional>
@@ -62,11 +63,9 @@ namespace GuelderEngine
         //void SetWindow(GLFWwindow* other, const std::string* otherTitle = nullptr);
     private:
         void Init();
-        //void VulkanInit() const;
         void Shutdown();
 
         WindowData m_Data;
-
         GLFWwindow* m_Window = nullptr;
 
         //TEST

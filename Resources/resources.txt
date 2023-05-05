@@ -2,4 +2,7 @@ shaders
 {
 	vertex = "./Resources/shaders/vertex.shader";
 	fragment = "./Resources/shaders/fragment.shader";
+	
+	vertex_simple = "./Resources/shaders/compiled/vertex_simple.vert.spv";
+	fragment_simple = "./Resources/shaders/compiled/fragment_simple.frag.spv";
 }

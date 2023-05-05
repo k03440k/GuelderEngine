@@ -70,6 +70,8 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
+option(GLFW_USE_STATIC_VULKAN_LOADER "Use the static Vulkan loader" ON)
+
 add_subdirectory(../External/glfw ${CMAKE_CURRENT_BINARY_DIR}/glfw)
 target_link_libraries(${ENGINE_CORE_NAME} PUBLIC glfw)
 #end include glfw
@@ -123,6 +125,12 @@ else()
     message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
 endif()
 target_link_libraries(${ENGINE_CORE_NAME} PUBLIC Vulkan::Vulkan)
+
+if(GLFW_USE_STATIC_VULKAN_LOADER)
+    target_compile_definitions(${ENGINE_CORE_NAME} PRIVATE GLFW_INCLUDE_NONE GLFW_USE_STATIC_VULKAN_LOADER)
+else()
+    target_compile_definitions(${ENGINE_CORE_NAME} PRIVATE GLFW_INCLUDE_VULKAN)
+endif()
 #end Vulkan include
 
 #start Vulkan-HPP include

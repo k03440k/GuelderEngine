@@ -8,7 +8,7 @@ namespace GuelderEngine
         {
             if (!condition)
             {
-                GR_ELOG(message);
+                GE_ELOG(message);
                 __debugbreak();
             }
         }

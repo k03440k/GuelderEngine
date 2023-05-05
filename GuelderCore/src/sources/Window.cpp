@@ -7,11 +7,11 @@
 #include "../../includes/GuelderEngine/Events/MouseEvent.hpp"
 #include "../../includes/GuelderEngine/Events/KeyEvent.hpp"
 
-#include <glfw/glfw3.h>
-#include <stdexcept>
-
 #include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
+//#include <imgui/backends/imgui_impl_opengl3.h>
+#include <glfw/glfw3.h>
+
+#include <stdexcept>
 
 namespace GuelderEngine
 {
@@ -21,13 +21,13 @@ namespace GuelderEngine
     {
         static void GLFWErrorCallback(int errorCode, const char* description)
         {
-            GR_ELOG("GuelderEngine::GLFWErrorCallback: error code: ", errorCode);
+            GE_ELOG("GuelderEngine::GLFWErrorCallback: error code: ", errorCode);
         }
     }
     //TEST
     void Window::TEST_DrawImGui()
     {
-        ImGuiIO& io = ImGui::GetIO();
+        /*ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize.x = static_cast<float>(GetWidth());
         io.DisplaySize.y = static_cast<float>(GetHeight());
 
@@ -37,13 +37,13 @@ namespace GuelderEngine
         ImGui::ShowDemoWindow();
 
         ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());*/
     }
     void ImGui_Init()
     {
-        IMGUI_CHECKVERSION();
+        /*IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGui_ImplOpenGL3_Init();
+        ImGui_ImplOpenGL3_Init();*/
     }
     Window::Window(const Utils::ushort& windowWidth, const Utils::ushort& windowHeight,
         const std::string& windowTitle, const UpdateFunc& update, const bool& enableVSync) :
@@ -86,7 +86,7 @@ namespace GuelderEngine
             {
                 glfwSetErrorCallback(Events::GLFWErrorCallback);
                 glfwTerminate();
-                GR_ELOG("Window::Init: cannot initialise glfw");
+                GE_ELOG("Window::Init: cannot initialise glfw");
             }
             is_GLFW_init = true;
         }
@@ -96,18 +96,12 @@ namespace GuelderEngine
         if (!m_Window)
         {
             glfwTerminate();
-            GR_ELOG("Window::Init: window is nullptr");
+            GE_ELOG("Window::Init: window is nullptr");
         }
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         glfwMakeContextCurrent(m_Window);
         glfwSetWindowUserPointer(m_Window, &m_Data);
         SetVSync(m_Data.isVSync);
-
-        //VulkanInit();
 
         //set glfw callbacks
         glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
@@ -191,7 +185,7 @@ namespace GuelderEngine
     }
     void Window::OnUpdate()
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        //glClear(GL_COLOR_BUFFER_BIT);
 
         onUpdate();
 
@@ -202,7 +196,7 @@ namespace GuelderEngine
     }
     void Window::OnUpdate(const UpdateFunc& update)
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        //glClear(GL_COLOR_BUFFER_BIT);
 
         update();
 

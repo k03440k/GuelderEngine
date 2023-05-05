@@ -9,10 +9,15 @@
 #include <ctime>
 //#include <functional>
 
-#define GR_DEBUG
+#define DEBUG_VULKAN
+#define GE_DEBUG
 
-//error log
-#define GR_ELOG(...) Debug::Logger::ELog(Debug::Logger::Format(##__VA_ARGS__), __FILE__)
+//guelder engine error log
+#define GE_ELOG(...) Debug::Logger::ELog(Debug::Logger::Format(##__VA_ARGS__), __FILE__)
+
+#define FUNC_NAME __func__
+#define METHOD_NAME std::string(typeid(*this).name + FUNC_NAME)
+#define MSG_METHOD_LOGGING(msg) std::string(METHOD_NAME + msg)
 
 template<typename T>
 concept HasOutputOperator = requires(std::stringstream & os, const T & t) { os << t; };

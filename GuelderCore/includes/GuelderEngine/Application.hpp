@@ -15,27 +15,65 @@
 
 //#include "../src/headers/Window.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 namespace GuelderEngine
 {
     //idk is it normal
     //namespace Events { struct WindowCloseEvent; struct Event; class EventDispatcher; }
     namespace Layers { class Layer; class LayerStack; }
 
-    class Application
+    /*
+    * Manager which responsible for all about initialization of Vulkan API
+    */
+    class VulkanManager
     {
     public:
-        Application(const Utils::ushort& windowWidth, const Utils::ushort& windowHeight,
-                    const std::string_view& windowTitle, const std::function<void()>& callOnUpdate = []{});
-        virtual ~Application();
+        VulkanManager(const std::string_view& name = "Guelder Engine Editor");
+        ~VulkanManager();
 
-        Application(const Application&) = delete;
-        Application(Application&&) = delete;
-        Application& operator=(const Application&) = delete;
-        Application& operator=(Application&&) = delete;
+        static vk::Instance CreateVkInstance(const char* const name);
+        static bool IsExtensionsSupported(const std::vector<const char*>& extensions);
+        static bool IsValidationLayersSupported(const std::vector<const char*>& layers);
+    protected:
+    private:
+        void Init();
+        void VkInit();
+        //void CreateVkInstance();
+        void Cleanup();
 
-        virtual void Start();
-        void Start(const std::function<void()>& callOnUpdate);
-        virtual void OnEvent(Events::Event& event);
+        vk::Instance m_Instance;
+        //VkInstance m_Instance;
+    };
+
+    class IApplication
+    {
+    public:
+        ~IApplication() = default;
+
+        virtual void Run() = 0;
+        virtual void OnEvent(Events::Event& event) = 0;
+
+    protected:
+        std::unique_ptr<class Window> m_Window;
+    };
+
+    //Guelder Engine Application
+    class GEApplication : public IApplication, public VulkanManager
+    {
+    public:
+        GEApplication(const Utils::ushort& windowWidth = 640, const Utils::ushort& windowHeight = 480,
+                    const std::string_view& windowTitle = "Guelder Engine Window", const std::function<void()>& callOnUpdate = [] {});
+        virtual ~GEApplication();
+
+        GEApplication(const GEApplication&) = delete;
+        GEApplication(GEApplication&&) = delete;
+        GEApplication& operator=(const GEApplication&) = delete;
+        GEApplication& operator=(GEApplication&&) = delete;
+
+        void Run() override;
+        void Run(const std::function<void()>& callOnUpdate);
+        void OnEvent(Events::Event& event) override;
 
         void PushLayer(Layers::Layer* layer);
         void PushOverlay(Layers::Layer* overlay);
@@ -51,7 +89,7 @@ namespace GuelderEngine
 
         //std::function<void()> m_CallOnUpdate;
 
-        std::unique_ptr<class Window> m_Window;
+        //std::unique_ptr<class Window> m_Window;
 
         Layers::LayerStack m_LayerStack;
 

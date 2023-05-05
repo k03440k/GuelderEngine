@@ -95,7 +95,7 @@ namespace GuelderEngine
         {
             const auto& found = m_ShaderPrograms.find(name.data());
             if (found == m_ShaderPrograms.end())
-                GR_ELOG("ResourceManager::GetShaderProgram: cannot find shader, name: ", name);
+                GE_ELOG("ResourceManager::GetShaderProgram: cannot find shader, name: ", name);
             return found->second;
         }*/
     }
