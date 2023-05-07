@@ -18,18 +18,29 @@ set(CORE_PRIVATE_SOURCES_PATH src/sources/)
 set(CORE_PUBLIC_INCLUDES_PATH includes/GuelderEngine/)
 
 set(CORE_PRIVATE_SOURCES
+	${CORE_PRIVATE_SOURCES_PATH}GObject/GClass.cpp
+
 	${CORE_PRIVATE_SOURCES_PATH}Utils/Debug.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Utils/ResourceManager.cpp
 	
 	${CORE_PRIVATE_SOURCES_PATH}Application.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Window.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Layers/LayerStack.cpp
+	
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanManager.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanDebugManager.cpp
 )
 set(CORE_PRIVATE_HEADERS
 	${CORE_PRIVATE_HEADERS_PATH}Window.hpp
+	
+	${CORE_PRIVATE_HEADERS_PATH}GObject/GClass.hpp
+	
+	${CORE_PRIVATE_HEADERS_PATH}Vulkan/VulkanManager.hpp
+	${CORE_PRIVATE_HEADERS_PATH}Vulkan/VulkanDebugManager.hpp
 )
 set(CORE_PUBLIC_HEADERS
 	${CORE_PUBLIC_INCLUDES_PATH}GuelderEngine.hpp
+	
 	${CORE_PUBLIC_INCLUDES_PATH}Application.hpp
 	
 	${CORE_PUBLIC_INCLUDES_PATH}Utils/Utils.hpp

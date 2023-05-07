@@ -18,7 +18,7 @@ namespace GuelderEngine
             std::ifstream file;
             file.open(m_Path + "/" + relativeFilePath.data(), std::ios::in | std::ios::binary);
             //LOG("DEBUG " << m_Path + "/" + relativeFilePath << " DEBUG");
-            Debug::Logger::Assert(file.is_open(), Debug::Logger::Format("ResourceManager::GetFileSource: cannot open file at location: ", relativeFilePath));
+            GE_CORE_ASSERT(file.is_open(), Debug::Logger::Format("ResourceManager::GetFileSource: cannot open file at location: ", relativeFilePath));
             std::stringstream source;
             source << file.rdbuf();
 
@@ -66,7 +66,7 @@ namespace GuelderEngine
             const std::string allText = GetFileSource(resourcesPath);
             const Utils::ubyte foundAt = (Utils::ubyte)allText.find(shaderName);
 
-            Debug::Logger::Assert(foundAt != std::string::npos, "ResourceManager::GetResourceRelativePath: cannot find a such variable name");
+            GE_CORE_ASSERT(foundAt != std::string::npos, "ResourceManager::GetResourceRelativePath: cannot find a such variable name");
 
             const Utils::ushort foundName = (Utils::ushort)allText.find(shaderName);//finds index of first char of nameVar
             const Utils::ushort foundSemicon = (Utils::ushort)allText.substr(foundName, allText.size()).find_first_of(';');//finds the end of that line(; or semicon)

@@ -5,46 +5,19 @@
 #include "Events/Event.hpp"
 #include "Events/ApplicationEvent.hpp"
 
-//#include "Layers/Layer.hpp"
 #include "Layers/LayerStack.hpp"
+
+#include "../src/headers/Vulkan/VulkanManager.hpp"
 
 #include <functional>
 #include <memory>
-//#include <string>
-#include <string_view>//<-- added this
-
-//#include "../src/headers/Window.hpp"
-
-#include <vulkan/vulkan.hpp>
+#include <string_view>
 
 namespace GuelderEngine
 {
     //idk is it normal
     //namespace Events { struct WindowCloseEvent; struct Event; class EventDispatcher; }
-    namespace Layers { class Layer; class LayerStack; }
-
-    /*
-    * Manager which responsible for all about initialization of Vulkan API
-    */
-    class VulkanManager
-    {
-    public:
-        VulkanManager(const std::string_view& name = "Guelder Engine Editor");
-        ~VulkanManager();
-
-        static vk::Instance CreateVkInstance(const char* const name);
-        static bool IsExtensionsSupported(const std::vector<const char*>& extensions);
-        static bool IsValidationLayersSupported(const std::vector<const char*>& layers);
-    protected:
-    private:
-        void Init();
-        void VkInit();
-        //void CreateVkInstance();
-        void Cleanup();
-
-        vk::Instance m_Instance;
-        //VkInstance m_Instance;
-    };
+    namespace Layers { class Layer; }
 
     class IApplication
     {
@@ -59,7 +32,7 @@ namespace GuelderEngine
     };
 
     //Guelder Engine Application
-    class GEApplication : public IApplication, public VulkanManager
+    class GEApplication : public IApplication, public Vulkan::VulkanManager, INHERIT_GClass(GEApplication)
     {
     public:
         GEApplication(const Utils::ushort& windowWidth = 640, const Utils::ushort& windowHeight = 480,

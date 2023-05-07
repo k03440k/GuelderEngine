@@ -12,7 +12,7 @@ namespace GuelderEngine
 {
     namespace Utils
     {
-        class ResourceManager
+        class ResourceManager : INHERIT_GClass(ResourceManager)
         {
         public:
             //using ShaderProgram_ptr = std::shared_ptr<Renderer::ShaderProgram>;

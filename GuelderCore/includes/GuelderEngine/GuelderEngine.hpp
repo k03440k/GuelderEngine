@@ -5,6 +5,7 @@
 //#include <vulkan/vulkan.hpp>
 #include "Utils/Debug.hpp"
 #include "Utils/Utils.hpp"
+#include "../src/headers/GObject/GClass.hpp"
 
 #define GE_USING_NAMESPACES_AND_CLASSES
 

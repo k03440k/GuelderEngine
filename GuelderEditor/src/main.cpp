@@ -5,7 +5,7 @@
 
 #include <memory>
 
-//#define ENABLE_MEMORY_LEAKS_CHECKING
+#define ENABLE_MEMORY_LEAKS_CHECKING
 
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 
@@ -28,8 +28,10 @@ int main(int argc, char** argv)
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "Guelder Engine error: " << e.what();
+		Logger::Log(LogLevel::Error, e.what());
 	}
+
+	Logger::Log(LogLevel::Warning, "Guelder Engine Editor closed successfully");
 
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 

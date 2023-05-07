@@ -8,7 +8,7 @@ namespace GuelderEngine
 {
     namespace Layers
     {
-        class Layer
+        class Layer : INHERIT_GClass(Layer)
         {
         public:
             Layer(const std::string& name = "Layer") : m_DebugName(name){}

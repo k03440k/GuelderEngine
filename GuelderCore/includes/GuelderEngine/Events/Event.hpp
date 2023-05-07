@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../Utils/Utils.hpp"
-#include "../Utils/Debug.hpp"
+#include "../GuelderEngine.hpp"
 
 #include <functional>
 #include <array>
@@ -46,7 +45,7 @@ namespace GuelderEngine
 
             EventsCount
         };
-        struct Event
+        struct Event : INHERIT_GClass(Event)
         {
             virtual ~Event() = default;
             virtual const EventType GetType() const = 0;
@@ -56,7 +55,7 @@ namespace GuelderEngine
 
             bool isHandled = false;
         };
-        class EventDispatcher
+        class EventDispatcher : INHERIT_GClass(EventDispatcher)
         {
         public:
             /*

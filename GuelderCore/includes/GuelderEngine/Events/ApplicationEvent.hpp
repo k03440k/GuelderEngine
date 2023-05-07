@@ -17,9 +17,10 @@ namespace GuelderEngine
             EVENT_STRUCT_TYPE(WindowResize)
             const std::string ToString() const override
             {
-                std::stringstream ss;
-                ss << "WindowResizeEvent: width[" << width << "], height[" << height << ']';
-                return ss.str();
+                //std::stringstream ss;
+                //ss << "WindowResizeEvent: width[" << width << "], height[" << height << ']';
+                
+                return Logger::Format("WindowResizeEvent: width[", width, "], height[", height, ']');
             }
         };
         MAKE_STRUCT_EVENT(WindowClose);
