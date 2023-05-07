@@ -27,8 +27,8 @@ namespace GuelderEngine
             uint version{};
             vkEnumerateInstanceVersion(&version);
 #ifdef DEBUG_VULKAN
-            Logger::Log(LogLevel::Info, Logger::Format("System can support Vulkan variant: ", VK_API_VERSION_VARIANT(version), ", ",
-                VK_API_VERSION_MAJOR(version), '.', VK_API_VERSION_MINOR(version), '.', VK_API_VERSION_PATCH(version)));
+            LOG_INFO("System can support Vulkan variant: ", VK_API_VERSION_VARIANT(version), ", ",
+                VK_API_VERSION_MAJOR(version), '.', VK_API_VERSION_MINOR(version), '.', VK_API_VERSION_PATCH(version));
 #endif // DEBUG_VULKAN
 
             vk::ApplicationInfo appInfo(name, 0, "Guelder Engine", version);
@@ -44,10 +44,10 @@ namespace GuelderEngine
 
             if (extensions.size() > 0)
             {
-                Logger::Log(LogLevel::Info, "All available extensions for Vulkan are:");
+                LOG_INFO("All available extensions for Vulkan are:");
                 for (const auto extension : extensions)
                 {
-                    Logger::Log(LogLevel::Info, extension);
+                    LOG_INFO(extension);
                 }
             }
 #endif // DEBUG_VULKAN
@@ -88,10 +88,10 @@ namespace GuelderEngine
             std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
 
 #ifdef DEBUG_VULKAN
-            Logger::Log(LogLevel::Info, "Device can support following extensions:");
+            LOG_INFO("Device can support following extensions:");
             for (const auto& supportedExtension : supportedExtensions)
             {
-                Logger::Log(LogLevel::Info, '\t', supportedExtension.extensionName);
+                LOG_INFO('\t', supportedExtension.extensionName);
             }
 #endif //DEBUG_VULKAN
 
@@ -105,14 +105,14 @@ namespace GuelderEngine
                     {
                         found = true;
 #ifdef DEBUG_VULKAN
-                        Logger::Log(LogLevel::Info, "Extension \"", extension, "\" is supported");
+                        LOG_INFO("Extension \"", extension, "\" is supported");
 #endif //DEBUG_VULKAN
                     }
                 }
                 if (!found)
                 {
 #ifdef DEBUG_VULKAN
-                    Logger::Log(LogLevel::Info, "Extension \"", extension, "\" is not supported");
+                    LOG_INFO("Extension \"", extension, "\" is not supported");
 #endif //DEBUG_VULKAN
                     return false;
                 }

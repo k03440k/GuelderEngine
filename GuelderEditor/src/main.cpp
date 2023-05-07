@@ -28,10 +28,10 @@ int main(int argc, char** argv)
 	}
 	catch (const std::exception& e)
 	{
-		Logger::Log(LogLevel::Error, e.what());
+		LOG_ERROR(e.what());
 	}
 
-	Logger::Log(LogLevel::Warning, "Guelder Engine Editor closed successfully");
+	LOG_WARNING("Guelder Engine Editor closed successfully");
 
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 

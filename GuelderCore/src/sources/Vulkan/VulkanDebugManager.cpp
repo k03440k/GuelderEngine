@@ -16,10 +16,10 @@ namespace GuelderEngine
             std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 
 #ifdef DEBUG_VULKAN
-            Logger::Log(LogLevel::Info, "Device can support following layers:");
+            LOG_INFO("Device can support following layers:");
             for (const auto& layer : supportedLayers)
             {
-                Logger::Log(LogLevel::Info, '\t', layer.layerName);
+                LOG_INFO('\t', layer.layerName);
             }
 #endif // DEBUG_VULKAN
 
@@ -33,14 +33,14 @@ namespace GuelderEngine
                     {
                         found = true;
 #ifdef DEBUG_VULKAN
-                        Logger::Log(LogLevel::Info, "Layer \"", extension, "\" is supported");
+                        LOG_INFO("Layer \"", extension, "\" is supported");
 #endif //DEBUG_VULKAN
                     }
                 }
                 if (!found)
                 {
 #ifdef DEBUG_VULKAN
-                    Logger::Log(LogLevel::Info, "Layer \"", extension, "\" is not supported");
+                    LOG_INFO("Layer \"", extension, "\" is not supported");
 #endif //DEBUG_VULKAN
                     return false;
                 }

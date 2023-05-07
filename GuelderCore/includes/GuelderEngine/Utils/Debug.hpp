@@ -51,6 +51,24 @@
 */
 #define GE_ASSERT(condition, msg) ::GuelderEngine::Debug::Logger::Assert(condition, msg, __FILE__, __LINE__)
 
+/*
+* Prints into cout as info.
+* Another form of Logger::Log(LogLevel::Info, ...)
+*/
+#define LOG_INFO(...) ::GuelderEngine::Debug::Logger::Log(::GuelderEngine::Debug::LogLevel::Info, __VA_ARGS__)
+
+/*
+* brief Prints into cout as warning.
+* Another form of Logger::Log(LogLevel::Warning, ...)
+*/
+#define LOG_WARNING(...) ::GuelderEngine::Debug::Logger::Log(::GuelderEngine::Debug::LogLevel::Warning, __VA_ARGS__)
+
+/*
+* brief Prints into cout as error.
+* Another form of Logger::Log(LogLevel::Error, ...)
+*/
+#define LOG_ERROR(...) ::GuelderEngine::Debug::Logger::Log(::GuelderEngine::Debug::LogLevel::Error, __VA_ARGS__)
+
 template<typename T>
 concept HasOutputOperator = requires(std::stringstream & os, const T & t) { os << t; };
 
