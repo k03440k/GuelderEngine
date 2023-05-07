@@ -16,10 +16,10 @@ namespace GuelderEngine
             std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 
 #ifdef DEBUG_VULKAN
-            LOG_INFO("Device can support following layers:");
+            LogInfo("Device can support following layers:");
             for (const auto& layer : supportedLayers)
             {
-                LOG_INFO('\t', layer.layerName);
+                LogInfo('\t', layer.layerName);
             }
 #endif // DEBUG_VULKAN
 
@@ -33,14 +33,14 @@ namespace GuelderEngine
                     {
                         found = true;
 #ifdef DEBUG_VULKAN
-                        LOG_INFO("Layer \"", extension, "\" is supported");
+                        LogInfo("Layer \"", extension, "\" is supported");
 #endif //DEBUG_VULKAN
                     }
                 }
                 if (!found)
                 {
 #ifdef DEBUG_VULKAN
-                    LOG_INFO("Layer \"", extension, "\" is not supported");
+                    LogInfo("Layer \"", extension, "\" is not supported");
 #endif //DEBUG_VULKAN
                     return false;
                 }
@@ -49,7 +49,36 @@ namespace GuelderEngine
             return true;
         }
         VulkanDebugManager::VulkanDebugManager(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
+            : m_DebugMessenger(CreateDebugMessenger(instance, dldi))
         {
+        }
+        VulkanDebugManager& VulkanDebugManager::operator=(const VulkanDebugManager& other)
+        {
+            m_DebugMessenger = other.m_DebugMessenger;
+            return *this;
+        }
+        vk::DebugUtilsMessengerEXT VulkanDebugManager::CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
+        {
+            vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
+                vk::DebugUtilsMessengerCreateFlagsEXT(),
+                vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+                    vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+                vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+                    vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+                DebugCallback,
+                nullptr
+            );
+
+            return instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
+        }
+        VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugManager::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageServerity,
+            VkDebugUtilsMessageTypeFlagsEXT messageType,
+            const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+            void* userData)
+        {
+            LogVulkanError(callbackData->pMessage);
+
+            return VK_FALSE;
         }
         /*VulkanDebugManager::VulkanDebugManager(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi, const std::vector<const char* const> validationLayers)
             : m_LayersManager(validationLayers)

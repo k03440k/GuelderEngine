@@ -10,7 +10,6 @@ namespace GuelderEngine
         VulkanManager::VulkanManager(const std::string_view& name)
         {
             Init(name);
-
         }
         void VulkanManager::Init(const std::string_view& name)
         {
@@ -20,14 +19,17 @@ namespace GuelderEngine
         {
             m_Instance = CreateVkInstance(name);
             m_DLDI = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
-            //m_DebugMessenger = CreateDebugMessenger();
+
+#ifdef DEBUG_VULKAN
+            m_DebugManager = Vulkan::VulkanDebugManager(m_Instance, m_DLDI);
+#endif // DEBUG_VULKAN
         }
         vk::Instance VulkanManager::CreateVkInstance(const char* const name)
         {
             uint version{};
             vkEnumerateInstanceVersion(&version);
 #ifdef DEBUG_VULKAN
-            LOG_INFO("System can support Vulkan variant: ", VK_API_VERSION_VARIANT(version), ", ",
+            LogInfo("System can support Vulkan variant: ", VK_API_VERSION_VARIANT(version), ", ",
                 VK_API_VERSION_MAJOR(version), '.', VK_API_VERSION_MINOR(version), '.', VK_API_VERSION_PATCH(version));
 #endif // DEBUG_VULKAN
 
@@ -44,10 +46,10 @@ namespace GuelderEngine
 
             if (extensions.size() > 0)
             {
-                LOG_INFO("All available extensions for Vulkan are:");
+                LogInfo("All available extensions for Vulkan are:");
                 for (const auto extension : extensions)
                 {
-                    LOG_INFO(extension);
+                    LogInfo(extension);
                 }
             }
 #endif // DEBUG_VULKAN
@@ -88,10 +90,10 @@ namespace GuelderEngine
             std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
 
 #ifdef DEBUG_VULKAN
-            LOG_INFO("Device can support following extensions:");
+            LogInfo("Device can support following extensions:");
             for (const auto& supportedExtension : supportedExtensions)
             {
-                LOG_INFO('\t', supportedExtension.extensionName);
+                LogInfo('\t', supportedExtension.extensionName);
             }
 #endif //DEBUG_VULKAN
 
@@ -105,14 +107,14 @@ namespace GuelderEngine
                     {
                         found = true;
 #ifdef DEBUG_VULKAN
-                        LOG_INFO("Extension \"", extension, "\" is supported");
+                        LogInfo("Extension \"", extension, "\" is supported");
 #endif //DEBUG_VULKAN
                     }
                 }
                 if (!found)
                 {
 #ifdef DEBUG_VULKAN
-                    LOG_INFO("Extension \"", extension, "\" is not supported");
+                    LogInfo("Extension \"", extension, "\" is not supported");
 #endif //DEBUG_VULKAN
                     return false;
                 }
@@ -161,6 +163,7 @@ namespace GuelderEngine
         //    }
         void VulkanManager::Cleanup()
         {
+            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugManager.m_DebugMessenger, nullptr, m_DLDI);
             m_Instance.destroy();
         }
         VulkanManager::~VulkanManager()

@@ -33,10 +33,22 @@ namespace GuelderEngine
                 const std::vector<const char* const> validationLayers*/);
             ~VulkanDebugManager() = default;
 
+            VulkanDebugManager& operator=(const VulkanDebugManager& other);
+
             //const std::vector<const char* const>& GetValidationLayers() { return m_ValidationLayers; }
 
+            //const vk::DebugUtilsMessengerEXT& GetDebuggerMessenger() { return m_DebugMessenger; }
+
         private:
-            static vk::DebugUtilsMessengerEXT CreateDebugMessenger(const vk::Instance & instance, const vk::DispatchLoaderDynamic & dldi);
+            friend class VulkanManager;
+
+            static vk::DebugUtilsMessengerEXT CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi);
+
+            static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+                VkDebugUtilsMessageSeverityFlagBitsEXT messageServerity,
+                VkDebugUtilsMessageTypeFlagsEXT messageType,
+                const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+                void* userData);
 
             //debug callback
             vk::DebugUtilsMessengerEXT m_DebugMessenger;

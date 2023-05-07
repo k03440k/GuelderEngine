@@ -45,6 +45,11 @@ namespace GuelderEngine
                 break;
             case LogLevel::Error:
                 std::cerr << BACKGROUND_ERROR << "[ERROR]" << BACKGROUND_BLACK << ERROR_FONT << ": " << message << std::endl;
+            case LogLevel::RendererError:
+                std::cerr << BACKGROUND_ERROR << "[RENDERER ERRROR]" << BACKGROUND_BLACK << RENDERER_ERROR_FONT << ": " << message << std::endl;
+                break;
+            case LogLevel::VulkanError:
+                std::cerr << BACKGROUND_ERROR << "[VULKAN ERRROR]" << BACKGROUND_BLACK << VULKAN_ERROR_FONT << ": " << message << std::endl;
                 break;
             }
             std::cout << DEFAULT_FONT;

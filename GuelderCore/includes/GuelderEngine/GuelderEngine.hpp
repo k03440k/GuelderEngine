@@ -13,7 +13,8 @@
 
 using namespace GuelderEngine;
 using namespace Utils;
-using Debug::Logger;
-using Debug::LogLevel;
+using namespace Debug;
+//using Debug::Logger;
+//using Debug::LogLevel;
 
 #endif // GE_USING_NAMESPACES_AND_CLASSES

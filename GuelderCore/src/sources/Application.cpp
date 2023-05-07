@@ -25,7 +25,6 @@ namespace GuelderEngine
     }
     GEApplication::~GEApplication()
     {
-        m_Window->~Window();
     }
     void GEApplication::Run()
     {
