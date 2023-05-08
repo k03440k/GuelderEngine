@@ -9,7 +9,10 @@
 #include <sstream>
 #include <chrono>
 #include <ctime>
+#include <type_traits>
 //#include <functional>
+
+#include <Windows.h>
 
 //TODO: make normal assert, because it prints the path of this file(debug, path must be of that file which caused an error)
 //finish the inheritance of GClass
@@ -62,27 +65,50 @@ namespace GuelderEngine
 {
     namespace Debug
     {
-        /*
-        * @brief a constexpr inline const variable
-        *
-        * @param type - type(int, char*, char* const, uint32_t, etc)
-        */
-#define GLOBAL_CONSTEXPR(type) constexpr inline const type
+        enum class ConsoleTextColor : WORD
+        {
+            Black = 0,
+            Blue = FOREGROUND_BLUE,
+            Green = FOREGROUND_GREEN,
+            Cyan = FOREGROUND_GREEN | FOREGROUND_BLUE,
+            Red = FOREGROUND_RED,
+            Magenta = FOREGROUND_RED | FOREGROUND_BLUE,
+            Yellow = FOREGROUND_RED | FOREGROUND_GREEN,
+            White = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+            Gray = FOREGROUND_INTENSITY,
+            BrightBlue = FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+            BrightGreen = FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+            BrightCyan = FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+            BrightRed = FOREGROUND_RED | FOREGROUND_INTENSITY,
+            BrightMagenta = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+            BrightYellow = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+            BrightWhite = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY
+        };
 
-        GLOBAL_CONSTEXPR(char* const) ERROR_FONT = "\033[31m";
-        GLOBAL_CONSTEXPR(char* const) WARNING_FONT = "\033[33m";
-        GLOBAL_CONSTEXPR(char* const) INFO_FONT = "\033[36m";
+        enum class ConsoleBackgroundColor : WORD
+        {
+            Black = 0,
+            Blue = BACKGROUND_BLUE,
+            Green = BACKGROUND_GREEN,
+            Cyan = BACKGROUND_GREEN | BACKGROUND_BLUE,
+            Red = BACKGROUND_RED,
+            Magenta = BACKGROUND_RED | BACKGROUND_BLUE,
+            Yellow = BACKGROUND_RED | BACKGROUND_GREEN,
+            White = BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE
+        };
 
-        GLOBAL_CONSTEXPR(char* const) RENDERER_ERROR_FONT = "\033[35m";
-        GLOBAL_CONSTEXPR(char* const) VULKAN_ERROR_FONT = "\033[35m";
+    }
+}
 
-        GLOBAL_CONSTEXPR(char* const) BACKGROUND_INFO = "\033[46m";
-        GLOBAL_CONSTEXPR(char* const) BACKGROUND_WARNING = "\033[43m";
-        GLOBAL_CONSTEXPR(char* const) BACKGROUND_ERROR = "\033[41m";
+template<typename... Attributes>
+concept ConsoleColorAttributes = (std::is_enum_v<Attributes> && ...)
+    && ((std::is_same_v<Attributes, GuelderEngine::Debug::ConsoleTextColor> || ...)
+        || (std::is_same_v<Attributes, GuelderEngine::Debug::ConsoleBackgroundColor> || ...));
 
-        GLOBAL_CONSTEXPR(char* const) BACKGROUND_BLACK = "\033[40m";
-        GLOBAL_CONSTEXPR(char* const) DEFAULT_FONT = "\033[0m";
-
+namespace GuelderEngine
+{
+    namespace Debug
+    {
         enum class LogLevel
         {
             Info,
@@ -92,11 +118,14 @@ namespace GuelderEngine
             VulkanError
         };
 
+        /*
+        * @note I use HANDE but i don't do CloseHandle in dtor
+        */
         class Logger
         {
         public:
-            Logger() = delete;
-            ~Logger() = delete;
+            Logger() = default;
+            ~Logger() = default;
 
             template<typename... Args>
             constexpr inline static void Log(LogLevel level, const Args&... args)
@@ -127,6 +156,12 @@ namespace GuelderEngine
             static void Assert(const bool& condition, const std::string_view& message = "", const char* const file = __FILE__, const Utils::uint& line = __LINE__);
 
         private:
+            template<ConsoleColorAttributes... Attributes>
+            inline static void SetConsoleColorAttributes(Attributes&&... attrs)
+            {
+                SetConsoleTextAttribute(console, static_cast<WORD>((static_cast<WORD>(attrs) | ...)));
+            }
+
             template<HasOutputOperator T>
             constexpr static void Format(std::ostringstream& oss, const T& arg)
             {
@@ -141,6 +176,8 @@ namespace GuelderEngine
             }
 
             static void WriteLog(LogLevel level, const std::string_view& message);
+
+            static HANDLE console;
         };
     }
 #pragma region logging fuctions

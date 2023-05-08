@@ -10,6 +10,19 @@ namespace GuelderEngine
 {
     namespace Vulkan
     {
+        class VulkanDeviceManager : INHERIT_GClass(VulkanDeviceManager)
+        {
+        public:
+            VulkanDeviceManager() = default;
+            VulkanDeviceManager(const vk::Instance& instance);
+            ~VulkanDeviceManager() = default;
+
+            VulkanDeviceManager& operator=(const VulkanDeviceManager& other);
+        private:
+            static vk::PhysicalDevice ChoosePhysicalDevice(const vk::Instance & instance);
+
+            vk::PhysicalDevice m_PhysicalDevice;
+        };
         /*
         * Manager which responsible for all about initialization of Vulkan API
         */
@@ -33,6 +46,8 @@ namespace GuelderEngine
 
             //dynamic instance dispatcher
             vk::DispatchLoaderDynamic m_DLDI;
+
+            VulkanDeviceManager m_DeviceManager;
 #ifdef DEBUG_VULKAN
             VulkanDebugManager m_DebugManager;
 #endif //DEBUG_VULKAN

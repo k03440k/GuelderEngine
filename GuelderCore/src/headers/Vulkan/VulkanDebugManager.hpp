@@ -15,14 +15,16 @@ namespace GuelderEngine
         class VulkanDebugLayersManager : INHERIT_GClass(VulkanDebugLayersManager)
         {
         public:
-            VulkanDebugLayersManager(const std::vector<const char*> layers);
+            using ValidationLayer = const char*;
+
+            VulkanDebugLayersManager(const std::vector<ValidationLayer> layers);
             ~VulkanDebugLayersManager() = default;
 
-            const std::vector<const char*>& GetLayers() { return m_Layers; }
+            const std::vector<ValidationLayer>& GetLayers() { return m_Layers; }
         private:
-            static bool AreValidationLayersSupported(const std::vector<const char*>&layers);
+            static bool AreValidationLayersSupported(const std::vector<ValidationLayer>&layers);
 
-            const std::vector<const char*> m_Layers;
+            const std::vector<ValidationLayer> m_Layers;
         };
         class VulkanDebugManager : INHERIT_GClass(VulkanDebugManager)
         {

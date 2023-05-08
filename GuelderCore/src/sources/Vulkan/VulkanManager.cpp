@@ -23,6 +23,7 @@ namespace GuelderEngine
 #ifdef DEBUG_VULKAN
             m_DebugManager = Vulkan::VulkanDebugManager(m_Instance, m_DLDI);
 #endif // DEBUG_VULKAN
+            m_DeviceManager = VulkanDeviceManager(m_Instance);
         }
         vk::Instance VulkanManager::CreateVkInstance(const char* const name)
         {
@@ -171,5 +172,20 @@ namespace GuelderEngine
             Cleanup();
         }
 #pragma endregion
-    }
+        VulkanDeviceManager::VulkanDeviceManager(const vk::Instance& instance)
+        {
+            m_PhysicalDevice = ChoosePhysicalDevice(instance);
+        }
+        VulkanDeviceManager& VulkanDeviceManager::operator=(const VulkanDeviceManager& other)
+        {
+            m_PhysicalDevice = other.m_PhysicalDevice;
+            return *this;
+        }
+        vk::PhysicalDevice VulkanDeviceManager::ChoosePhysicalDevice(const vk::Instance& instance)
+        {
+
+
+            return vk::PhysicalDevice();
+        }
+}
 }

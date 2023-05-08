@@ -22,7 +22,7 @@ namespace GuelderEngine
     class IApplication
     {
     public:
-        ~IApplication() = default;
+        virtual ~IApplication() = default;
 
         virtual void Run() = 0;
         virtual void OnEvent(Events::Event& event) = 0;
@@ -65,6 +65,8 @@ namespace GuelderEngine
         //std::unique_ptr<class Window> m_Window;
 
         Layers::LayerStack m_LayerStack;
+
+        const Logger m_Logger;
 
         bool m_CloseWindow = false;
     };

@@ -18,6 +18,7 @@ namespace GuelderEngine
 #define BIND_EVENT_FUNC(x) std::bind(&x, this, std::placeholders::_1)
     GEApplication::GEApplication(const Utils::ushort& windowWidth, const Utils::ushort& windowHeight,
         const std::string_view& windowTitle, const std::function<void()>& callOnUpdate)
+        : m_Logger()
     {
         m_Window = std::make_unique<Window>(Window::WindowData(windowTitle.data(), windowWidth, windowHeight));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));

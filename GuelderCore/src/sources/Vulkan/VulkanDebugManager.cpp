@@ -4,12 +4,12 @@ namespace GuelderEngine
 {
     namespace Vulkan
     {
-        VulkanDebugLayersManager::VulkanDebugLayersManager(const std::vector<const char*> layers)
+        VulkanDebugLayersManager::VulkanDebugLayersManager(const std::vector<ValidationLayer> layers)
             : m_Layers(layers)
         {
             GE_CORE_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
         }
-        bool VulkanDebugLayersManager::AreValidationLayersSupported(const std::vector<const char*>& layers)
+        bool VulkanDebugLayersManager::AreValidationLayersSupported(const std::vector<ValidationLayer>& layers)
         {
             GE_CORE_ASSERT(layers.size() > 0, "layers size is zero");
 
@@ -80,10 +80,5 @@ namespace GuelderEngine
 
             return VK_FALSE;
         }
-        /*VulkanDebugManager::VulkanDebugManager(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi, const std::vector<const char* const> validationLayers)
-            : m_LayersManager(validationLayers)
-        {
-
-        }*/
     }
 }
