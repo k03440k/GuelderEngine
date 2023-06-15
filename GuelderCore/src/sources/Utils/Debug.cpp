@@ -1,6 +1,19 @@
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+//#include "../includes/GuelderEngine/Utils/Debug.hpp"
 
+//#include <Windows.h>
+module;
+#include <ctime>
 #include <Windows.h>
+#include "../includes/GuelderEngine/Utils/Debug.hpp"
+module GuelderEngine;
+import GuelderEngine.Debug;
+import GuelderEngine.Core.Types;
+
+import <iostream>;
+import <stdexcept>;
+import <string_view>;
+import <string>;
+import <chrono>;
 
 namespace GuelderEngine
 {
@@ -13,7 +26,7 @@ namespace GuelderEngine
                 CloseHandle(console);
             }
         }*/
-        void Logger::ELog(const std::string_view& message, const char* const fileName, const Utils::uint& line)
+        void Logger::ELog(const std::string_view& message, const char* const fileName, const Types::uint& line)
         {
             //const auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
             //const auto tm = *std::localtime(&t);
@@ -30,7 +43,7 @@ namespace GuelderEngine
             
             throw(std::runtime_error(message.data()/*Format(ERROR_FONT, message, DEFAULT_FONT)*/));
         }
-        void Logger::Assert(const bool& condition, const std::string_view& message, const char* const file, const Utils::uint& line)
+        void Logger::Assert(const bool& condition, const std::string_view& message, const char* const file, const Types::uint& line)
         {
             if (!condition)
             {
@@ -38,7 +51,7 @@ namespace GuelderEngine
                 __debugbreak();
             }
         }
-        void Logger::WriteLog(LogLevel level, const std::string_view& message)
+        void Logger::WriteLog(const LogLevel& level, const std::string_view& message)
         {
             const auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
             struct tm local_time;
@@ -83,7 +96,28 @@ namespace GuelderEngine
             default:
                 GE_ELOG("Logger::WriteLog: invalid logging level");
             }
-            std::cout << ": " << message << std::endl/* << DEFAULT_FONT*/;
+            std::cout << ": " << message << '\n'/*std::endl*//* << DEFAULT_FONT*/;
+            SetConsoleColorAttributes(Text::White, Background::Black);
+        }
+        void Logger::WriteLog(ConsoleTextColor&& textColor, const std::string_view& categoryName,
+            const std::string_view& message)
+        {
+            const auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            struct tm local_time;
+            localtime_s(&local_time, &t);
+
+            std::cout << std::put_time(&local_time, "%H:%M:%S") << ' '; // print timestamp
+            using Background = ConsoleBackgroundColor;
+            using Text = ConsoleTextColor;
+
+            SetConsoleColorAttributes(Background::Green, Text::White);
+
+            std::cout << '[' << categoryName << ']';
+            SetConsoleColorAttributes(Text::White, Background::Black);
+            std::cout << ": ";
+            SetConsoleColorAttributes(std::move(textColor));
+            std::cout << message << '\n';
+
             SetConsoleColorAttributes(Text::White, Background::Black);
         }
     }

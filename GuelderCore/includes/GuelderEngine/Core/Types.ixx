@@ -1,8 +1,10 @@
-#pragma once
+export module GuelderEngine.Core.Types;
 
-namespace GuelderEngine
+export import :GClass;
+
+export namespace GuelderEngine
 {
-    namespace Utils
+    namespace Types
     {
         using byte = char;
         using cstr = char*;

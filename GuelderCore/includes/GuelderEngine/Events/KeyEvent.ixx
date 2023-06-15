@@ -1,8 +1,16 @@
-#pragma once
+//module;
 
-#include "Event.hpp"
+//#include "Event.hpp"
+module;
+#include "../src/headers/Events/Event.hpp"
+#include "../src/headers/Core/GObject/GClass.hpp"
+export module GuelderEngine.Events:KeyEvent;
 
-namespace GuelderEngine
+import :BaseEvent;
+
+import GuelderEngine.Debug;
+
+export namespace GuelderEngine
 {
     namespace Events
     {

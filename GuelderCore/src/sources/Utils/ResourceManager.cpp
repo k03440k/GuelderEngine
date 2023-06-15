@@ -1,13 +1,19 @@
-#include "../../../includes/GuelderEngine/Utils/ResourceManager.hpp"
+//#include "../../../includes/GuelderEngine/Utils/ResourceManager.hpp"
+module;
+#include "../includes/GuelderEngine/Utils/Debug.hpp"
+module GuelderEngine.Core;
+import :ResourceManager;
 
-#include <fstream>
-#include <sstream>
+import <fstream>;
+import <sstream>;
+
+import GuelderEngine.Debug;
 
 namespace GuelderEngine
 {
     namespace Utils
     {
-        ResourceManager::ResourceManager(const std::string_view& executablePath) : 
+        ResourceManager::ResourceManager(const std::string_view& executablePath) :
             m_Path(executablePath.substr(0, executablePath.find_last_of("/\\")))
         {
             //const size_t found = executablePath.find_last_of("/\\");
@@ -19,7 +25,7 @@ namespace GuelderEngine
             file.open(m_Path + "/" + relativeFilePath.data(), std::ios::in | std::ios::binary);
             //LOG("DEBUG " << m_Path + "/" + relativeFilePath << " DEBUG");
             GE_CORE_ASSERT(file.is_open(), Debug::Logger::Format("ResourceManager::GetFileSource: cannot open file at location: ", relativeFilePath));
-            std::stringstream source;
+            std::stringstream source;//istringstream or stringstream?
             source << file.rdbuf();
 
             file.close();
@@ -64,17 +70,17 @@ namespace GuelderEngine
         std::string ResourceManager::GetResourceRelativePath(const std::string& shaderName) const
         {
             const std::string allText = GetFileSource(resourcesPath);
-            const Utils::ubyte foundAt = (Utils::ubyte)allText.find(shaderName);
+            const Types::ubyte foundAt = (Types::ubyte)allText.find(shaderName);
 
             GE_CORE_ASSERT(foundAt != std::string::npos, "ResourceManager::GetResourceRelativePath: cannot find a such variable name");
 
-            const Utils::ushort foundName = (Utils::ushort)allText.find(shaderName);//finds index of first char of nameVar
-            const Utils::ushort foundSemicon = (Utils::ushort)allText.substr(foundName, allText.size()).find_first_of(';');//finds the end of that line(; or semicon)
+            const Types::ushort foundName = (Types::ushort)allText.find(shaderName);//finds index of first char of nameVar
+            const Types::ushort foundSemicon = (Types::ushort)allText.substr(foundName, allText.size()).find_first_of(';');//finds the end of that line(; or semicon)
 
             const std::string foundLine = allText.substr(foundName, foundSemicon);//cutts all file string to only line
 
-            const Utils::ushort first = (Utils::ushort)foundLine.find_first_of('\"') + 1/*finds first '"'*/;
-            const Utils::ushort second = (Utils::ushort)foundLine.find_last_of('\"') - (Utils::ushort)foundLine.find_first_of('\"') - 1/*finds last '"'*/;
+            const Types::ushort first = (Types::ushort)foundLine.find_first_of('\"') + 1/*finds first '"'*/;
+            const Types::ushort second = (Types::ushort)foundLine.find_last_of('\"') - (Types::ushort)foundLine.find_first_of('\"') - 1/*finds last '"'*/;
 
             const std::string shaderPath = foundLine.substr(first, second);
 

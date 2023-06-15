@@ -1,4 +1,13 @@
-#include "../../headers/Vulkan/VulkanDebugManager.hpp"
+//#include "../../headers/Vulkan/VulkanDebugManager.hpp"
+module;
+#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include <vulkan/vulkan.hpp>
+module GuelderEngine.Vulkan;
+import :VulkanDebugManager;
+
+import GuelderEngine.Debug;
+
+import <vector>;
 
 namespace GuelderEngine
 {
@@ -16,10 +25,10 @@ namespace GuelderEngine
             std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 
 #ifdef DEBUG_VULKAN
-            LogInfo("Device can support following layers:");
+            Debug::LogInfo("Device can support following layers:");
             for (const auto& layer : supportedLayers)
             {
-                LogInfo('\t', layer.layerName);
+                Debug::LogInfo('\t', layer.layerName);
             }
 #endif // DEBUG_VULKAN
 
@@ -33,14 +42,14 @@ namespace GuelderEngine
                     {
                         found = true;
 #ifdef DEBUG_VULKAN
-                        LogInfo("Layer \"", extension, "\" is supported");
+                        Debug::LogInfo("Layer \"", extension, "\" is supported");
 #endif //DEBUG_VULKAN
                     }
                 }
                 if (!found)
                 {
 #ifdef DEBUG_VULKAN
-                    LogInfo("Layer \"", extension, "\" is not supported");
+                    Debug::LogInfo("Layer \"", extension, "\" is not supported");
 #endif //DEBUG_VULKAN
                     return false;
                 }
@@ -57,14 +66,20 @@ namespace GuelderEngine
             m_DebugMessenger = other.m_DebugMessenger;
             return *this;
         }
+        void VulkanDebugManager::LogDeviceProperties(const vk::PhysicalDevice& device)
+        {
+            const vk::PhysicalDeviceProperties properties = device.getProperties();
+
+            Debug::LogInfo("Device name: ", properties.deviceName, ". Device driver version: ", properties.driverVersion);
+        }
         vk::DebugUtilsMessengerEXT VulkanDebugManager::CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
         {
             vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
                 vk::DebugUtilsMessengerCreateFlagsEXT(),
                 vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                    vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+                vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
                 vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-                    vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+                vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
                 DebugCallback,
                 nullptr
             );
@@ -76,7 +91,7 @@ namespace GuelderEngine
             const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
             void* userData)
         {
-            LogVulkanError(callbackData->pMessage);
+            Debug::LogVulkanError(callbackData->pMessage);
 
             return VK_FALSE;
         }

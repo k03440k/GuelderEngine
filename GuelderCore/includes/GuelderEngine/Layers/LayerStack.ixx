@@ -1,12 +1,18 @@
-#pragma once
+module;
 
-#include "Layer.hpp"
+//#include "Layer.hpp"
 
-#include "../Utils/Utils.hpp"
+//#include "../Utils/Utils.hpp"
 
-#include <vector>
+//#include <vector>
+export module GuelderEngine.Layers:LayerStack;
 
-namespace GuelderEngine
+import :Layer;
+import GuelderEngine.Core.Types;
+
+import <vector>;
+
+export namespace GuelderEngine
 {
     namespace Layers
     {
@@ -27,7 +33,7 @@ namespace GuelderEngine
             LayerVec::iterator begin() { return m_Layers.begin(); }
             LayerVec::iterator end() { return m_Layers.end(); }
 
-            const Utils::ubyte size() const { return (Utils::ubyte)m_Layers.size(); }
+            const Types::ubyte size() const { return (Types::ubyte)m_Layers.size(); }
             const bool IsEmpty() const { return !m_Layers.size(); }
         private:
             LayerVec m_Layers;

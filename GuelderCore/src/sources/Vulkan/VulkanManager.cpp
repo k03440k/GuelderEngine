@@ -1,6 +1,22 @@
-#include "../../headers/Vulkan/VulkanManager.hpp"
+module;
+//#include "../../headers/Vulkan/VulkanManager.hpp"
 
+//#include "../../headers/Vulkan/VulkanDebugManager.hpp"
+
+#include "../../../includes/GuelderEngine/Utils/Debug.hpp"
+
+//#include <vector>
+#include <vulkan/vulkan.hpp>
 #include <glfw/glfw3.h>
+module GuelderEngine.Vulkan;
+import :VulkanManager;
+import :VulkanDebugManager;
+
+import GuelderEngine.Debug;
+import GuelderEngine.Core.Types;
+
+import <vector>;
+import <string_view>;
 
 namespace GuelderEngine
 {
@@ -27,16 +43,16 @@ namespace GuelderEngine
         }
         vk::Instance VulkanManager::CreateVkInstance(const char* const name)
         {
-            uint version{};
+            Types::uint version{};
             vkEnumerateInstanceVersion(&version);
 #ifdef DEBUG_VULKAN
-            LogInfo("System can support Vulkan variant: ", VK_API_VERSION_VARIANT(version), ", ",
+            Debug::LogInfo("System can support Vulkan variant: ", VK_API_VERSION_VARIANT(version), ", ",
                 VK_API_VERSION_MAJOR(version), '.', VK_API_VERSION_MINOR(version), '.', VK_API_VERSION_PATCH(version));
 #endif // DEBUG_VULKAN
 
             vk::ApplicationInfo appInfo(name, 0, "Guelder Engine", version);
 
-            uint glfwExtensionsCount{};
+            Types::uint glfwExtensionsCount{};
             const char** glfwExtensions;
             glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
 
@@ -47,10 +63,10 @@ namespace GuelderEngine
 
             if (extensions.size() > 0)
             {
-                LogInfo("All available extensions for Vulkan are:");
+                Debug::LogInfo("All available extensions for Vulkan are:");
                 for (const auto extension : extensions)
                 {
-                    LogInfo(extension);
+                    Debug::LogInfo(extension);
                 }
             }
 #endif // DEBUG_VULKAN
@@ -68,13 +84,13 @@ namespace GuelderEngine
 
             vk::InstanceCreateInfo createInfo(vk::InstanceCreateFlags(),
                 &appInfo,
-                (uint)layers.GetLayers().size(), layers.GetLayers().data(),//debug layers
-                (uint)extensions.size(), extensions.data());//extensions
+                (Types::uint)layers.GetLayers().size(), layers.GetLayers().data(),//debug layers
+                (Types::uint)extensions.size(), extensions.data());//extensions
 #else
             vk::InstanceCreateInfo createInfo(vk::InstanceCreateFlags(),
                 &appInfo,
                 0, nullptr),//debug layers
-                (uint)extensions.size(), extensions.data());//extensions
+                (Utils::uint)extensions.size(), extensions.data());//extensions
 #endif // DEBUG_VULKAN
                 return vk::createInstance(createInfo);
         }
@@ -91,10 +107,10 @@ namespace GuelderEngine
             std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
 
 #ifdef DEBUG_VULKAN
-            LogInfo("Device can support following extensions:");
+            Debug::LogInfo("Device can support following extensions:");
             for (const auto& supportedExtension : supportedExtensions)
             {
-                LogInfo('\t', supportedExtension.extensionName);
+                Debug::LogInfo('\t', supportedExtension.extensionName);
             }
 #endif //DEBUG_VULKAN
 
@@ -108,14 +124,14 @@ namespace GuelderEngine
                     {
                         found = true;
 #ifdef DEBUG_VULKAN
-                        LogInfo("Extension \"", extension, "\" is supported");
+                        Debug::LogInfo("Extension \"", extension, "\" is supported");
 #endif //DEBUG_VULKAN
                     }
                 }
                 if (!found)
                 {
 #ifdef DEBUG_VULKAN
-                    LogInfo("Extension \"", extension, "\" is not supported");
+                    Debug::LogInfo("Extension \"", extension, "\" is not supported");
 #endif //DEBUG_VULKAN
                     return false;
                 }
@@ -164,7 +180,9 @@ namespace GuelderEngine
         //    }
         void VulkanManager::Cleanup()
         {
+#ifdef DEBUG_VULKAN
             m_Instance.destroyDebugUtilsMessengerEXT(m_DebugManager.m_DebugMessenger, nullptr, m_DLDI);
+#endif // DEBUG_VULKAN
             m_Instance.destroy();
         }
         VulkanManager::~VulkanManager()
@@ -183,9 +201,18 @@ namespace GuelderEngine
         }
         vk::PhysicalDevice VulkanDeviceManager::ChoosePhysicalDevice(const vk::Instance& instance)
         {
+            std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
+
+#ifdef DEBUG_VULKAN
+            Debug::LogInfo("There are ", physicalDevices.size(), " detected physical devices:");
+            for (const auto& device : physicalDevices)
+            {
+                VulkanDebugManager::LogDeviceProperties(device);
+            }
+#endif // DEBUG_VULKAN
 
 
             return vk::PhysicalDevice();
         }
-}
+    }
 }

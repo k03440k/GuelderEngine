@@ -1,17 +1,26 @@
-#include "../headers/Window.hpp"
+module;
+//#include "../headers/Window.hpp"
 
-#include "../../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../includes/GuelderEngine/Utils/Debug.hpp"
 
-#include "../../includes/GuelderEngine/Events/Event.hpp"
-#include "../../includes/GuelderEngine/Events/ApplicationEvent.hpp"
-#include "../../includes/GuelderEngine/Events/MouseEvent.hpp"
-#include "../../includes/GuelderEngine/Events/KeyEvent.hpp"
+//#include "../../includes/GuelderEngine/Events/Event.hpp"
+//#include "../../includes/GuelderEngine/Events/ApplicationEvent.hpp"
+//#include "../../includes/GuelderEngine/Events/MouseEvent.hpp"
+//#include "../../includes/GuelderEngine/Events/KeyEvent.hpp"
 
 #include <imgui/imgui.h>
 //#include <imgui/backends/imgui_impl_opengl3.h>
 #include <glfw/glfw3.h>
 
-#include <stdexcept>
+//#include <stdexcept>
+module GuelderEngine.Core;
+import :Window;
+
+import GuelderEngine.Core.Types;
+import GuelderEngine.Events;
+import GuelderEngine.Debug;
+
+import <stdexcept>;
 
 namespace GuelderEngine
 {
@@ -45,7 +54,7 @@ namespace GuelderEngine
         ImGui::CreateContext();
         ImGui_ImplOpenGL3_Init();*/
     }
-    Window::Window(const Utils::ushort& windowWidth, const Utils::ushort& windowHeight,
+    Window::Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
         const std::string& windowTitle, const UpdateFunc& update, const bool& enableVSync) :
         m_Data(windowTitle, windowWidth, windowHeight, enableVSync), onUpdate(update)
     {
@@ -70,7 +79,7 @@ namespace GuelderEngine
         else glfwSwapInterval(0);
         m_Data.isVSync = isEnable;
     }
-    void Window::SetWindow(const Utils::ushort& windowWidth, const Utils::ushort& windowHeight, const std::string& windowTitle)
+    void Window::SetWindow(const Types::ushort& windowWidth, const Types::ushort& windowHeight, const std::string& windowTitle)
     {
         m_Data = Window::WindowData(windowTitle, windowWidth, windowHeight);
 
@@ -211,8 +220,8 @@ namespace GuelderEngine
     }
 #pragma endregion
 #pragma region WindowData
-    Window::WindowData::WindowData(const std::string& title, const Utils::ushort& width,
-        const Utils::ushort& height, const bool isVSync,
+    Window::WindowData::WindowData(const std::string& title, const Types::ushort& width,
+        const Types::ushort& height, const bool isVSync,
         const EventCallbackFunc& callback) : title(title), width(width), height(height),
         callback(callback), isVSync(isVSync) {}
     Window::WindowData::~WindowData()

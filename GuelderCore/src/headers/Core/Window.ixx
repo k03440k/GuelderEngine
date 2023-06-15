@@ -1,14 +1,24 @@
-#pragma once
+module;
 
-#include "../../includes/GuelderEngine/GuelderEngine.hpp"
-#include "../includes/GuelderEngine/Utils/Utils.hpp"
+//#include "../../includes/GuelderEngine/GuelderEngine.hpp"
+//#include "../includes/GuelderEngine/Types/Types.hpp"
 //#include "../../includes/Engine3DCore/Events/Event.hpp"
-#include <functional>
-#include <string>
+//#include <functional>
+//#include <string>
+#include <glfw/glfw3.h>
+export module GuelderEngine.Core:Window;
+
+import <functional>;
+import <string>;
+
+import GuelderEngine.Core.Types;
+import GuelderEngine.Events;
+
+//struct GLFWwindow;
 
 struct GLFWwindow;
 
-namespace GuelderEngine
+export namespace GuelderEngine
 {
     namespace Events { struct Event; }
     class Window
@@ -19,13 +29,13 @@ namespace GuelderEngine
 
         struct WindowData
         {
-            WindowData(const std::string& title = "GuelderEngine window", const Utils::ushort& width = 640, const Utils::ushort& height = 480,
-                  const bool isVSync = false, const EventCallbackFunc& callback = EventCallbackFunc());
+            WindowData(const std::string& title = "GuelderEngine window", const Types::ushort& width = 640, const Types::ushort& height = 480,
+                const bool isVSync = false, const EventCallbackFunc& callback = EventCallbackFunc());
             ~WindowData();
             WindowData& operator=(const WindowData& other);
 
-            Utils::ushort width = 0;
-            Utils::ushort height = 0;
+            Types::ushort width = 0;
+            Types::ushort height = 0;
             std::string title;
             EventCallbackFunc callback;
 
@@ -33,8 +43,8 @@ namespace GuelderEngine
         };
 
         Window() = default;
-        Window(const Utils::ushort& windowWidth, const Utils::ushort& windowHeight,
-               const std::string& windowTitle, const UpdateFunc& update = []{}, const bool& enableVSync = false);
+        Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
+            const std::string& windowTitle, const UpdateFunc& update = [] {}, const bool& enableVSync = false);
         Window(const WindowData& data);
         ~Window();
 
@@ -50,8 +60,8 @@ namespace GuelderEngine
 
         UpdateFunc onUpdate;
 
-        Utils::ushort GetWidth() const noexcept { return m_Data.width; }
-        Utils::ushort GetHeight() const noexcept { return m_Data.height; }
+        Types::ushort GetWidth() const noexcept { return m_Data.width; }
+        Types::ushort GetHeight() const noexcept { return m_Data.height; }
         std::string GetTitle() const noexcept { return m_Data.title; }
         //GLFWwindow* GetWindow() const { return window; }
         const bool isVSync() const noexcept { return m_Data.isVSync; }
@@ -59,7 +69,7 @@ namespace GuelderEngine
         void SetVSync(const bool& isEnable = true);
 
         void SetCallback(const EventCallbackFunc& callback) noexcept { m_Data.callback = callback; }
-        void SetWindow(const Utils::ushort& windowWidth = 640, const Utils::ushort& windowHeight = 480, const std::string& windowTitle = std::string("window"));
+        void SetWindow(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480, const std::string& windowTitle = std::string("window"));
         //void SetWindow(GLFWwindow* other, const std::string* otherTitle = nullptr);
     private:
         void Init();

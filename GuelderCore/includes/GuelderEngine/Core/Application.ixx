@@ -1,19 +1,29 @@
-#pragma once
+module;
+#include "../src/headers/Core/GObject/GClass.hpp"
+//#include "Utils/Utils.hpp"
+//
+//#include "Events/Event.hpp"
+//#include "Events/ApplicationEvent.hpp"
+//
+//#include "Layers/LayerStack.hpp"
+//
+//#include "../src/headers/Vulkan/VulkanManager.hpp"
+//
+//#include <string_view>
+//#include <functional>
+//#include <memory>
+export module GuelderEngine.Core:Application;
 
-#include "Utils/Utils.hpp"
+import GuelderEngine.Vulkan;
+import GuelderEngine.Events;
+import GuelderEngine.Debug;
+import GuelderEngine.Layers;
 
-#include "Events/Event.hpp"
-#include "Events/ApplicationEvent.hpp"
+import <functional>;
+import <memory>;
+import <string_view>;
 
-#include "Layers/LayerStack.hpp"
-
-#include "../src/headers/Vulkan/VulkanManager.hpp"
-
-#include <functional>
-#include <memory>
-#include <string_view>
-
-namespace GuelderEngine
+export namespace GuelderEngine
 {
     //idk is it normal
     //namespace Events { struct WindowCloseEvent; struct Event; class EventDispatcher; }
@@ -35,7 +45,7 @@ namespace GuelderEngine
     class GEApplication : public IApplication, public Vulkan::VulkanManager, INHERIT_GClass(GEApplication)
     {
     public:
-        GEApplication(const Utils::ushort& windowWidth = 640, const Utils::ushort& windowHeight = 480,
+        GEApplication(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480,
                     const std::string_view& windowTitle = "Guelder Engine Window", const std::function<void()>& callOnUpdate = [] {});
         virtual ~GEApplication();
 
@@ -66,7 +76,7 @@ namespace GuelderEngine
 
         Layers::LayerStack m_LayerStack;
 
-        const Logger m_Logger;
+        const Debug::Logger m_Logger;
 
         bool m_CloseWindow = false;
     };

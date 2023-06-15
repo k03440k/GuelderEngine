@@ -1,12 +1,19 @@
-#pragma once
+module;
 
-#include "../includes/GuelderEngine/GuelderEngine.hpp"
+///#include "../includes/GuelderEngine/GuelderEngine.hpp"
 
-#include "VulkanDebugManager.hpp"
-
+//#include "VulkanDebugManager.hpp"
+#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace GuelderEngine
+export module GuelderEngine.Vulkan:VulkanManager;
+import :VulkanDebugManager;
+
+import <string_view>;
+import <vector>;
+
+export namespace GuelderEngine
 {
     namespace Vulkan
     {
@@ -14,10 +21,10 @@ namespace GuelderEngine
         {
         public:
             VulkanDeviceManager() = default;
-            VulkanDeviceManager(const vk::Instance& instance);
+            VulkanDeviceManager(const vk::Instance & instance);
             ~VulkanDeviceManager() = default;
 
-            VulkanDeviceManager& operator=(const VulkanDeviceManager& other);
+            VulkanDeviceManager& operator=(const VulkanDeviceManager & other);
         private:
             static vk::PhysicalDevice ChoosePhysicalDevice(const vk::Instance & instance);
 
@@ -29,7 +36,7 @@ namespace GuelderEngine
         class VulkanManager : INHERIT_GClass(VulkanManager)
         {
         public:
-            VulkanManager(const std::string_view& name = "Guelder Engine Editor");
+            VulkanManager(const std::string_view & name = "Guelder Engine Editor");
             ~VulkanManager();
 
             static bool IsExtensionsSupported(const std::vector<const char*>&extensions);
@@ -43,10 +50,8 @@ namespace GuelderEngine
             void Cleanup();
 
             vk::Instance m_Instance;
-
             //dynamic instance dispatcher
             vk::DispatchLoaderDynamic m_DLDI;
-
             VulkanDeviceManager m_DeviceManager;
 #ifdef DEBUG_VULKAN
             VulkanDebugManager m_DebugManager;

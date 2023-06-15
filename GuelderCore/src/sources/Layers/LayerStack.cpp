@@ -1,4 +1,6 @@
-#include "../includes/GuelderEngine/Layers/LayerStack.hpp"
+//#include "../includes/GuelderEngine/Layers/LayerStack.hpp"
+module GuelderEngine.Layers;
+import :LayerStack;
 
 namespace GuelderEngine
 {

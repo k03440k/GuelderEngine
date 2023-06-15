@@ -1,14 +1,15 @@
-#pragma once
-
+module;
+#include "../src/headers/Core/GObject/GClass.hpp"
 //#include "../../../src/headers/Renderer/ShaderProgram.hpp"
-#include "../../GuelderCore/includes/GuelderEngine/GuelderEngine.hpp"
+//#include "../../GuelderCore/includes/GuelderEngine/GuelderEngine.hpp"
+export module GuelderEngine.Core:ResourceManager;
 
-#include <string>
-#include <string_view>
-#include <map>
-#include <memory>
+import <string>;
+import <string_view>;
+import <map>;
+import <memory>;
 
-namespace GuelderEngine
+export namespace GuelderEngine
 {
     namespace Utils
     {
@@ -25,7 +26,7 @@ namespace GuelderEngine
             //using PresetShaderMap = std::map<ResourceManager::ShadersPreset, ResourceManager::ShaderProgram_ptr>;
 
             ~ResourceManager() = default;
-            ResourceManager(const std::string_view& executablePath);
+            ResourceManager(const std::string_view & executablePath);
 
             ResourceManager(const ResourceManager&) = delete;
             ResourceManager(const ResourceManager&&) = delete;
@@ -33,7 +34,7 @@ namespace GuelderEngine
             ResourceManager& operator=(const ResourceManager&&) = delete;
 
             //get file string
-            const std::string GetFileSource(const std::string_view& relativeFilePath) const;
+            const std::string GetFileSource(const std::string_view & relativeFilePath) const;
             //static const std::string GetFileSource(const std::string& executablePath, const char* relativeFilePath);
 
             //ShaderProgram_ptr LoadShaderProgram(const std::string_view& shaderProgramName, const std::string_view& vertexPath, const std::string_view& fragmentPath);
@@ -44,7 +45,7 @@ namespace GuelderEngine
             /*
             * Gets default resource path in file "./res/resources.txt"
             */
-            std::string GetResourceRelativePath(const std::string& resourceName) const;
+            std::string GetResourceRelativePath(const std::string & resourceName) const;
 
             //const PresetShaderMap GetPresetShader() const;
 

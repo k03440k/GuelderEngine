@@ -1,22 +1,30 @@
-#include "../includes/GuelderEngine/Application.hpp"
+module;
+//#include "../includes/GuelderEngine/Application.hpp"
 
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
 
-#include "../headers/Window.hpp"
-#include "../../includes/GuelderEngine/Layers/Layer.hpp"
+//#include "../headers/Window.hpp"
+//#include "../../includes/GuelderEngine/Layers/Layer.hpp"
 
 #include <glfw/glfw3.h>
-
+//#include <memory>
+module GuelderEngine.Core;
+import :Application;
+import :Window;
+import GuelderEngine.Layers;
+import GuelderEngine.Core.Types;
 //#include <stdexcept>
-#include <string>//<-- added this
-#include <vector>
+import <string>;//<-- added this
+import <vector>;
+import <memory>;
+import <functional>;
 //#include <iostream>
 
 namespace GuelderEngine
 {
 #pragma region GEApplication
 #define BIND_EVENT_FUNC(x) std::bind(&x, this, std::placeholders::_1)
-    GEApplication::GEApplication(const Utils::ushort& windowWidth, const Utils::ushort& windowHeight,
+    GEApplication::GEApplication(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
         const std::string_view& windowTitle, const std::function<void()>& callOnUpdate)
         : m_Logger()
     {
