@@ -1,17 +1,11 @@
 module;
-//#include "../../headers/Vulkan/VulkanManager.hpp"
-
-//#include "../../headers/Vulkan/VulkanDebugManager.hpp"
-
 #include "../../../includes/GuelderEngine/Utils/Debug.hpp"
-
-//#include <vector>
 #include <vulkan/vulkan.hpp>
 #include <glfw/glfw3.h>
 module GuelderEngine.Vulkan;
 import :VulkanManager;
-import :VulkanDebugManager;
 
+import :VulkanDebugManager;
 import GuelderEngine.Debug;
 import GuelderEngine.Core.Types;
 
@@ -71,7 +65,7 @@ namespace GuelderEngine
             }
 #endif // DEBUG_VULKAN
 
-            GE_CORE_ASSERT(IsExtensionsSupported(extensions), "extensions are not supported");
+            GE_CORE_ASSERT(AreExtensionsSupported(extensions), "extensions are not supported");
 
 #ifdef DEBUG_VULKAN
             //m_DebugManager = VulkanDebugManager(m_Instance, m_DLDI, { "VK_LAYER_KHRONOS_validation" });
@@ -84,7 +78,7 @@ namespace GuelderEngine
 
             vk::InstanceCreateInfo createInfo(vk::InstanceCreateFlags(),
                 &appInfo,
-                (Types::uint)layers.GetLayers().size(), layers.GetLayers().data(),//debug layers
+                static_cast<Types::uint>(layers.GetLayers().size()), layers.GetLayers().data(),//debug layers
                 (Types::uint)extensions.size(), extensions.data());//extensions
 #else
             vk::InstanceCreateInfo createInfo(vk::InstanceCreateFlags(),
@@ -100,7 +94,7 @@ namespace GuelderEngine
             m_DebugMessenger = CreateDebugMessenger(instance, dldi);
             GE_CORE_ASSERT(AreValidationLayersSupported(validationLayers), "layers are not supported");
         }*/
-        bool VulkanManager::IsExtensionsSupported(const std::vector<const char*>& extensions)
+        bool VulkanManager::AreExtensionsSupported(const std::vector<const char*>& extensions)
         {
             GE_CORE_ASSERT(extensions.size() > 0, "extensions size is zero");
 
@@ -178,7 +172,7 @@ namespace GuelderEngine
         //
         //        return true;
         //    }
-        void VulkanManager::Cleanup()
+        void VulkanManager::Cleanup() const noexcept
         {
 #ifdef DEBUG_VULKAN
             m_Instance.destroyDebugUtilsMessengerEXT(m_DebugManager.m_DebugMessenger, nullptr, m_DLDI);
@@ -201,7 +195,7 @@ namespace GuelderEngine
         }
         vk::PhysicalDevice VulkanDeviceManager::ChoosePhysicalDevice(const vk::Instance& instance)
         {
-            std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
+            const std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 
 #ifdef DEBUG_VULKAN
             Debug::LogInfo("There are ", physicalDevices.size(), " detected physical devices:");

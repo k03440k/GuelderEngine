@@ -1,18 +1,7 @@
 module;
-//#include "../headers/Window.hpp"
-
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
-
-//#include "../../includes/GuelderEngine/Events/Event.hpp"
-//#include "../../includes/GuelderEngine/Events/ApplicationEvent.hpp"
-//#include "../../includes/GuelderEngine/Events/MouseEvent.hpp"
-//#include "../../includes/GuelderEngine/Events/KeyEvent.hpp"
-
 #include <imgui/imgui.h>
-//#include <imgui/backends/imgui_impl_opengl3.h>
 #include <glfw/glfw3.h>
-
-//#include <stdexcept>
 module GuelderEngine.Core;
 import :Window;
 
@@ -28,7 +17,7 @@ namespace GuelderEngine
 #pragma region Window
     namespace Events
     {
-        static void GLFWErrorCallback(int errorCode, const char* description)
+        static void GLFWErrorCallback(int&& errorCode, const char* description)
         {
             GE_ELOG("GuelderEngine::GLFWErrorCallback: error code: ", errorCode);
         }
@@ -36,17 +25,7 @@ namespace GuelderEngine
     //TEST
     void Window::TEST_DrawImGui()
     {
-        /*ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize.x = static_cast<float>(GetWidth());
-        io.DisplaySize.y = static_cast<float>(GetHeight());
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui::NewFrame();
-
-        ImGui::ShowDemoWindow();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());*/
+        
     }
     void ImGui_Init()
     {
@@ -194,8 +173,6 @@ namespace GuelderEngine
     }
     void Window::OnUpdate()
     {
-        //glClear(GL_COLOR_BUFFER_BIT);
-
         onUpdate();
 
         TEST_DrawImGui();
@@ -205,8 +182,6 @@ namespace GuelderEngine
     }
     void Window::OnUpdate(const UpdateFunc& update)
     {
-        //glClear(GL_COLOR_BUFFER_BIT);
-
         update();
 
         TEST_DrawImGui();

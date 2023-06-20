@@ -1,17 +1,5 @@
 module;
 #include "../src/headers/Core/GObject/GClass.hpp"
-//#include "Utils/Utils.hpp"
-//
-//#include "Events/Event.hpp"
-//#include "Events/ApplicationEvent.hpp"
-//
-//#include "Layers/LayerStack.hpp"
-//
-//#include "../src/headers/Vulkan/VulkanManager.hpp"
-//
-//#include <string_view>
-//#include <functional>
-//#include <memory>
 export module GuelderEngine.Core:Application;
 
 import GuelderEngine.Vulkan;
@@ -25,8 +13,7 @@ import <string_view>;
 
 export namespace GuelderEngine
 {
-    //idk is it normal
-    //namespace Events { struct WindowCloseEvent; struct Event; class EventDispatcher; }
+    //namespace Events { struct WindowCloseEvent; struct BaseEvent; class EventDispatcher; }
     namespace Layers { class Layer; }
 
     class IApplication
@@ -35,7 +22,7 @@ export namespace GuelderEngine
         virtual ~IApplication() = default;
 
         virtual void Run() = 0;
-        virtual void OnEvent(Events::Event& event) = 0;
+        virtual void OnEvent(Events::BaseEvent& event) = 0;
 
     protected:
         std::unique_ptr<class Window> m_Window;
@@ -56,7 +43,7 @@ export namespace GuelderEngine
 
         void Run() override;
         void Run(const std::function<void()>& callOnUpdate);
-        void OnEvent(Events::Event& event) override;
+        void OnEvent(Events::BaseEvent& event) override;
 
         void PushLayer(Layers::Layer* layer);
         void PushOverlay(Layers::Layer* overlay);

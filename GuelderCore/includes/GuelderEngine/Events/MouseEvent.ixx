@@ -14,7 +14,7 @@ export namespace GuelderEngine
     namespace Events
     {
         using MouseCode = int;//TEMP
-        struct MouseMovedEvent : public Event
+        struct MouseMovedEvent : public BaseEvent
         {
             MouseMovedEvent(const double& newX, const double& newY) : x(newX), y(newY) {};
 
@@ -22,14 +22,12 @@ export namespace GuelderEngine
             double y;
 
             EVENT_STRUCT_TYPE(MouseMoved)
-            const std::string ToString() const override
+            std::string ToString() const override
             {
-                //std::stringstream ss;
-                //ss << "MouseMovedEvent: x[" << x << "], y[" << y << ']';
                 return Debug::Logger::Format("MouseMovedEvent: x[", x, "], y[", y, ']');
             }
         };
-        struct MouseScrolledEvent : public Event
+        struct MouseScrolledEvent : public BaseEvent
         {
             MouseScrolledEvent(const float& xOffset, const float& yOffset) : xOffset(xOffset), yOffset(yOffset) {};
 
@@ -37,14 +35,12 @@ export namespace GuelderEngine
             float yOffset;
 
             EVENT_STRUCT_TYPE(MouseScrolled)
-            const std::string ToString() const override
+            std::string ToString() const override
             {
-                //std::stringstream ss;
-                //ss << "MouseScrolledEvent: xOffset[" << xOffset << "], yOffset[" << yOffset << ']';
                 return Debug::Logger::Format("MouseScrolledEvent: x[", xOffset, "], y[", yOffset, ']');
             }
         };
-        struct MouseButtonEvent : public Event
+        struct MouseButtonEvent : public BaseEvent
         {
         public:
             MouseCode button;
@@ -57,11 +53,8 @@ export namespace GuelderEngine
             MouseButtonPressedEvent(const MouseCode& button) : MouseButtonEvent(button) {}
 
             EVENT_STRUCT_TYPE(MouseButtonPressed)//idk which
-            const std::string ToString() const override
+            std::string ToString() const override
             {
-                //std::stringstream ss;
-                //ss << "MouseButtonPressedEvent: button: " << button;
-                //return ss.str();
                 return Debug::Logger::Format("MouseButtonPressedEvent: button: ", button);
             }
         };
@@ -70,11 +63,8 @@ export namespace GuelderEngine
             MouseButtonReleasedEvent(const MouseCode& button) : MouseButtonEvent(button) {}
 
             EVENT_STRUCT_TYPE(MouseButtonReleased)//idk which
-            const std::string ToString() const override
+            std::string ToString() const override
             {
-                //std::stringstream ss;
-                //ss << "MouseButtonReleasedEvent: button: " << button;
-                //return ss.str();
                 return Debug::Logger::Format("MouseButtonReleasedEvent: button: ", button);
             }
         };

@@ -1,6 +1,4 @@
 module;
-
-//#include "Event.hpp"
 #include "../src/headers/Events/Event.hpp"
 #include "../src/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Events:ApplicationEvents;
@@ -13,7 +11,7 @@ export namespace GuelderEngine
 {
     namespace Events
     {
-        struct WindowResizeEvent : public Event
+        struct WindowResizeEvent : public BaseEvent
         {
             WindowResizeEvent(const Types::ushort& newWidth, const Types::ushort& newHeight) :
                 width(newWidth), height(newHeight) {}
@@ -22,7 +20,7 @@ export namespace GuelderEngine
             Types::ushort height;
 
             EVENT_STRUCT_TYPE(WindowResize)
-            const std::string ToString() const override
+            std::string ToString() const override
             {
                 //std::stringstream ss;
                 //ss << "WindowResizeEvent: width[" << width << "], height[" << height << ']';

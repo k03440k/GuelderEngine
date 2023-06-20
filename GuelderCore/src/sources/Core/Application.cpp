@@ -1,24 +1,17 @@
 module;
-//#include "../includes/GuelderEngine/Application.hpp"
-
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
-
-//#include "../headers/Window.hpp"
-//#include "../../includes/GuelderEngine/Layers/Layer.hpp"
-
 #include <glfw/glfw3.h>
-//#include <memory>
 module GuelderEngine.Core;
 import :Application;
+
 import :Window;
 import GuelderEngine.Layers;
 import GuelderEngine.Core.Types;
-//#include <stdexcept>
+
 import <string>;//<-- added this
 import <vector>;
 import <memory>;
 import <functional>;
-//#include <iostream>
 
 namespace GuelderEngine
 {
@@ -62,7 +55,7 @@ namespace GuelderEngine
         }
         m_Window->onUpdate = callOnUpdate;
     }
-    void GEApplication::OnEvent(Events::Event& event)
+    void GEApplication::OnEvent(Events::BaseEvent& event)
     {
         Events::EventDispatcher dispatcher;
         dispatcher.AddEventListener<Events::WindowCloseEvent>(BIND_EVENT_FUNC(GEApplication::OnWindowCloseEvent));

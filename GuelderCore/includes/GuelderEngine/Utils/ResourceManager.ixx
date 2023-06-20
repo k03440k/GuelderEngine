@@ -1,7 +1,5 @@
 module;
 #include "../src/headers/Core/GObject/GClass.hpp"
-//#include "../../../src/headers/Renderer/ShaderProgram.hpp"
-//#include "../../GuelderCore/includes/GuelderEngine/GuelderEngine.hpp"
 export module GuelderEngine.Core:ResourceManager;
 
 import <string>;
@@ -25,8 +23,8 @@ export namespace GuelderEngine
 
             //using PresetShaderMap = std::map<ResourceManager::ShadersPreset, ResourceManager::ShaderProgram_ptr>;
 
-            ~ResourceManager() = default;
             ResourceManager(const std::string_view & executablePath);
+            ~ResourceManager() = default;
 
             ResourceManager(const ResourceManager&) = delete;
             ResourceManager(const ResourceManager&&) = delete;
@@ -34,7 +32,7 @@ export namespace GuelderEngine
             ResourceManager& operator=(const ResourceManager&&) = delete;
 
             //get file string
-            const std::string GetFileSource(const std::string_view & relativeFilePath) const;
+            std::string GetFileSource(const std::string_view & relativeFilePath) const;
             //static const std::string GetFileSource(const std::string& executablePath, const char* relativeFilePath);
 
             //ShaderProgram_ptr LoadShaderProgram(const std::string_view& shaderProgramName, const std::string_view& vertexPath, const std::string_view& fragmentPath);
@@ -43,7 +41,7 @@ export namespace GuelderEngine
             static constexpr char resourcesPath[] = "./Resources/resources.txt";
 
             /*
-            * Gets default resource path in file "./res/resources.txt"
+            * Gets default resource path in file "./Resources/resources.txt"
             */
             std::string GetResourceRelativePath(const std::string & resourceName) const;
 

@@ -98,20 +98,10 @@ target_sources(
 		PRIVATE
         FILE_SET module_files_private TYPE CXX_MODULES
         FILES
-		#PRIVATE
+
 		${CORE_PRIVATE_MODULES}
 		${CORE_PRIVATE_SOURCES}
 )
-#target_sources(
-#        ${ECN}
-#        PUBLIC
-#        FILE_SET header_files TYPE HEADERS
-#        BASE_DIRS "../GuelderCore"
-#        FILES
-#${CORE_PUBLIC_MODULES}
-#		${CORE_PRIVATE_HEADERS}
-#		${CORE_PUBLIC_HEADERS}
-#)
 
 target_include_directories(${ECN} PUBLIC includes)
 target_include_directories(${ECN} PRIVATE src)

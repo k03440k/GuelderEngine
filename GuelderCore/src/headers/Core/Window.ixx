@@ -1,10 +1,4 @@
 module;
-
-//#include "../../includes/GuelderEngine/GuelderEngine.hpp"
-//#include "../includes/GuelderEngine/Types/Types.hpp"
-//#include "../../includes/Engine3DCore/Events/Event.hpp"
-//#include <functional>
-//#include <string>
 #include <glfw/glfw3.h>
 export module GuelderEngine.Core:Window;
 
@@ -14,22 +8,18 @@ import <string>;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Events;
 
-//struct GLFWwindow;
-
-struct GLFWwindow;
-
 export namespace GuelderEngine
 {
-    namespace Events { struct Event; }
+    namespace Events { struct BaseEvent; }
     class Window
     {
     public:
-        using EventCallbackFunc = std::function<void(Events::Event&)>;
+        using EventCallbackFunc = std::function<void(Events::BaseEvent&)>;
         using UpdateFunc = std::function<void()>;
 
         struct WindowData
         {
-            WindowData(const std::string& title = "GuelderEngine window", const Types::ushort& width = 640, const Types::ushort& height = 480,
+            explicit WindowData(const std::string& title = "GuelderEngine window", const Types::ushort& width = 640, const Types::ushort& height = 480,
                 const bool isVSync = false, const EventCallbackFunc& callback = EventCallbackFunc());
             ~WindowData();
             WindowData& operator=(const WindowData& other);
@@ -39,14 +29,14 @@ export namespace GuelderEngine
             std::string title;
             EventCallbackFunc callback;
 
-            bool isVSync = false;
+            bool isVSync : 1 = false;
         };
 
         Window() = default;
         Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
             const std::string& windowTitle, const UpdateFunc& update = [] {}, const bool& enableVSync = false);
-        Window(const WindowData& data);
-        ~Window();
+        explicit Window(const WindowData& data);
+        virtual ~Window();
 
         Window(const Window&) = delete;
         Window(Window&&) = delete;
@@ -64,7 +54,7 @@ export namespace GuelderEngine
         Types::ushort GetHeight() const noexcept { return m_Data.height; }
         std::string GetTitle() const noexcept { return m_Data.title; }
         //GLFWwindow* GetWindow() const { return window; }
-        const bool isVSync() const noexcept { return m_Data.isVSync; }
+        bool IsVSync() const noexcept { return m_Data.isVSync; }
 
         void SetVSync(const bool& isEnable = true);
 
@@ -76,7 +66,7 @@ export namespace GuelderEngine
         void Shutdown();
 
         WindowData m_Data;
-        GLFWwindow* m_Window = nullptr;
+        GLFWwindow* m_Window;
 
         //TEST
         void TEST_DrawImGui();

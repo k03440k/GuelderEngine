@@ -1,8 +1,4 @@
-//module;
-
-//#include "../GuelderEngine.hpp"
 module;
-//#include "Event.hpp"
 #include "../src/headers/Events/Event.hpp"
 #include "../src/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Events:BaseEvent;
@@ -22,16 +18,6 @@ export namespace GuelderEngine
 {
     namespace Events
     {
-//#define EVENT_STRUCT_TYPE(_type) static const EventType type = EventType::##_type;\
-//                                virtual const EventType GetType() const override { return type; }\
-//                                virtual const char* GetName() const override { return #_type; }
-//
-//#define MAKE_STRUCT_EVENT(typeEvent) struct typeEvent ## Event : public Event\
-//                                     {\
-//                                          typeEvent ## Event () = default;\
-//                                          EVENT_STRUCT_TYPE(##typeEvent)\
-//                                     }
-
         enum class EventType
         {
             WindowResize,
@@ -52,43 +38,42 @@ export namespace GuelderEngine
 
             EventsCount
         };
-        struct Event : INHERIT_GClass(Event)
+        struct BaseEvent : INHERIT_GClass(BaseEvent)
         {
-            virtual ~Event() = default;
+            virtual ~BaseEvent() = default;
             virtual const EventType GetType() const = 0;
 
             virtual const char* GetName() const = 0;
-            virtual const std::string ToString() const { return GetName(); };
+            virtual std::string ToString() const { return GetName(); };
 
-            bool isHandled = false;
+            bool isHandled : 1 = false;
         };
         class EventDispatcher : INHERIT_GClass(EventDispatcher)
         {
         public:
             /*
-            * template class should be inheriented from struct Event
+            * template class should be inherited from struct BaseEvent
             */
-            template<DerivedFrom<Event> EventType = Event>
+            template<DerivedFrom<BaseEvent> EventType = BaseEvent>
             void AddEventListener(std::function<void(EventType&)> callback)
             {
-                auto baseCallback = [func = std::move(callback)](Event& e)
+                auto baseCallback = [func = std::move(callback)](BaseEvent& e)
                 {
                     if (e.GetType() == EventType::type) func(static_cast<EventType&>(e));
                 };
                 m_EventCallbacks[static_cast<Types::ushort>(EventType::type)] = std::move(baseCallback);
             }
 
-            void Dispatch(Event& event)
+            void Dispatch(BaseEvent& event) const
             {
-                auto& callback = m_EventCallbacks[static_cast<Types::ushort>(event.GetType())];
-                if (callback)
+                if (auto& callback = m_EventCallbacks[static_cast<Types::ushort>(event.GetType())])
                     callback(event);
             }
 
         private:
-            std::array <std::function<void(Event&)>, static_cast<Types::ushort>(EventType::EventsCount)> m_EventCallbacks;
+            std::array <std::function<void(BaseEvent&)>, static_cast<Types::ushort>(EventType::EventsCount)> m_EventCallbacks;
         };
-        inline std::ostream& operator<<(std::ostream& os, const Event& e)//idk why inline
+        inline std::ostream& operator<<(std::ostream& os, const BaseEvent& e)//idk why inline
         {
             return os << e.ToString();
         }

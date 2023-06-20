@@ -1,6 +1,3 @@
-//#include "../includes/GuelderEngine/Utils/Debug.hpp"
-
-//#include <Windows.h>
 module;
 #include <ctime>
 #include <Windows.h>
@@ -54,10 +51,10 @@ namespace GuelderEngine
         void Logger::WriteLog(const LogLevel& level, const std::string_view& message)
         {
             const auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-            struct tm local_time;
-            localtime_s(&local_time, &t);
+            struct tm localTime;
+            localtime_s(&localTime, &t);
 
-            std::cout << std::put_time(&local_time, "%H:%M:%S") << ' '; // print timestamp
+            std::cout << std::put_time(&localTime, "%H:%M:%S") << ' '; // print timestamp
 
             using Background = ConsoleBackgroundColor;
             using Text = ConsoleTextColor;
@@ -84,13 +81,13 @@ namespace GuelderEngine
             case LogLevel::RendererError:
                 //std::cerr << BACKGROUND_ERROR << "[RENDERER ERRROR]" << BACKGROUND_BLACK << RENDERER_ERROR_FONT;
                 SetConsoleColorAttributes(Background::Red, Text::White);
-                std::cout << "[RENDERER ERRROR]";
+                std::cout << "[RENDERER ERROR]";
                 SetConsoleColorAttributes(Text::Magenta, Background::Black);
                 break;
             case LogLevel::VulkanError:
                 //::cerr << BACKGROUND_ERROR << "[VULKAN ERRROR]" << BACKGROUND_BLACK << VULKAN_ERROR_FONT;
                 SetConsoleColorAttributes(Background::Red, Text::White);
-                std::cout << "[VULKAN ERRROR]";
+                std::cout << "[VULKAN ERROR]";
                 SetConsoleColorAttributes(Text::Magenta, Background::Black);
                 break;
             default:

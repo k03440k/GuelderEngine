@@ -1,6 +1,3 @@
-//module;
-
-//#include "Event.hpp"
 module;
 #include "../src/headers/Events/Event.hpp"
 #include "../src/headers/Core/GObject/GClass.hpp"
@@ -16,47 +13,43 @@ export namespace GuelderEngine
     {
         using KeyCode = int;//TEMP
 
-        struct KeyEvent : public Event
+        struct KeyEvent : public BaseEvent
         {
         public:
             KeyCode keyCode;
         protected:
-            KeyEvent(const KeyCode& keyCode) : keyCode(keyCode) {}
+            explicit KeyEvent(const KeyCode& keyCode) : keyCode(keyCode) {}
         };
-        struct KeyPressedEvent : public KeyEvent
+        struct KeyPressedEvent final : public KeyEvent
         {
         public:
-            KeyPressedEvent(const KeyCode& keyCode, const bool& isRepeat = false) :
+            explicit KeyPressedEvent(const KeyCode& keyCode, const bool& isRepeat = false) :
                 KeyEvent(keyCode), m_IsRepeat(isRepeat) {}
 
             EVENT_STRUCT_TYPE(KeyPressed)
 
-            const bool IsRepeat() { return m_IsRepeat; }
-            const std::string ToString() const override
+            bool IsRepeat() const noexcept { return m_IsRepeat; }
+            std::string ToString() const override
             {
-                //std::stringstream ss;
-                //ss << "KeyPressedEvent: keyCode: " << keyCode << "(isRepeat = " << isRepeat << ')';
                 return Debug::Logger::Format("KeyPressedEvent: keyCode: ", keyCode, "(isRepeat = ", m_IsRepeat, ')');
             }
         private:
-            bool m_IsRepeat = false;
+            bool m_IsRepeat : 1 = false;
         };
-        struct KeyReleasedEvent : public KeyEvent
+        struct KeyReleasedEvent final : public KeyEvent
         {
         public:
-            KeyReleasedEvent(const KeyCode& keyCode, const bool& isRepeat = false) :
+            explicit KeyReleasedEvent(const KeyCode& keyCode, const bool& isRepeat = false) :
                 KeyEvent(keyCode), m_IsRepeat(isRepeat) {}
 
             EVENT_STRUCT_TYPE(KeyReleased)
-            const bool IsRepeat() { return m_IsRepeat; }
-            const std::string ToString() const override
+            bool IsRepeat() const noexcept { return m_IsRepeat; }
+            std::string ToString() const override
             {
-                //std::stringstream ss;
-                //ss << "KeyReleasedEvent: button: " << keyCode << "(isRepeat = " << isRepeat << ')';
                 return Debug::Logger::Format("KeyPressedEvent: keyCode: ", keyCode, "(isRepeat = ", m_IsRepeat, ')');
             }
         private:
-            bool m_IsRepeat = false;
+            bool m_IsRepeat : 1 = false;
         };
     }
 }

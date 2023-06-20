@@ -1,10 +1,3 @@
-module;
-
-//#include "Layer.hpp"
-
-//#include "../Utils/Utils.hpp"
-
-//#include <vector>
 export module GuelderEngine.Layers:LayerStack;
 
 import :Layer;
@@ -22,7 +15,7 @@ export namespace GuelderEngine
             using LayerVec = std::vector<Layer*>;
 
             LayerStack();
-            LayerStack(Layer* layer);
+            explicit LayerStack(Layer* layer);
             ~LayerStack();
 
             void PushLayer(Layer* layer);
@@ -33,8 +26,8 @@ export namespace GuelderEngine
             LayerVec::iterator begin() { return m_Layers.begin(); }
             LayerVec::iterator end() { return m_Layers.end(); }
 
-            const Types::ubyte size() const { return (Types::ubyte)m_Layers.size(); }
-            const bool IsEmpty() const { return !m_Layers.size(); }
+            Types::ubyte size() const { return (Types::ubyte)m_Layers.size(); }
+            bool IsEmpty() const { return !m_Layers.size(); }
         private:
             LayerVec m_Layers;
             LayerVec::iterator m_LayerInsert;

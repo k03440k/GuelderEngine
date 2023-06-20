@@ -1,6 +1,3 @@
-//#pragma once
-
-//#include "Utils.hpp"
 module;
 #include <Windows.h>
 #include <ctime>
@@ -21,6 +18,7 @@ import <functional>;
 template<typename T>
 concept HasOutputOperator = requires(std::stringstream & os, const T & t) { os << t; };
 
+//enums
 export namespace GuelderEngine
 {
     namespace Debug
@@ -114,7 +112,7 @@ export namespace GuelderEngine
             * @return formated std::string from different variables(const Args&... message)
             */
             template<HasOutputOperator ...Args>
-            constexpr static std::string Format(const Args&... message)
+            constexpr static std::string Format(Args&&... message)
             {
                 std::ostringstream out;
                 (out << ... << message);
@@ -138,7 +136,7 @@ export namespace GuelderEngine
             }
 
             template<HasOutputOperator T, typename... Args>
-            constexpr static void Format(std::ostringstream& oss, const T& arg, const Args&... args)
+            constexpr static void Format(std::ostringstream& oss, const T& arg, Args&&... args)//TODO: CHANGE Args&&..
             {
                 oss << arg;
                 Format(oss, args...);

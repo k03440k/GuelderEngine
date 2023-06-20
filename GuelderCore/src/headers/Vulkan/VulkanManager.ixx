@@ -1,12 +1,7 @@
 module;
-
-///#include "../includes/GuelderEngine/GuelderEngine.hpp"
-
-//#include "VulkanDebugManager.hpp"
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
-
 export module GuelderEngine.Vulkan:VulkanManager;
 import :VulkanDebugManager;
 
@@ -17,7 +12,7 @@ export namespace GuelderEngine
 {
     namespace Vulkan
     {
-        class VulkanDeviceManager : INHERIT_GClass(VulkanDeviceManager)
+        class VulkanDeviceManager final : INHERIT_GClass(VulkanDeviceManager)
         {
         public:
             VulkanDeviceManager() = default;
@@ -36,10 +31,10 @@ export namespace GuelderEngine
         class VulkanManager : INHERIT_GClass(VulkanManager)
         {
         public:
-            VulkanManager(const std::string_view & name = "Guelder Engine Editor");
+            VulkanManager(const std::string_view& name = "Guelder Engine Editor");
             ~VulkanManager();
 
-            static bool IsExtensionsSupported(const std::vector<const char*>&extensions);
+            static bool AreExtensionsSupported(const std::vector<const char*>&extensions);
             //static bool IsValidationLayersSupported(const std::vector<const char*>& layers);
         protected:
         private:
@@ -47,7 +42,7 @@ export namespace GuelderEngine
 
             void Init(const std::string_view & name);
             void VkInit(const char* const name);
-            void Cleanup();
+            void Cleanup() const noexcept;
 
             vk::Instance m_Instance;
             //dynamic instance dispatcher

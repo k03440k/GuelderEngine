@@ -1,6 +1,3 @@
-module;
-
-#define INHERIT_GClass(className) public virtual ::GuelderEngine::Core::GClass<className>
 export module GuelderEngine.Core.Types:GClass;
 
 export namespace GuelderEngine

@@ -1,4 +1,3 @@
-//#include "../../headers/Vulkan/VulkanDebugManager.hpp"
 module;
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
 #include <vulkan/vulkan.hpp>
@@ -13,7 +12,7 @@ namespace GuelderEngine
 {
     namespace Vulkan
     {
-        VulkanDebugLayersManager::VulkanDebugLayersManager(const std::vector<ValidationLayer> layers)
+        VulkanDebugLayersManager::VulkanDebugLayersManager(const std::vector<ValidationLayer>& layers)
             : m_Layers(layers)
         {
             GE_CORE_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
@@ -22,7 +21,7 @@ namespace GuelderEngine
         {
             GE_CORE_ASSERT(layers.size() > 0, "layers size is zero");
 
-            std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
+            const std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 
 #ifdef DEBUG_VULKAN
             Debug::LogInfo("Device can support following layers:");
@@ -86,7 +85,7 @@ namespace GuelderEngine
 
             return instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
         }
-        VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugManager::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageServerity,
+        VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugManager::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
             VkDebugUtilsMessageTypeFlagsEXT messageType,
             const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
             void* userData)

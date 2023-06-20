@@ -27,6 +27,5 @@ target_sources(
 		${EDITOR_SOURCE_PATH}main.cpp
 		)
 
-
 target_link_libraries(${ENGINE_EDITOR_NAME} PUBLIC GuelderEngineCore)
 set_target_properties(${ENGINE_EDITOR_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
