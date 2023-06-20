@@ -47,8 +47,7 @@ namespace GuelderEngine
             vk::ApplicationInfo appInfo(name, 0, "Guelder Engine", version);
 
             Types::uint glfwExtensionsCount{};
-            const char** glfwExtensions;
-            glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
+            const char** const glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
 
             std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionsCount);
 

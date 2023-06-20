@@ -17,7 +17,7 @@ namespace GuelderEngine
 #pragma region Window
     namespace Events
     {
-        static void GLFWErrorCallback(int&& errorCode, const char* description)
+        static void GLFWErrorCallback(int errorCode, const char* description)
         {
             GE_ELOG("GuelderEngine::GLFWErrorCallback: error code: ", errorCode);
         }

@@ -66,14 +66,14 @@ namespace GuelderEngine
             m_ShaderPrograms.emplace("default", GetPresetShader().find(presetToLoad)->second);
             return GetPresetShader().find(presetToLoad)->second;
         }*/
-        std::string ResourceManager::GetResourceRelativePath(const std::string& shaderName) const
+        std::string ResourceManager::GetResourceRelativePath(const std::string& varName) const
         {
             const std::string allText = GetFileSource(resourcesPath);
-            const Types::ubyte foundAt = (Types::ubyte)allText.find(shaderName);
+            const Types::ubyte foundAt = (Types::ubyte)allText.find(varName);
 
-            GE_CORE_ASSERT(foundAt != std::string::npos, "ResourceManager::GetResourceRelativePath: cannot find a such variable name");
+            GE_CORE_ASSERT(foundAt != std::string::npos, "ResourceManager::GetResourceRelativePath: cannot find a ", varName, " variable name");
 
-            const Types::ushort foundName = (Types::ushort)allText.find(shaderName);//finds index of first char of nameVar
+            const Types::ushort foundName = (Types::ushort)allText.find(varName);//finds index of first char of nameVar
             const Types::ushort foundSemicolon = (Types::ushort)allText.substr(foundName, allText.size()).find_first_of(';');//finds the end of that line(; or semicon)
 
             const std::string foundLine = allText.substr(foundName, foundSemicolon);//cuts all file string to only line

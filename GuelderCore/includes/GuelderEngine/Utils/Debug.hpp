@@ -17,7 +17,7 @@ import GuelderEngine.Debug;
 *
 * @example
 */
-#define MSG_METHOD_LOGGING(msg) ::GuelderEngine::Debug::Logger::Format(GGetClassName(), "::", FUNC_NAME, ": ", msg)
+#define MSG_METHOD_LOGGING(...) ::GuelderEngine::Debug::Logger::Format(GGetClassName(), "::", FUNC_NAME, ": ", __VA_ARGS__)
 
 /*
 * @brief guelder engine error log
@@ -32,7 +32,7 @@ import GuelderEngine.Debug;
 * @param condition - bool
 * @param msg - string message
 */
-#define GE_CORE_ASSERT(condition, msg) ::GuelderEngine::Debug::Logger::Assert(condition, MSG_METHOD_LOGGING(msg), __FILE__, __LINE__)
+#define GE_CORE_ASSERT(condition, ...) ::GuelderEngine::Debug::Logger::Assert(condition, MSG_METHOD_LOGGING(__VA_ARGS__), __FILE__, __LINE__)
 
 /*
 * @brief If condition(param) is false then it will throw exception. Prints the path of the file and message(msg).
