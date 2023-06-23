@@ -8,91 +8,125 @@ import GuelderEngine.Debug;
 
 import <vector>;
 
-namespace GuelderEngine
+namespace GuelderEngine::Vulkan
 {
-    namespace Vulkan
+    VulkanDebugLayersManager::VulkanDebugLayersManager(const std::vector<ValidationLayer>& layers)
+        : m_Layers(layers)
     {
-        VulkanDebugLayersManager::VulkanDebugLayersManager(const std::vector<ValidationLayer>& layers)
-            : m_Layers(layers)
+        GE_CORE_CLASS_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
+    }
+    bool VulkanDebugLayersManager::AreValidationLayersSupported(const std::vector<ValidationLayer>& layers)
+    {
+        GE_CORE_CLASS_ASSERT(layers.size() > 0, "layers size is zero");
+
+        const std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
+
+#ifdef GE_DEBUG_VULKAN
+        Debug::LogInfo("Device can support following layers:");
+        for (const auto& layer : supportedLayers)
         {
-            GE_CORE_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
+            Debug::LogInfo('\t', layer.layerName);
         }
-        bool VulkanDebugLayersManager::AreValidationLayersSupported(const std::vector<ValidationLayer>& layers)
+#endif // GE_DEBUG_VULKAN
+
+        bool found = false;
+        for (const auto& extension : layers)
         {
-            GE_CORE_ASSERT(layers.size() > 0, "layers size is zero");
-
-            const std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
-
-#ifdef DEBUG_VULKAN
-            Debug::LogInfo("Device can support following layers:");
-            for (const auto& layer : supportedLayers)
+            found = false;
+            for (const auto& supportedExtension : supportedLayers)
             {
-                Debug::LogInfo('\t', layer.layerName);
-            }
-#endif // DEBUG_VULKAN
-
-            bool found = false;
-            for (const auto& extension : layers)
-            {
-                found = false;
-                for (const auto& supportedExtension : supportedLayers)
+                if (strcmp(extension, supportedExtension.layerName) == 0)
                 {
-                    if (strcmp(extension, supportedExtension.layerName) == 0)
-                    {
-                        found = true;
-#ifdef DEBUG_VULKAN
-                        Debug::LogInfo("Layer \"", extension, "\" is supported");
-#endif //DEBUG_VULKAN
-                    }
-                }
-                if (!found)
-                {
-#ifdef DEBUG_VULKAN
-                    Debug::LogInfo("Layer \"", extension, "\" is not supported");
-#endif //DEBUG_VULKAN
-                    return false;
+                    found = true;
+#ifdef GE_DEBUG_VULKAN
+                    Debug::LogInfo("Layer \"", extension, "\" is supported");
+#endif //GE_DEBUG_VULKAN
                 }
             }
+            if (!found)
+            {
+#ifdef GE_DEBUG_VULKAN
+                Debug::LogInfo("Layer \"", extension, "\" is not supported");
+#endif //GE_DEBUG_VULKAN
+                return false;
+            }
+        }
 
-            return true;
-        }
-        VulkanDebugManager::VulkanDebugManager(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
-            : m_DebugMessenger(CreateDebugMessenger(instance, dldi))
-        {
-        }
-        VulkanDebugManager& VulkanDebugManager::operator=(const VulkanDebugManager& other)
-        {
-            m_DebugMessenger = other.m_DebugMessenger;
-            return *this;
-        }
-        void VulkanDebugManager::LogDeviceProperties(const vk::PhysicalDevice& device)
-        {
-            const vk::PhysicalDeviceProperties properties = device.getProperties();
+        return true;
+    }
+    VulkanDebugManager::VulkanDebugManager(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
+        : m_DebugMessenger(CreateDebugMessenger(instance, dldi))
+    {
+    }
+    VulkanDebugManager& VulkanDebugManager::operator=(const VulkanDebugManager& other)
+    {
+        m_DebugMessenger = other.m_DebugMessenger;
+        return *this;
+    }
+    void VulkanDebugManager::LogDeviceProperties(const vk::PhysicalDevice& device)
+    {
+        const vk::PhysicalDeviceProperties properties = device.getProperties();
 
-            Debug::LogInfo("Device name: ", properties.deviceName, ". Device driver version: ", properties.driverVersion);
-        }
-        vk::DebugUtilsMessengerEXT VulkanDebugManager::CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
-        {
-            vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
-                vk::DebugUtilsMessengerCreateFlagsEXT(),
-                vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-                vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-                vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-                DebugCallback,
-                nullptr
-            );
+        Debug::LogInfo("Device name: ", properties.deviceName, ". Device driver version: ", properties.driverVersion);
+        const vk::PhysicalDeviceMemoryProperties memoryProperties = device.getMemoryProperties();
 
-            return instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
-        }
-        VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugManager::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-            VkDebugUtilsMessageTypeFlagsEXT messageType,
-            const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
-            void* userData)
+        //device type
         {
-            Debug::LogVulkanError(callbackData->pMessage);
-
-            return VK_FALSE;
+            std::string msg = "Device type: ";
+            switch(properties.deviceType)
+            {
+                using enum vk::PhysicalDeviceType;
+            case (eCpu):
+                msg += "CPU";
+                break;
+            case (eDiscreteGpu):
+                msg += "Discrete GPU";
+                break;
+            case (eIntegratedGpu):
+                msg += "Integrated GPU";
+                break;
+            case (eVirtualGpu):
+                msg += "Virtual GPU";
+                break;
+            default:
+                msg += "other";
+            }
+            Debug::LogInfo(msg);
         }
+
+        const uint32_t heapCount = memoryProperties.memoryHeapCount;
+
+        // Iterate over memory heaps to find the heap with the desired memory type
+        for (uint32_t heapIndex = 0; heapIndex < heapCount; ++heapIndex) {
+            // Check if the memory heap is for device local memory (typically used for graphics memory)
+            if (const auto& heap = memoryProperties.memoryHeaps[heapIndex]; heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal) {
+                // Convert the size to gigabytes
+                const double memorySizeGB = static_cast<double>(heap.size) / (1024 * 1024 * 1024);
+                Debug::LogInfo("Memory size in ", heapIndex+1, " heap : ", memorySizeGB, " GB");
+            }
+        }
+    }
+    vk::DebugUtilsMessengerEXT VulkanDebugManager::CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
+    {
+        constexpr vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
+            vk::DebugUtilsMessengerCreateFlagsEXT(),
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+            | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+            vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+            | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+            DebugCallback,
+            nullptr
+        );
+
+        return instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
+    }
+    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugManager::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                                     VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                                                     const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+                                                                     void* userData)
+    {
+        Debug::LogVulkanError(callbackData->pMessage);
+
+        return VK_FALSE;
     }
 }

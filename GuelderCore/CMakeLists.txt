@@ -21,7 +21,7 @@ set(CORE_PRIVATE_SOURCES_PATH src/sources/)
 set(CORE_PUBLIC_MODULES_PATH includes/GuelderEngine/)
 
 set(CORE_PRIVATE_HEADERS
-
+	${CORE_PRIVATE_MODULES_PATH}Core/GObject/GClass.hpp
 )
 set(CORE_PUBLIC_HEADERS
 	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.hpp

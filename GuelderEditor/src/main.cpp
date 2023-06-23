@@ -3,13 +3,16 @@
 //#define ENABLE_MEMORY_LEAKS_CHECKING
 import GuelderEngine;
 
+#include <GuelderEngine/Utils/Debug.hpp>
+
 import <memory>;
+import <string_view>;
 
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 
-//#define _CRTDBG_MAP_ALLOC
-//#include <stdlib.h>
-//#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 
 //#include <vld.h>
 
@@ -18,31 +21,32 @@ import <memory>;
 using namespace GuelderEngine;
 using namespace Types;
 using namespace Debug;
-using Debug::ConsoleTextColor;
+using Debug::ConsoleForegroundColor;
+
+DECLARE_LOG_CATEGORY_EXTERN(User, All);
+DEFINE_LOG_CATEGORY(User);
 
 int main(int argc, char** argv)
 {
     try
     {
-        std::unique_ptr<GEApplication> app = std::make_unique<GEApplication>();
+        auto app = std::make_unique<GEApplication>();
 
         //Utils::ResourceManager resManager(argv[0]);
 
-        app->Run([] {
-            
-            });
+        //app->Run([] {});
     }
     catch (const std::exception& e)
     {
         LogError(e.what());
     }
 
-    LogWarning("Guelder Engine Editor closed successfully");
+    GE_LOG(User, Warning, "Guelder Engine Editor closed");
     
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 
-    //_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
-    //_CrtDumpMemoryLeaks();
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+    _CrtDumpMemoryLeaks();
 
 #endif // ENABLE_MEMORY_LEAKS_CHECKING
 #ifndef GE_DEBUG

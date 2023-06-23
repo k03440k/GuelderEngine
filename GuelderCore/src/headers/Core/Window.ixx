@@ -1,4 +1,5 @@
 module;
+#include "GObject/GClass.hpp"
 #include <glfw/glfw3.h>
 export module GuelderEngine.Core:Window;
 
@@ -11,7 +12,7 @@ import GuelderEngine.Events;
 export namespace GuelderEngine
 {
     namespace Events { struct BaseEvent; }
-    class Window
+    class Window : INHERIT_GClass(Window)
     {
     public:
         using EventCallbackFunc = std::function<void(Events::BaseEvent&)>;
@@ -46,7 +47,7 @@ export namespace GuelderEngine
         virtual void OnUpdate();
         void OnUpdate(const UpdateFunc& update);
 
-        const bool ShouldClose() const;
+        bool ShouldClose() const;
 
         UpdateFunc onUpdate;
 

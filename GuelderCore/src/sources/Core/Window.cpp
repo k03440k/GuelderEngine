@@ -19,7 +19,7 @@ namespace GuelderEngine
     {
         static void GLFWErrorCallback(int errorCode, const char* description)
         {
-            GE_ELOG("GuelderEngine::GLFWErrorCallback: error code: ", errorCode);
+            GE_THROW("GuelderEngine::GLFWErrorCallback: error code: ", errorCode);
         }
     }
     //TEST
@@ -74,17 +74,21 @@ namespace GuelderEngine
             {
                 glfwSetErrorCallback(Events::GLFWErrorCallback);
                 glfwTerminate();
-                GE_ELOG("Window::Init: cannot initialise glfw");
+                GE_CORE_CLASS_THROW("cannot initialise glfw");
             }
+
             is_GLFW_init = true;
         }
 
-        m_Window = glfwCreateWindow(m_Data.width, m_Data.height, m_Data.title.c_str(), NULL, NULL);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+        m_Window = glfwCreateWindow(m_Data.width, m_Data.height, m_Data.title.c_str(), nullptr, nullptr);
 
         if (!m_Window)
         {
             glfwTerminate();
-            GE_ELOG("Window::Init: window is nullptr");
+            GE_CORE_CLASS_THROW("window is nullptr");
         }
 
         glfwMakeContextCurrent(m_Window);
@@ -94,7 +98,7 @@ namespace GuelderEngine
         //set glfw callbacks
         glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
             {
-                WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                 data.width = width;
                 data.height = height;
 
@@ -103,13 +107,13 @@ namespace GuelderEngine
             });
         glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
             {
-                WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                 Events::WindowCloseEvent event;
                 data.callback(event);
             });
         glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
             {
-                WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                 switch (action)
                 {
                 case GLFW_PRESS:
@@ -134,7 +138,7 @@ namespace GuelderEngine
             });
         glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
             {
-                WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                 switch (action)
                 {
                 case GLFW_PRESS:
@@ -153,15 +157,15 @@ namespace GuelderEngine
             });
         glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
             {
-                WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-                Events::MouseScrolledEvent event((float)xOffset, (float)yOffset);
+                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+                Events::MouseScrolledEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
                 data.callback(event);
             });
         glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double x, double y)
             {
-                WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-                Events::MouseMovedEvent event((float)x, (float)y);
+                Events::MouseMovedEvent event(static_cast<float>(x), static_cast<float>(y));
                 data.callback(event);
             });
     }
@@ -189,7 +193,7 @@ namespace GuelderEngine
         glfwSwapBuffers(m_Window);
         glfwPollEvents();
     }
-    const bool Window::ShouldClose() const
+    bool Window::ShouldClose() const
     {
         return glfwWindowShouldClose(m_Window);
     }

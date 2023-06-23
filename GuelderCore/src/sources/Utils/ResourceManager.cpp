@@ -23,7 +23,7 @@ namespace GuelderEngine
             std::ifstream file;
             file.open(m_Path + "/" + relativeFilePath.data(), std::ios::in | std::ios::binary);
             //LOG("DEBUG " << m_Path + "/" + relativeFilePath << " DEBUG");
-            GE_CORE_ASSERT(file.is_open(), "ResourceManager::GetFileSource: cannot open file at location: ", relativeFilePath);
+            GE_CORE_CLASS_ASSERT(file.is_open(), "ResourceManager::GetFileSource: cannot open file at location: ", relativeFilePath);
             std::stringstream source;//istringstream or stringstream?
             source << file.rdbuf();
 
@@ -71,7 +71,7 @@ namespace GuelderEngine
             const std::string allText = GetFileSource(resourcesPath);
             const Types::ubyte foundAt = (Types::ubyte)allText.find(varName);
 
-            GE_CORE_ASSERT(foundAt != std::string::npos, "ResourceManager::GetResourceRelativePath: cannot find a ", varName, " variable name");
+            GE_CORE_CLASS_ASSERT(foundAt != std::string::npos, "ResourceManager::GetResourceRelativePath: cannot find a ", varName, " variable name");
 
             const Types::ushort foundName = (Types::ushort)allText.find(varName);//finds index of first char of nameVar
             const Types::ushort foundSemicolon = (Types::ushort)allText.substr(foundName, allText.size()).find_first_of(';');//finds the end of that line(; or semicon)
@@ -100,7 +100,7 @@ namespace GuelderEngine
         {
             const auto& found = m_ShaderPrograms.find(name.data());
             if (found == m_ShaderPrograms.end())
-                GE_ELOG("ResourceManager::GetShaderProgram: cannot find shader, name: ", name);
+                GE_THROW("ResourceManager::GetShaderProgram: cannot find shader, name: ", name);
             return found->second;
         }*/
     }
