@@ -62,7 +62,7 @@ namespace GuelderEngine
     {
         m_Data = Window::WindowData(windowTitle, windowWidth, windowHeight);
 
-        if (m_Window) glfwDestroyWindow(m_Window);
+        if (m_GLFWWindow) glfwDestroyWindow(m_GLFWWindow);
 
         Init();
     }
@@ -83,20 +83,20 @@ namespace GuelderEngine
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-        m_Window = glfwCreateWindow(m_Data.width, m_Data.height, m_Data.title.c_str(), nullptr, nullptr);
+        m_GLFWWindow = glfwCreateWindow(m_Data.width, m_Data.height, m_Data.title.c_str(), nullptr, nullptr);
 
-        if (!m_Window)
+        if (!m_GLFWWindow)
         {
             glfwTerminate();
             GE_CORE_CLASS_THROW("window is nullptr");
         }
 
-        glfwMakeContextCurrent(m_Window);
-        glfwSetWindowUserPointer(m_Window, &m_Data);
+        glfwMakeContextCurrent(m_GLFWWindow);
+        glfwSetWindowUserPointer(m_GLFWWindow, &m_Data);
         SetVSync(m_Data.isVSync);
 
         //set glfw callbacks
-        glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+        glfwSetWindowSizeCallback(m_GLFWWindow, [](GLFWwindow* window, int width, int height)
             {
                 WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                 data.width = width;
@@ -105,13 +105,13 @@ namespace GuelderEngine
                 Events::WindowResizeEvent event(width, height);
                 data.callback(event);
             });
-        glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
+        glfwSetWindowCloseCallback(m_GLFWWindow, [](GLFWwindow* window)
             {
                 WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                 Events::WindowCloseEvent event;
                 data.callback(event);
             });
-        glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+        glfwSetKeyCallback(m_GLFWWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
             {
                 WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                 switch (action)
@@ -136,7 +136,7 @@ namespace GuelderEngine
                 }
                 }
             });
-        glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
+        glfwSetMouseButtonCallback(m_GLFWWindow, [](GLFWwindow* window, int button, int action, int mods)
             {
                 WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                 switch (action)
@@ -155,13 +155,13 @@ namespace GuelderEngine
                 }
                 }
             });
-        glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
+        glfwSetScrollCallback(m_GLFWWindow, [](GLFWwindow* window, double xOffset, double yOffset)
             {
                 WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
                 Events::MouseScrolledEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
                 data.callback(event);
             });
-        glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double x, double y)
+        glfwSetCursorPosCallback(m_GLFWWindow, [](GLFWwindow* window, double x, double y)
             {
                 WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
@@ -172,7 +172,7 @@ namespace GuelderEngine
     void Window::Shutdown()
     {
         m_Data.~WindowData();
-        glfwDestroyWindow(m_Window);
+        glfwDestroyWindow(m_GLFWWindow);
         glfwTerminate();
     }
     void Window::OnUpdate()
@@ -181,7 +181,7 @@ namespace GuelderEngine
 
         TEST_DrawImGui();
 
-        glfwSwapBuffers(m_Window);
+        glfwSwapBuffers(m_GLFWWindow);
         glfwPollEvents();
     }
     void Window::OnUpdate(const UpdateFunc& update)
@@ -190,12 +190,12 @@ namespace GuelderEngine
 
         TEST_DrawImGui();
 
-        glfwSwapBuffers(m_Window);
+        glfwSwapBuffers(m_GLFWWindow);
         glfwPollEvents();
     }
     bool Window::ShouldClose() const
     {
-        return glfwWindowShouldClose(m_Window);
+        return glfwWindowShouldClose(m_GLFWWindow);
     }
 #pragma endregion
 #pragma region WindowData

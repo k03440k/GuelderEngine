@@ -16,6 +16,8 @@ export namespace GuelderEngine
     //namespace Events { struct WindowCloseEvent; struct BaseEvent; class EventDispatcher; }
     namespace Layers { class Layer; }
 
+    class Window;
+
     class IApplication
     {
     public:
@@ -25,21 +27,18 @@ export namespace GuelderEngine
         virtual void OnEvent(Events::BaseEvent& event) = 0;
 
     protected:
-        std::unique_ptr<class Window> m_Window;
+        std::unique_ptr<Window> m_Window;
     };
 
     //Guelder Engine Application
-    class GEApplication : public IApplication, public Vulkan::VulkanManager, INHERIT_GClass(GEApplication)
+    class GEApplication : public IApplication, INHERIT_GClass(GEApplication)
     {
     public:
         GEApplication(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480,
                     const std::string_view& windowTitle = "Guelder Engine Window", const std::function<void()>& callOnUpdate = [] {});
         virtual ~GEApplication();
 
-        GEApplication(const GEApplication&) = delete;
-        GEApplication(GEApplication&&) = delete;
-        GEApplication& operator=(const GEApplication&) = delete;
-        GEApplication& operator=(GEApplication&&) = delete;
+        DELETE_COPY_AND_MOVE(GEApplication);
 
         void Run() override;
         void Run(const std::function<void()>& callOnUpdate);
@@ -55,6 +54,8 @@ export namespace GuelderEngine
 
         Events::EventDispatcher eventDispatcher;
     private:
+        std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;
+
         bool OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept;
 
         //std::function<void()> m_CallOnUpdate;

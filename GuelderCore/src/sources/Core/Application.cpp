@@ -1,14 +1,15 @@
 module;
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
-#include <glfw/glfw3.h>
 module GuelderEngine.Core;
 import :Application;
 
 import :Window;
 import GuelderEngine.Layers;
 import GuelderEngine.Core.Types;
+import GuelderEngine.Vulkan;
 
-import <string>;//<-- added this
+import <string>;
+import <string_view>;
 import <vector>;
 import <memory>;
 import <functional>;
@@ -19,10 +20,12 @@ namespace GuelderEngine
 #define BIND_EVENT_FUNC(x) std::bind(&x, this, std::placeholders::_1)
     GEApplication::GEApplication(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
         const std::string_view& windowTitle, const std::function<void()>& callOnUpdate)
-        : m_Logger()
     {
         m_Window = std::make_unique<Window>(Window::WindowData(windowTitle.data(), windowWidth, windowHeight));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));
+
+        m_VulkanManager = std::make_unique<GuelderEngine::Vulkan::VulkanManager>(m_Window->m_GLFWWindow);
+
         //this->m_CallOnUpdate = callOnUpdate;
     }
     GEApplication::~GEApplication()

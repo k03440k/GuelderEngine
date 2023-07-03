@@ -62,12 +62,13 @@ export namespace GuelderEngine
         void SetCallback(const EventCallbackFunc& callback) noexcept { m_Data.callback = callback; }
         void SetWindow(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480, const std::string& windowTitle = std::string("window"));
         //void SetWindow(GLFWwindow* other, const std::string* otherTitle = nullptr);
+        friend class GEApplication;
     private:
         void Init();
         void Shutdown();
 
         WindowData m_Data;
-        GLFWwindow* m_Window;
+        GLFWwindow* m_GLFWWindow;
 
         //TEST
         void TEST_DrawImGui();
