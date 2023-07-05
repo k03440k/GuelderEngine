@@ -1,12 +1,6 @@
 //git push -f origin master
 
 //#define ENABLE_MEMORY_LEAKS_CHECKING
-import GuelderEngine;
-
-#include <GuelderEngine/Utils/Debug.hpp>
-
-import <memory>;
-import <string_view>;
 
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 
@@ -18,13 +12,13 @@ import <string_view>;
 
 #endif // ENABLE_MEMORY_LEAKS_CHECKING
 
-using namespace GuelderEngine;
-using namespace Types;
-using namespace Debug;
-using Debug::ConsoleForegroundColor;
+#include <GuelderEngine/GuelderEngine.hpp>
 
-DECLARE_LOG_CATEGORY_EXTERN(User, All);
-DEFINE_LOG_CATEGORY(User);
+import <memory>;
+import <string_view>;
+
+DECLARE_LOG_CATEGORY_EXTERN(Editor, All);
+DEFINE_LOG_CATEGORY(Editor);
 
 int main(int argc, char** argv)
 {
@@ -41,7 +35,7 @@ int main(int argc, char** argv)
         LogError(e.what());
     }
 
-    GE_LOG(User, Warning, "Guelder Engine Editor closed");
+    GE_LOG(Editor, Warning, "Guelder Engine Editor closed");
     
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 
@@ -50,7 +44,7 @@ int main(int argc, char** argv)
 
 #endif // ENABLE_MEMORY_LEAKS_CHECKING
 #ifndef GE_DEBUG
-    //system("pause");
+    system("pause");
 #endif // GE_DEBUG
 
     return 0;

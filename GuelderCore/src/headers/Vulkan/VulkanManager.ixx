@@ -5,9 +5,10 @@ module;
 #include <glfw/glfw3.h>
 export module GuelderEngine.Vulkan:VulkanManager;
 
+import :IVulkanBase;
 import :VulkanDebugManager;
 import :VulkanDeviceManager;
-import :VulkanSurfaceManager;
+//import :VulkanSurfaceManager;
 
 import <string_view>;
 import <vector>;
@@ -18,16 +19,20 @@ export namespace GuelderEngine::Vulkan
     /*
     * Manager which responsible for all about initialization of Vulkan API
     */
-    class VulkanManager : INHERIT_GClass(VulkanManager)
+    class VulkanManager : public IVulkanBase, INHERIT_GClass(VulkanManager)
     {
     public:
-        //VulkanManager() = default;
+        VulkanManager() = default;
         VulkanManager(GLFWwindow* glfwWindow, const std::string_view& name = "Guelder Engine Editor");
         virtual ~VulkanManager();
 
-        DELETE_COPY_AND_MOVE(VulkanManager);
+        VulkanManager(const VulkanManager& other);//really i don't fucking know is it good idea to make such things
+        VulkanManager(VulkanManager&& other);
+        VulkanManager& operator=(VulkanManager&& other);
+        VulkanManager& operator=(const VulkanManager& other);
 
-        void Cleanup() const;
+        virtual void Reset() override;
+        virtual void Cleanup() const;
 
         static bool AreExtensionsSupported(const std::vector<const char*>&extensions);
         //static bool IsValidationLayersSupported(const std::vector<const char*>& layers);
@@ -39,7 +44,6 @@ export namespace GuelderEngine::Vulkan
         //dynamic instance dispatcher
         vk::DispatchLoaderDynamic m_DLDI;
         VulkanDeviceManager m_DeviceManager;
-        VulkanSurfaceManager m_SurfaceManager;
 #ifdef GE_DEBUG_VULKAN
         VulkanDebugManager m_DebugManager;
 #endif //GE_DEBUG_VULKAN

@@ -58,10 +58,13 @@ namespace GuelderEngine::Vulkan
         : m_DebugMessenger(CreateDebugMessenger(instance, dldi))
     {
     }
-    VulkanDebugManager& VulkanDebugManager::operator=(const VulkanDebugManager& other)
+    void VulkanDebugManager::Reset()
     {
-        m_DebugMessenger = other.m_DebugMessenger;
-        return *this;
+        m_DebugMessenger = nullptr;
+    }
+    void VulkanDebugManager::Cleanup(const vk::Instance& instance, const vk::DispatchLoaderDynamic& DLDI) const
+    {
+        instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, DLDI);
     }
     void VulkanDebugManager::LogDeviceProperties(const vk::PhysicalDevice& device)
     {
@@ -129,4 +132,32 @@ namespace GuelderEngine::Vulkan
 
         return VK_FALSE;
     }
+#pragma region operators_and_ctors
+    VulkanDebugManager::VulkanDebugManager(const VulkanDebugManager& other)
+    {
+        m_DebugMessenger = other.m_DebugMessenger;
+    }
+    VulkanDebugManager::VulkanDebugManager(VulkanDebugManager&& other)
+    {
+        m_DebugMessenger = other.m_DebugMessenger;
+
+        other.m_DebugMessenger = nullptr;
+    }
+    VulkanDebugManager& VulkanDebugManager::operator=(VulkanDebugManager&& other)
+    {
+        m_DebugMessenger = other.m_DebugMessenger;
+
+        other.m_DebugMessenger = nullptr;
+
+        return *this;
+    }
+    VulkanDebugManager& VulkanDebugManager::operator=(const VulkanDebugManager& other)
+    {
+        if(this == &other)
+            return *this;
+
+        m_DebugMessenger = other.m_DebugMessenger;
+        return *this;
+    }
+#pragma endregion
 }

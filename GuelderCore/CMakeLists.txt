@@ -22,10 +22,11 @@ set(CORE_PUBLIC_MODULES_PATH includes/GuelderEngine/)
 
 set(CORE_PRIVATE_HEADERS
 	${CORE_PRIVATE_MODULES_PATH}Core/GObject/GClass.hpp
+	${CORE_PRIVATE_MODULES_PATH}Events/Event.hpp
 )
 set(CORE_PUBLIC_HEADERS
 	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.hpp
-	${CORE_PRIVATE_MODULES_PATH}Events/Event.hpp
+	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.hpp
 )
 set(CORE_PRIVATE_SOURCES
 	#${CORE_PRIVATE_SOURCES_PATH}GObject/GClass.cpp
@@ -40,7 +41,6 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanManager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanDebugManager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanDeviceManager.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanSurfaceManager.cpp
 )
 set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Core/Window.ixx
@@ -51,7 +51,7 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanDebugManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanDeviceManager.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanSurfaceManager.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/IVulkanBase.ixx
 )
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx

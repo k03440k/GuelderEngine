@@ -7,7 +7,7 @@ import :VulkanManager;
 
 import :VulkanDebugManager;
 import :VulkanDeviceManager;
-import :VulkanSurfaceManager;
+//import :VulkanSurfaceManager;
 import GuelderEngine.Debug;
 import GuelderEngine.Core.Types;
 
@@ -17,17 +17,6 @@ import <set>;
 
 namespace GuelderEngine::Vulkan
 {
-    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const std::string_view& name)
-    {
-        m_Instance = CreateVkInstance(name.data());
-        m_DLDI = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
-        m_SurfaceManager = VulkanSurfaceManager(m_Instance, glfwWindow);
-        m_DeviceManager = VulkanDeviceManager(m_Instance, m_SurfaceManager);
-
-#ifdef GE_DEBUG_VULKAN
-        m_DebugManager = VulkanDebugManager(m_Instance, m_DLDI);
-#endif // GE_DEBUG_VULKAN
-    }
     vk::Instance VulkanManager::CreateVkInstance(const char* name)
     {
         Types::uint version{};
@@ -121,53 +110,93 @@ namespace GuelderEngine::Vulkan
 
         return true;
     }
-    //    bool VulkanManager::IsValidationLayersSupported(const std::vector<const char*>& layers)
-    //    {
-    //        GE_CORE_CLASS_ASSERT(layers.size() > 0, "layers size is zero");
-    //
-    //        std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
-    //
-    //#ifdef GE_DEBUG_VULKAN
-    //        Logger::Log(LogLevel::Info, "Device can support following layers:");
-    //        for (const auto& layer : supportedLayers)
-    //        {
-    //            Logger::Log(LogLevel::Info, '\t', layer.layerName);
-    //        }
-    //#endif // GE_DEBUG_VULKAN
-    //
-    //        bool found = false;
-    //        for (const auto& extension : layers)
-    //        {
-    //            found = false;
-    //            for (const auto& supportedExtension : supportedLayers)
-    //            {
-    //                if (strcmp(extension, supportedExtension.layerName) == 0)
-    //                {
-    //                    found = true;
-    //#ifdef GE_DEBUG_VULKAN
-    //                    Logger::Log(LogLevel::Info, "Layer \"", extension, "\" is supported");
-    //#endif //GE_DEBUG_VULKAN
-    //                }
-    //            }
-    //            if (!found)
-    //            {
-    //#ifdef GE_DEBUG_VULKAN
-    //                Logger::Log(LogLevel::Info, "Layer \"", extension, "\" is not supported");
-    //#endif //GE_DEBUG_VULKAN
-    //                return false;
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
+    void VulkanManager::Reset()
+    {
+        m_Instance = nullptr;
+        m_DLDI = nullptr;
+        m_DeviceManager.Reset();
+#ifdef GE_DEBUG_VULKAN
+        m_DebugManager.Reset();
+#endif
+    }
     void VulkanManager::Cleanup() const
     {
-        m_Instance.destroySurfaceKHR(m_SurfaceManager.surface);
-        m_DeviceManager.Cleanup();
+        m_DeviceManager.Cleanup(m_Instance);
 #ifdef GE_DEBUG_VULKAN
-        m_Instance.destroyDebugUtilsMessengerEXT(m_DebugManager.m_DebugMessenger, nullptr, m_DLDI);
+        //m_Instance.destroyDebugUtilsMessengerEXT(m_DebugManager.m_DebugMessenger, nullptr, m_DLDI);
+        m_DebugManager.Cleanup(m_Instance, m_DLDI);
 #endif // GE_DEBUG_VULKAN
         m_Instance.destroy();
+    }
+    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const std::string_view& name)
+    {
+        m_Instance = CreateVkInstance(name.data());
+        m_DLDI = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
+        m_DeviceManager = VulkanDeviceManager(m_Instance, glfwWindow);
+
+#ifdef GE_DEBUG_VULKAN
+        m_DebugManager = VulkanDebugManager(m_Instance, m_DLDI);
+#endif // GE_DEBUG_VULKAN
+    }
+    VulkanManager::VulkanManager(const VulkanManager& other)
+    {
+        m_Instance = other.m_Instance;
+        m_DLDI = other.m_DLDI;
+        m_DeviceManager = other.m_DeviceManager;
+#ifdef GE_DEBUG_VULKAN
+        m_DebugManager = other.m_DebugManager;
+#endif //GE_DEBUG_VULKAN
+    }
+    VulkanManager::VulkanManager(VulkanManager&& other)
+    {
+        m_Instance = other.m_Instance;
+        m_DLDI = other.m_DLDI;
+        m_DeviceManager = other.m_DeviceManager;
+#ifdef GE_DEBUG_VULKAN
+        m_DebugManager = other.m_DebugManager;
+#endif //GE_DEBUG_VULKAN
+
+        other.m_Instance = nullptr;
+        other.m_DLDI = nullptr;
+        other.m_DeviceManager.Reset();
+        //other.m_DeviceManager.Cleanup(m_Instance);//idk
+#ifdef GE_DEBUG_VULKAN
+        other.m_DebugManager.Reset();
+        //other.m_DebugManager.Cleanup(m_Instance, m_DLDI);//idk
+#endif
+    }
+    VulkanManager& VulkanManager::operator=(VulkanManager&& other)
+    {
+        m_Instance = other.m_Instance;
+        m_DLDI = other.m_DLDI;
+        m_DeviceManager = other.m_DeviceManager;
+#ifdef GE_DEBUG_VULKAN
+        m_DebugManager = other.m_DebugManager;
+#endif //GE_DEBUG_VULKAN
+
+        other.m_Instance = nullptr;
+        other.m_DLDI = nullptr;
+        other.m_DeviceManager.Reset();
+        //other.m_DeviceManager.Cleanup(m_Instance);//idk
+#ifdef GE_DEBUG_VULKAN
+        other.m_DebugManager.Reset();
+        //other.m_DebugManager.Cleanup(m_Instance, m_DLDI);//idk
+#endif
+        return *this;
+    }
+    VulkanManager& VulkanManager::operator=(const VulkanManager& other)
+    {
+        if(this == &other)
+            return *this;
+
+        m_Instance = other.m_Instance;
+        m_DLDI = other.m_DLDI;
+        m_DeviceManager = other.m_DeviceManager;
+#ifdef GE_DEBUG_VULKAN
+        m_DebugManager = other.m_DebugManager;
+#endif //GE_DEBUG_VULKAN
+
+        return *this;
     }
     VulkanManager::~VulkanManager()
     {

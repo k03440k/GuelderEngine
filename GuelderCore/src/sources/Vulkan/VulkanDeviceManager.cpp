@@ -1,11 +1,12 @@
 module;
 #include <../includes/GuelderEngine/Utils/Debug.hpp>
+#define GLFW_INCLUDE_VULKAN
+#include <glfw/glfw3.h>
 #include <vulkan/vulkan.hpp>
 module GuelderEngine.Vulkan;
 import :VulkanDeviceManager;
 
 import :VulkanDebugManager;
-import :VulkanSurfaceManager;
 import GuelderEngine.Core.Types;
 
 import <optional>;
@@ -16,25 +17,89 @@ namespace GuelderEngine::Vulkan
     QueueFamilyIndices::QueueFamilyIndices()
         : graphicsFamily(0), presentFamily(0) {}
 
-    VulkanDeviceManager::VulkanDeviceManager(const vk::Instance& instance, const VulkanSurfaceManager& surface)
+    VulkanDeviceManager::VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow)
     {
+        VkSurfaceKHR cStyle;
+        GE_CORE_CLASS_ASSERT(glfwCreateWindowSurface(instance, glfwWindow, nullptr, &cStyle) == VK_SUCCESS,
+            "cannot abstract GLFWwindow for vulkan surface");
+        m_Surface = cStyle;
+
         m_PhysicalDevice = ChoosePhysicalDevice(instance);
-        m_QueueIndices = FindQueueFamily(m_PhysicalDevice, surface);
-        m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices, surface);
-        m_Queues.graphicsQueue = GetGraphicsQueue(m_PhysicalDevice, m_Device, m_QueueIndices);
-        m_Queues.presentQueue = GetPresentQueue(m_PhysicalDevice, m_Device, m_QueueIndices);
+        m_QueueIndices = FindQueueFamily(m_PhysicalDevice, m_Surface);
+        m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices);
+
+        m_Queues.graphicsQueue = GetGraphicsQueue(m_Device, m_QueueIndices);
+        m_Queues.presentQueue = GetPresentQueue(m_Device, m_QueueIndices);
     }
-    void VulkanDeviceManager::Cleanup() const
-    {
-        m_Device.destroy();
-    }
-    VulkanDeviceManager& VulkanDeviceManager::operator=(const VulkanDeviceManager& other)
+    VulkanDeviceManager::VulkanDeviceManager(const VulkanDeviceManager& other)
     {
         m_PhysicalDevice = other.m_PhysicalDevice;
         m_Device = other.m_Device;
+        m_QueueIndices = other.m_QueueIndices;
+        m_Surface = other.m_Surface;
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
+    }
+    VulkanDeviceManager::VulkanDeviceManager(VulkanDeviceManager&& other)
+    {
+        m_PhysicalDevice = other.m_PhysicalDevice;
+        m_Device = other.m_Device;
+        m_QueueIndices = other.m_QueueIndices;
+        m_Surface = other.m_Surface;
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
+
+        other.m_PhysicalDevice = nullptr;
+        other.m_Surface = nullptr;
+        other.m_Queues.graphicsQueue = nullptr;
+        other.m_Queues.presentQueue = nullptr;
+    }
+    VulkanDeviceManager& VulkanDeviceManager::operator=(const VulkanDeviceManager& other)
+    {
+        if(this == &other)
+            return *this;
+
+        m_PhysicalDevice = other.m_PhysicalDevice;
+        m_Device = other.m_Device;
+        m_QueueIndices = other.m_QueueIndices;
+        m_Surface = other.m_Surface;
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
+
         return *this;
     }
-    QueueFamilyIndices VulkanDeviceManager::FindQueueFamily(const vk::PhysicalDevice& device, const VulkanSurfaceManager& surface)
+    VulkanDeviceManager& VulkanDeviceManager::operator=(VulkanDeviceManager&& other)
+    {
+        m_PhysicalDevice = other.m_PhysicalDevice;
+        m_Device = other.m_Device;
+        m_QueueIndices = other.m_QueueIndices;
+        m_Surface = other.m_Surface;
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
+
+        other.m_PhysicalDevice = nullptr;
+        other.m_Surface = nullptr;
+        other.m_Queues.graphicsQueue = nullptr;
+        other.m_Queues.presentQueue = nullptr;
+
+        return *this;
+    }
+
+    void VulkanDeviceManager::Reset()
+    {
+        m_PhysicalDevice = nullptr;
+        m_Device = nullptr;
+        m_QueueIndices = {};
+        m_Surface = nullptr;
+        m_Queues.presentQueue = nullptr;
+        m_Queues.graphicsQueue = nullptr;
+    }
+    void VulkanDeviceManager::Cleanup(const vk::Instance& instance) const
+    {
+        m_Device.destroy();
+        instance.destroySurfaceKHR(m_Surface);
+    }
+    QueueFamilyIndices VulkanDeviceManager::FindQueueFamily(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface)
     {
         QueueFamilyIndices indices;
 
@@ -46,7 +111,7 @@ namespace GuelderEngine::Vulkan
 
         for (size_t i = 0; i < queueFamilies.size(); i++)
         {
-            if (queueFamilies[i].queueFlags & vk::QueueFlagBits::eGraphics && device.getSurfaceSupportKHR(i, surface.surface))
+            if (queueFamilies[i].queueFlags & vk::QueueFlagBits::eGraphics && device.getSurfaceSupportKHR(i, surface))
             {
                 indices.graphicsFamily = i;
                 indices.presentFamily = i;
@@ -137,7 +202,7 @@ namespace GuelderEngine::Vulkan
 
         return physicalDevices[idxToDeviceOftheBiggestMemory];//TODO: Queue Families at the video time of 1:04:11
     }
-    vk::Device VulkanDeviceManager::CreateDevice(const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& indices, const VulkanSurfaceManager& surface)
+    vk::Device VulkanDeviceManager::CreateDevice(const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& indices)
     {
         constexpr float queuePriority = 1.0f;
 
@@ -176,11 +241,11 @@ namespace GuelderEngine::Vulkan
 
         return physicalDevice.createDevice(deviceInfo);
     }
-    vk::Queue VulkanDeviceManager::GetGraphicsQueue(const vk::PhysicalDevice& physicalDevice, const vk::Device& device, const QueueFamilyIndices& indices)
+    vk::Queue VulkanDeviceManager::GetGraphicsQueue(const vk::Device& device, const QueueFamilyIndices& indices)
     {
         return device.getQueue(indices.graphicsFamily.value(), 0);
     }
-    vk::Queue VulkanDeviceManager::GetPresentQueue(const vk::PhysicalDevice& physicalDevice, const vk::Device& device, const QueueFamilyIndices& indices)
+    vk::Queue VulkanDeviceManager::GetPresentQueue(const vk::Device& device, const QueueFamilyIndices& indices)
     {
         return device.getQueue(indices.presentFamily.value(), 0);
     }

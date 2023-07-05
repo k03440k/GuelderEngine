@@ -4,6 +4,8 @@ module;
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:VulkanDebugManager;
 
+import :IVulkanBase;
+
 import <vector>;
 //TODO: VulkanDebugManager::CreateDebugMessenger
 
@@ -23,7 +25,7 @@ export namespace GuelderEngine::Vulkan
 
         const std::vector<ValidationLayer> m_Layers;
     };
-    class VulkanDebugManager final : INHERIT_GClass(VulkanDebugManager)
+    class VulkanDebugManager final : public IVulkanBase, INHERIT_GClass(VulkanDebugManager)
     {
     public:
         VulkanDebugManager() = default;
@@ -31,7 +33,13 @@ export namespace GuelderEngine::Vulkan
                 const std::vector<const char* const> validationLayers*/);
         ~VulkanDebugManager() = default;
 
+        VulkanDebugManager(const VulkanDebugManager& other);
+        VulkanDebugManager(VulkanDebugManager&& other);
+        VulkanDebugManager& operator=(VulkanDebugManager&& other);
         VulkanDebugManager& operator=(const VulkanDebugManager& other);//because VulkanDebugManager doesn't contain move ctor
+
+        void Reset() override;
+        void Cleanup(const vk::Instance& instance, const vk::DispatchLoaderDynamic& DLDI) const;
 
         static void LogDeviceProperties(const vk::PhysicalDevice & device);
     private:

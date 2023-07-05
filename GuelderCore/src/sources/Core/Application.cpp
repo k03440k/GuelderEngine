@@ -24,7 +24,8 @@ namespace GuelderEngine
         m_Window = std::make_unique<Window>(Window::WindowData(windowTitle.data(), windowWidth, windowHeight));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));
 
-        m_VulkanManager = std::make_unique<GuelderEngine::Vulkan::VulkanManager>(m_Window->m_GLFWWindow);
+        m_VulkanManager = std::make_unique<Vulkan::VulkanManager>(m_Window->m_GLFWWindow, windowTitle);
+        //m_VulkanManager = Vulkan::VulkanManager(m_Window->m_GLFWWindow, windowTitle);
 
         //this->m_CallOnUpdate = callOnUpdate;
     }
