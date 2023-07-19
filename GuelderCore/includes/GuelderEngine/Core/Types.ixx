@@ -2,6 +2,8 @@ export module GuelderEngine.Core.Types;
 
 export import :GClass;
 
+import <vector>;
+
 export namespace GuelderEngine
 {
     namespace Types

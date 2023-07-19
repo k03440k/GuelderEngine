@@ -20,7 +20,7 @@ export namespace GuelderEngine
 
         struct WindowData
         {
-            explicit WindowData(const std::string& title = "GuelderEngine window", const Types::ushort& width = 640, const Types::ushort& height = 480,
+            WindowData(const std::string& title = "GuelderEngine window", const Types::ushort& width = 640, const Types::ushort& height = 480,
                 const bool isVSync = false, const EventCallbackFunc& callback = EventCallbackFunc());
             ~WindowData();
             WindowData& operator=(const WindowData& other);

@@ -29,21 +29,22 @@ export namespace GuelderEngine::Vulkan
     {
     public:
         VulkanDebugManager() = default;
-        VulkanDebugManager(const vk::Instance & instance, const vk::DispatchLoaderDynamic & dldi/*,
+        VulkanDebugManager(const vk::Instance& instance/*,
                 const std::vector<const char* const> validationLayers*/);
         ~VulkanDebugManager() = default;
 
         VulkanDebugManager(const VulkanDebugManager& other);
-        VulkanDebugManager(VulkanDebugManager&& other);
-        VulkanDebugManager& operator=(VulkanDebugManager&& other);
-        VulkanDebugManager& operator=(const VulkanDebugManager& other);//because VulkanDebugManager doesn't contain move ctor
+        VulkanDebugManager(VulkanDebugManager&& other) noexcept;
+        VulkanDebugManager& operator=(const VulkanDebugManager& other);
+        VulkanDebugManager& operator=(VulkanDebugManager&& other) noexcept;
 
-        void Reset() override;
-        void Cleanup(const vk::Instance& instance, const vk::DispatchLoaderDynamic& DLDI) const;
+        void Reset() noexcept override;
+        void Cleanup(const vk::Instance& instance) const noexcept;
 
-        static void LogDeviceProperties(const vk::PhysicalDevice & device);
+        static void LogDeviceProperties(const vk::PhysicalDevice& device);
+        static void LogPresentMode(const vk::PresentModeKHR& mode);
     private:
-        friend class VulkanManager;
+        friend class VulkanManager;//
 
         static vk::DebugUtilsMessengerEXT CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi);
 
@@ -55,6 +56,9 @@ export namespace GuelderEngine::Vulkan
 
         //debug callback
         vk::DebugUtilsMessengerEXT m_DebugMessenger;
+
+        //dynamic instance dispatcher
+        vk::DispatchLoaderDynamic m_DLDI;
 
         //const VulkanDebugLayersManager m_LayersManager;
     };

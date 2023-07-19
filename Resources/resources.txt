@@ -1,8 +1,8 @@
 shaders
 {
-	vertex = "./Resources/shaders/vertex.shader";
-	fragment = "./Resources/shaders/fragment.shader";
+	var vert = "./Resources/Shaders/Compiled/vertex.vert.spv";
+	var frag = "./Resources/Shaders/Compiled/fragment.frag.spv";
 	
-	vertex_simple = "./Resources/shaders/compiled/vertex_simple.vert.spv";
-	fragment_simple = "./Resources/shaders/compiled/fragment_simple.frag.spv";
+	var vert_code = "./Resources/Shaders/vertex.vert";
+	var frag_code = "./Resources/Shaders/fragment.frag";
 }

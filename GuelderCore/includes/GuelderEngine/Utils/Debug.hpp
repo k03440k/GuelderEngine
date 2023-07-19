@@ -2,8 +2,13 @@
 
 import GuelderEngine.Debug;
 
-#define GE_DEBUG_VULKAN
 #define GE_DEBUG
+
+#ifdef GE_DEBUG
+
+#define GE_DEBUG_VULKAN
+
+#endif
 
 #define FUNC_NAME __func__
 
@@ -55,6 +60,13 @@ import GuelderEngine.Debug;
     };\
     extern name##LoggingCategory name##LoggingCategoryVar
 
+#ifdef GE_DEBUG
+
 #define DEFINE_LOG_CATEGORY(name) name##LoggingCategory name##LoggingCategoryVar
 
 #define GE_LOG(categoryName, level, ...) ::GuelderEngine::Debug::Log(categoryName##LoggingCategoryVar, ::GuelderEngine::Debug::LogLevel::##level, __VA_ARGS__)
+
+#else
+#define DEFINE_LOG_CATEGORY(...)
+#define GE_LOG(...)
+#endif

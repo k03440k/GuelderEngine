@@ -6,6 +6,8 @@ import GuelderEngine.Vulkan;
 import GuelderEngine.Events;
 import GuelderEngine.Debug;
 import GuelderEngine.Layers;
+import :ResourceManager;
+import :Window;
 
 import <functional>;
 import <memory>;
@@ -15,8 +17,6 @@ export namespace GuelderEngine
 {
     //namespace Events { struct WindowCloseEvent; struct BaseEvent; class EventDispatcher; }
     namespace Layers { class Layer; }
-
-    class Window;
 
     class IApplication
     {
@@ -34,8 +34,18 @@ export namespace GuelderEngine
     class GEApplication : public IApplication, INHERIT_GClass(GEApplication)
     {
     public:
-        GEApplication(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480,
-                    const std::string_view& windowTitle = "Guelder Engine Window", const std::function<void()>& callOnUpdate = [] {});
+        /*
+         *@param executablePath - path where .exe file stores, can be found in main
+         *@param info - info about size of window, its name, etc
+         *@param vertexShaderVarName - name of custom vertex shader
+         *@param fragmentShaderVarName - name of custom fragment shader
+        */
+        GEApplication(
+            const std::string_view& executablePath, 
+            const Window::WindowData& info = {}, 
+            const std::string_view& vertexShaderVarName = "vert",
+            const std::string_view& fragmentShaderVarName = "frag"
+        );
         virtual ~GEApplication();
 
         DELETE_COPY_AND_MOVING(GEApplication);
@@ -53,6 +63,7 @@ export namespace GuelderEngine
         const std::function<void()>& GetOnUpdateFunc();
 
         Events::EventDispatcher eventDispatcher;
+        Utils::ResourceManager resourceManager;
     private:
         std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;//TODO: remove std::unique_ptr and define for all Vulkan classes moving ctors and operators=
 

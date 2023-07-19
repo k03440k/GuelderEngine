@@ -41,6 +41,9 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanManager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanDebugManager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanDeviceManager.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanSwapchain.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanShaderManager.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanPipeline.cpp
 )
 set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Core/Window.ixx
@@ -52,6 +55,9 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanDebugManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanDeviceManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/IVulkanBase.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanSwapchain.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanShaderManager.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanPipeline.ixx
 )
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx
@@ -166,7 +172,7 @@ if (DEFINED VULKAN_SDK_PATH)
   set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
   set(Vulkan_FOUND "True")
 else()
-  find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
+  find_package(Vulkan REQUIRED COMPONENTS glslc) # throws error if could not find Vulkan
   message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
 endif()
 if (NOT Vulkan_FOUND)
@@ -191,6 +197,59 @@ endif()
 #etc.
 set_target_properties(${ECN} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 
+function(ge_copy_directory OUTPUT_DIRECTORY)
 add_custom_command(TARGET ${ECN} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/Resources $<TARGET_FILE_DIR:${ECN}>/Resources)
+        ${CMAKE_SOURCE_DIR}/Resources ${OUTPUT_DIRECTORY})
+endfunction()
+
+ge_copy_directory(${CMAKE_BINARY_DIR}/bin/Debug/Resources)
+ge_copy_directory(${CMAKE_BINARY_DIR}/bin/Release/Resources)
+ge_copy_directory($<TARGET_FILE_DIR:${ECN}>/Resources)
+
+#start compile .glsl shaders
+
+if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "AMD64")
+  set(GLSL_VALIDATOR "$ENV{VULKAN_SDK}/Bin/glslangValidator.exe")
+else()
+  set(GLSL_VALIDATOR "$ENV{VULKAN_SDK}/Bin32/glslangValidator.exe")
+endif()
+
+file(GLOB_RECURSE GLSL_SOURCE_FILES
+    "${CMAKE_SOURCE_DIR}/Resources/Shaders/*.vert"
+    "${CMAKE_SOURCE_DIR}/Resources/Shaders/*.frag"
+    )
+
+find_program(GLSLC_EXECUTABLE NAMES glslc HINTS Vulkan::glslc)
+
+foreach(GLSL ${GLSL_SOURCE_FILES})
+  get_filename_component(FILE_NAME ${GLSL} NAME)
+  set(DSPIRV "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/${FILE_NAME}.spv")
+  set(RSPIRV "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/${FILE_NAME}.spv")
+  add_custom_command(
+    OUTPUT ${DSPIRV}
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/"
+	COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${DSPIRV}
+    COMMAND ${GLSLC_EXECUTABLE} -o ${DSPIRV} ${GLSL}
+    DEPENDS ${GLSL} "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/")
+	add_custom_command(
+    OUTPUT ${RSPIRV}
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
+	COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${RSPIRV}
+    COMMAND ${GLSLC_EXECUTABLE} -o ${RSPIRV} ${GLSL}
+    DEPENDS ${GLSL} "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/")
+  list(APPEND SPIRV_BINARY_FILES ${DSPIRV})
+  list(APPEND SPIRV_BINARY_FILES ${RSPIRV})
+endforeach(GLSL)
+
+add_custom_target(Shaders ALL DEPENDS ${SPIRV_BINARY_FILES})
+
+add_dependencies(${ECN} Shaders)
+
+add_custom_command(TARGET ${ECN} POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${ECN}>/Resources/Shaders/Compiled/"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
+        $<TARGET_FILE_DIR:${ECN}>/Resources/Shaders/Compiled/
+        )
+#end compile .glsl shaders

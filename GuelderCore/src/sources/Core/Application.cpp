@@ -7,6 +7,7 @@ import :Window;
 import GuelderEngine.Layers;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
+import :ResourceManager;
 
 import <string>;
 import <string_view>;
@@ -18,13 +19,18 @@ namespace GuelderEngine
 {
 #pragma region GEApplication
 #define BIND_EVENT_FUNC(x) std::bind(&x, this, std::placeholders::_1)
-    GEApplication::GEApplication(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
-        const std::string_view& windowTitle, const std::function<void()>& callOnUpdate)
+    GEApplication::GEApplication(const std::string_view& executablePath, const Window::WindowData& info, const std::string_view& vertexShaderVarName,
+        const std::string_view& fragmentShaderVarName)
+    : resourceManager(executablePath)
     {
-        m_Window = std::make_unique<Window>(Window::WindowData(windowTitle.data(), windowWidth, windowHeight));
+        m_Window = std::make_unique<Window>(Window::WindowData(info.title.data(), info.width, info.height));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));
 
-        m_VulkanManager = std::make_unique<Vulkan::VulkanManager>(m_Window->m_GLFWWindow, windowTitle);
+        m_VulkanManager = std::make_unique<Vulkan::VulkanManager>(
+            m_Window->m_GLFWWindow, 
+            resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName),
+            resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName),
+            info.title);
         //m_VulkanManager = Vulkan::VulkanManager(m_Window->m_GLFWWindow, windowTitle);
 
         //this->m_CallOnUpdate = callOnUpdate;

@@ -6,6 +6,7 @@ module;
 module GuelderEngine.Vulkan;
 import :VulkanDeviceManager;
 
+import :VulkanSwapchain;
 import :VulkanDebugManager;
 import GuelderEngine.Core.Types;
 
@@ -14,10 +15,7 @@ import <set>;
 
 namespace GuelderEngine::Vulkan
 {
-    QueueFamilyIndices::QueueFamilyIndices()
-        : graphicsFamily(0), presentFamily(0) {}
-
-    VulkanDeviceManager::VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow)
+    VulkanDeviceManager::VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath)
     {
         VkSurfaceKHR cStyle;
         GE_CORE_CLASS_ASSERT(glfwCreateWindowSurface(instance, glfwWindow, nullptr, &cStyle) == VK_SUCCESS,
@@ -25,11 +23,18 @@ namespace GuelderEngine::Vulkan
         m_Surface = cStyle;
 
         m_PhysicalDevice = ChoosePhysicalDevice(instance);
-        m_QueueIndices = FindQueueFamily(m_PhysicalDevice, m_Surface);
+        m_QueueIndices = QueueFamilyIndices(m_PhysicalDevice, m_Surface);
         m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices);
 
         m_Queues.graphicsQueue = GetGraphicsQueue(m_Device, m_QueueIndices);
         m_Queues.presentQueue = GetPresentQueue(m_Device, m_QueueIndices);
+
+        int width{}, height{};
+        glfwGetWindowSize(glfwWindow, &width, &height);
+
+        m_Swapchain = VulkanSwapchain(m_Device, m_PhysicalDevice, m_Surface, width, height, m_QueueIndices);
+
+        m_Pipeline = VulkanPipeline(m_Device, m_Swapchain.m_Extent, m_Swapchain.m_Format, vertPath, fragPath);
     }
     VulkanDeviceManager::VulkanDeviceManager(const VulkanDeviceManager& other)
     {
@@ -39,8 +44,10 @@ namespace GuelderEngine::Vulkan
         m_Surface = other.m_Surface;
         m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
         m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_Swapchain = other.m_Swapchain;
+        m_Pipeline = other.m_Pipeline;
     }
-    VulkanDeviceManager::VulkanDeviceManager(VulkanDeviceManager&& other)
+    VulkanDeviceManager::VulkanDeviceManager(VulkanDeviceManager&& other) noexcept
     {
         m_PhysicalDevice = other.m_PhysicalDevice;
         m_Device = other.m_Device;
@@ -48,11 +55,10 @@ namespace GuelderEngine::Vulkan
         m_Surface = other.m_Surface;
         m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
         m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_Swapchain = other.m_Swapchain;
+        m_Pipeline = other.m_Pipeline;
 
-        other.m_PhysicalDevice = nullptr;
-        other.m_Surface = nullptr;
-        other.m_Queues.graphicsQueue = nullptr;
-        other.m_Queues.presentQueue = nullptr;
+        other.Reset();
     }
     VulkanDeviceManager& VulkanDeviceManager::operator=(const VulkanDeviceManager& other)
     {
@@ -65,10 +71,12 @@ namespace GuelderEngine::Vulkan
         m_Surface = other.m_Surface;
         m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
         m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_Swapchain = other.m_Swapchain;
+        m_Pipeline = other.m_Pipeline;
 
         return *this;
     }
-    VulkanDeviceManager& VulkanDeviceManager::operator=(VulkanDeviceManager&& other)
+    VulkanDeviceManager& VulkanDeviceManager::operator=(VulkanDeviceManager&& other) noexcept
     {
         m_PhysicalDevice = other.m_PhysicalDevice;
         m_Device = other.m_Device;
@@ -76,16 +84,15 @@ namespace GuelderEngine::Vulkan
         m_Surface = other.m_Surface;
         m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
         m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_Swapchain = other.m_Swapchain;
+        m_Pipeline = other.m_Pipeline;
 
-        other.m_PhysicalDevice = nullptr;
-        other.m_Surface = nullptr;
-        other.m_Queues.graphicsQueue = nullptr;
-        other.m_Queues.presentQueue = nullptr;
+        other.Reset();
 
         return *this;
     }
 
-    void VulkanDeviceManager::Reset()
+    void VulkanDeviceManager::Reset() noexcept
     {
         m_PhysicalDevice = nullptr;
         m_Device = nullptr;
@@ -93,52 +100,27 @@ namespace GuelderEngine::Vulkan
         m_Surface = nullptr;
         m_Queues.presentQueue = nullptr;
         m_Queues.graphicsQueue = nullptr;
+        m_Swapchain.Reset();
+        m_Pipeline.Reset();
     }
-    void VulkanDeviceManager::Cleanup(const vk::Instance& instance) const
+    void VulkanDeviceManager::Cleanup(const vk::Instance& instance) const noexcept
     {
+        m_Pipeline.Cleanup(m_Device);
+        m_Swapchain.Cleanup(m_Device);
         m_Device.destroy();
         instance.destroySurfaceKHR(m_Surface);
-    }
-    QueueFamilyIndices VulkanDeviceManager::FindQueueFamily(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface)
-    {
-        QueueFamilyIndices indices;
-
-        const std::vector queueFamilies = device.getQueueFamilyProperties();
-
-#ifdef GE_DEBUG_VULKAN
-        Debug::LogInfo("Device can support ", queueFamilies.size(), " Queue Families");
-#endif
-
-        for (size_t i = 0; i < queueFamilies.size(); i++)
-        {
-            if (queueFamilies[i].queueFlags & vk::QueueFlagBits::eGraphics && device.getSurfaceSupportKHR(i, surface))
-            {
-                indices.graphicsFamily = i;
-                indices.presentFamily = i;
-
-#ifdef GE_DEBUG_VULKAN
-                Debug::LogInfo("Queue Family at index ", i, " is suitable for graphics and presenting");
-#endif
-            }
-            if (indices.IsComplete())
-                break;
-        }
-
-        GE_CORE_CLASS_ASSERT(indices.IsComplete(), "Cannot complete Queue Family(device doesn't support requirements)");
-
-        return indices;
     }
     bool VulkanDeviceManager::CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& requestedExtensions)
     {
         std::set<std::string> requiredExtensions(requestedExtensions.begin(), requestedExtensions.end());
 #ifdef GE_DEBUG_VULKAN
-        Debug::LogInfo("Device can support following extensions:");
+        GE_LOG(VulkanCore, Info, "Device can support following extensions:");
 #endif
 
         for (auto&& extension : physicalDevice.enumerateDeviceExtensionProperties())
         {
 #ifdef GE_DEBUG_VULKAN
-            Debug::LogInfo('\t', extension.extensionName);
+            GE_LOG(VulkanCore, Info, '\t', extension.extensionName);
 #endif
             //remove this from the list of required extensions (set checks for equality automatically)
             requiredExtensions.erase(extension.extensionName);
@@ -164,7 +146,7 @@ namespace GuelderEngine::Vulkan
         GE_CORE_CLASS_ASSERT(physicalDevices.size() > 0, "there are no physical devices");
 
 #ifdef GE_DEBUG_VULKAN
-        Debug::LogInfo("There are ", physicalDevices.size(), " detected physical devices:");
+        GE_LOG(VulkanCore, Info, "There are ", physicalDevices.size(), " detected physical devices:");
         for (const auto& device : physicalDevices)
         {
             VulkanDebugManager::LogDeviceProperties(device);
@@ -208,7 +190,7 @@ namespace GuelderEngine::Vulkan
 
         std::vector uniqueIndices{indices.graphicsFamily.value()};
         if (indices.graphicsFamily.value() != indices.presentFamily.value())
-            uniqueIndices.push_back(indices.presentFamily.value());//9:11
+            uniqueIndices.push_back(indices.presentFamily.value());
 
         std::vector<vk::DeviceQueueCreateInfo> queueDeviceInfo;
         for (auto&& queueFamilyIndex : uniqueIndices)
@@ -221,7 +203,9 @@ namespace GuelderEngine::Vulkan
                 &queuePriority));
         }
 
-        const auto deviceFeatures = physicalDevice.getFeatures();//
+        std::vector<const char*> deviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+        const auto deviceFeatures = physicalDevice.getFeatures();//mine is .getFeatures()
 
         std::vector<const char*> enabledLayers;
 #ifdef GE_DEBUG_VULKAN
@@ -234,18 +218,18 @@ namespace GuelderEngine::Vulkan
             queueDeviceInfo.data(),
             enabledLayers.size(),
             enabledLayers.data(),
-            0,
-            nullptr,
+            deviceExtensions.size(),
+            deviceExtensions.data(),
             &deviceFeatures
         );
 
         return physicalDevice.createDevice(deviceInfo);
     }
-    vk::Queue VulkanDeviceManager::GetGraphicsQueue(const vk::Device& device, const QueueFamilyIndices& indices)
+    vk::Queue VulkanDeviceManager::GetGraphicsQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
     {
         return device.getQueue(indices.graphicsFamily.value(), 0);
     }
-    vk::Queue VulkanDeviceManager::GetPresentQueue(const vk::Device& device, const QueueFamilyIndices& indices)
+    vk::Queue VulkanDeviceManager::GetPresentQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
     {
         return device.getQueue(indices.presentFamily.value(), 0);
     }

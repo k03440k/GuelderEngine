@@ -4,12 +4,54 @@ module;
 module GuelderEngine.Vulkan;
 import :VulkanDebugManager;
 
+import :IVulkanBase;
 import GuelderEngine.Debug;
 
 import <vector>;
 
 namespace GuelderEngine::Vulkan
 {
+    DEFINE_LOG_CATEGORY(VulkanCore);
+
+#pragma region operators_and_ctors
+    VulkanDebugManager::VulkanDebugManager(const vk::Instance& instance)
+    {
+        m_DLDI = vk::DispatchLoaderDynamic(instance, vkGetInstanceProcAddr);
+        m_DebugMessenger = CreateDebugMessenger(instance, m_DLDI);
+    }
+    VulkanDebugManager::VulkanDebugManager(const VulkanDebugManager& other)
+    {
+        m_DebugMessenger = other.m_DebugMessenger;
+        m_DLDI = other.m_DLDI;
+    }
+    VulkanDebugManager::VulkanDebugManager(VulkanDebugManager&& other) noexcept
+    {
+        m_DebugMessenger = other.m_DebugMessenger;
+        m_DLDI = other.m_DLDI;
+
+        //other.Reset();//idk why error occurs
+    }
+    VulkanDebugManager& VulkanDebugManager::operator=(const VulkanDebugManager& other)
+    {
+        if(this == &other)
+            return *this;
+
+        m_DebugMessenger = other.m_DebugMessenger;
+        m_DLDI = other.m_DLDI;
+
+        return *this;
+    }
+    VulkanDebugManager& VulkanDebugManager::operator=(VulkanDebugManager&& other) noexcept
+    {
+        m_DebugMessenger = other.m_DebugMessenger;
+        m_DLDI = other.m_DLDI;
+
+        //other.Reset();//idk why error occurs
+
+        return *this;
+    }
+#pragma endregion
+
     VulkanDebugLayersManager::VulkanDebugLayersManager(const std::vector<ValidationLayer>& layers)
         : m_Layers(layers)
     {
@@ -22,10 +64,10 @@ namespace GuelderEngine::Vulkan
         const std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 
 #ifdef GE_DEBUG_VULKAN
-        Debug::LogInfo("Device can support following layers:");
+        GE_LOG(VulkanCore, Info, "Device can support following layers:");
         for (const auto& layer : supportedLayers)
         {
-            Debug::LogInfo('\t', layer.layerName);
+            GE_LOG(VulkanCore, Info, '\t', layer.layerName);
         }
 #endif // GE_DEBUG_VULKAN
 
@@ -39,14 +81,14 @@ namespace GuelderEngine::Vulkan
                 {
                     found = true;
 #ifdef GE_DEBUG_VULKAN
-                    Debug::LogInfo("Layer \"", extension, "\" is supported");
+                    GE_LOG(VulkanCore, Info, "Layer \"", extension, "\" is supported");
 #endif //GE_DEBUG_VULKAN
                 }
             }
             if (!found)
             {
 #ifdef GE_DEBUG_VULKAN
-                Debug::LogInfo("Layer \"", extension, "\" is not supported");
+                GE_LOG(VulkanCore, Info, "Layer \"", extension, "\" is not supported");
 #endif //GE_DEBUG_VULKAN
                 return false;
             }
@@ -54,23 +96,21 @@ namespace GuelderEngine::Vulkan
 
         return true;
     }
-    VulkanDebugManager::VulkanDebugManager(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
-        : m_DebugMessenger(CreateDebugMessenger(instance, dldi))
-    {
-    }
-    void VulkanDebugManager::Reset()
+
+    void VulkanDebugManager::Reset() noexcept
     {
         m_DebugMessenger = nullptr;
+        m_DLDI = nullptr;
     }
-    void VulkanDebugManager::Cleanup(const vk::Instance& instance, const vk::DispatchLoaderDynamic& DLDI) const
+    void VulkanDebugManager::Cleanup(const vk::Instance& instance) const noexcept
     {
-        instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, DLDI);
+        instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DLDI);
     }
     void VulkanDebugManager::LogDeviceProperties(const vk::PhysicalDevice& device)
     {
         const vk::PhysicalDeviceProperties properties = device.getProperties();
 
-        Debug::LogInfo("Device name: ", properties.deviceName, ". Device driver version: ", properties.driverVersion);
+        GE_LOG(VulkanCore, Info, "Device name: ", properties.deviceName, ". Device driver version: ", properties.driverVersion);
         const vk::PhysicalDeviceMemoryProperties memoryProperties = device.getMemoryProperties();
 
         //device type
@@ -94,7 +134,7 @@ namespace GuelderEngine::Vulkan
             default:
                 msg += "other";
             }
-            Debug::LogInfo(msg);
+            GE_LOG(VulkanCore, Info, msg);
         }
 
         const uint32_t heapCount = memoryProperties.memoryHeapCount;
@@ -105,9 +145,25 @@ namespace GuelderEngine::Vulkan
             if (const auto& heap = memoryProperties.memoryHeaps[heapIndex]; heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal) {
                 // Convert the size to gigabytes
                 const double memorySizeGB = static_cast<double>(heap.size) / (1024 * 1024 * 1024);
-                Debug::LogInfo("Memory size in ", heapIndex+1, " heap : ", memorySizeGB, " GB");
+                GE_LOG(VulkanCore, Info, "Memory size in ", heapIndex+1, " heap : ", memorySizeGB, " GB");
             }
         }
+    }
+    void VulkanDebugManager::LogPresentMode(const vk::PresentModeKHR& mode)
+    {
+        using enum vk::PresentModeKHR;
+        if(mode == eMailbox)
+            GE_LOG(VulkanCore, Info, "\tMailBox");
+        if(mode == eImmediate)
+            GE_LOG(VulkanCore, Info, "\tImmediate");
+        if(mode == eFifo)
+            GE_LOG(VulkanCore, Info, "\tFifo");
+        if(mode == eFifoRelaxed)
+            GE_LOG(VulkanCore, Info, "\tFifoRelaxed");
+        if(mode == eSharedContinuousRefresh)
+            GE_LOG(VulkanCore, Info, "\tSharedContinuousRefresh");
+        if(mode == eSharedDemandRefresh)
+            GE_LOG(VulkanCore, Info, "\tSharedDemandRefresh");
     }
     vk::DebugUtilsMessengerEXT VulkanDebugManager::CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
     {
@@ -128,36 +184,8 @@ namespace GuelderEngine::Vulkan
                                                                      const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
                                                                      void* userData)
     {
-        Debug::LogVulkanError(callbackData->pMessage);
+        GE_LOG(VulkanCore, VulkanError, callbackData->pMessage);
 
         return VK_FALSE;
     }
-#pragma region operators_and_ctors
-    VulkanDebugManager::VulkanDebugManager(const VulkanDebugManager& other)
-    {
-        m_DebugMessenger = other.m_DebugMessenger;
-    }
-    VulkanDebugManager::VulkanDebugManager(VulkanDebugManager&& other)
-    {
-        m_DebugMessenger = other.m_DebugMessenger;
-
-        other.m_DebugMessenger = nullptr;
-    }
-    VulkanDebugManager& VulkanDebugManager::operator=(VulkanDebugManager&& other)
-    {
-        m_DebugMessenger = other.m_DebugMessenger;
-
-        other.m_DebugMessenger = nullptr;
-
-        return *this;
-    }
-    VulkanDebugManager& VulkanDebugManager::operator=(const VulkanDebugManager& other)
-    {
-        if(this == &other)
-            return *this;
-
-        m_DebugMessenger = other.m_DebugMessenger;
-        return *this;
-    }
-#pragma endregion
 }

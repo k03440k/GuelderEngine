@@ -8,11 +8,14 @@ export module GuelderEngine.Vulkan:VulkanManager;
 import :IVulkanBase;
 import :VulkanDebugManager;
 import :VulkanDeviceManager;
+import GuelderEngine.Core.Types;
 //import :VulkanSurfaceManager;
 
 import <string_view>;
 import <vector>;
 import <optional>;
+
+using namespace GuelderEngine::Types;
 
 export namespace GuelderEngine::Vulkan
 {
@@ -23,26 +26,27 @@ export namespace GuelderEngine::Vulkan
     {
     public:
         VulkanManager() = default;
-        VulkanManager(GLFWwindow* glfwWindow, const std::string_view& name = "Guelder Engine Editor");
+        VulkanManager(GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath,
+            const std::string_view& name = "Guelder Engine Editor");
         virtual ~VulkanManager();
 
         VulkanManager(const VulkanManager& other);//really i don't fucking know is it good idea to make such things
-        VulkanManager(VulkanManager&& other);
-        VulkanManager& operator=(VulkanManager&& other);
+        VulkanManager(VulkanManager&& other) noexcept;
+        VulkanManager& operator=(VulkanManager&& other) noexcept;
         VulkanManager& operator=(const VulkanManager& other);
 
-        virtual void Reset() override;
-        virtual void Cleanup() const;
+        virtual void Reset() noexcept override;
+        virtual void Cleanup() const noexcept;
 
-        static bool AreExtensionsSupported(const std::vector<const char*>&extensions);
+        static bool AreExtensionsSupported(const std::vector<const char*>& extensions);
         //static bool IsValidationLayersSupported(const std::vector<const char*>& layers);
+        //void LoadVertexShader(const std::string_view& source);
+        //void LoadFragmentShader(const std::string_view& source);
     private:
         static vk::Instance CreateVkInstance(const char* name);
 
         vk::Instance m_Instance;
 
-        //dynamic instance dispatcher
-        vk::DispatchLoaderDynamic m_DLDI;
         VulkanDeviceManager m_DeviceManager;
 #ifdef GE_DEBUG_VULKAN
         VulkanDebugManager m_DebugManager;
