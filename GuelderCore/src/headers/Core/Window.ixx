@@ -20,9 +20,10 @@ export namespace GuelderEngine
 
         struct WindowData
         {
+        public:
             WindowData(const std::string& title = "GuelderEngine window", const Types::ushort& width = 640, const Types::ushort& height = 480,
-                const bool isVSync = false, const EventCallbackFunc& callback = EventCallbackFunc());
-            ~WindowData();
+                const bool& showFrameRate = true, const bool& isVSync = false, const EventCallbackFunc& callback = EventCallbackFunc());
+            ~WindowData() = default;
             WindowData& operator=(const WindowData& other);
 
             Types::ushort width = 0;
@@ -31,7 +32,19 @@ export namespace GuelderEngine
             EventCallbackFunc callback;
 
             bool isVSync : 1 = false;
+            bool showFrameRate : 1 = true;
+
+            float UpdateFrameRate();
+
+            float GetFrameRate() const noexcept;
+
+        private:
+            double m_LastTime, m_CurrentTime;
+            int m_NumFrames;
+            float m_FrameRate;
         };
+
+        DELETE_COPY_AND_MOVING(Window);
 
         Window() = default;
         Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
@@ -39,17 +52,10 @@ export namespace GuelderEngine
         explicit Window(const WindowData& data);
         virtual ~Window();
 
-        Window(const Window&) = delete;
-        Window(Window&&) = delete;
-        Window& operator=(const Window&) = delete;
-        Window& operator=(Window&&) = delete;
-
         virtual void OnUpdate();
         void OnUpdate(const UpdateFunc& update);
 
         bool ShouldClose() const;
-
-        UpdateFunc onUpdate;
 
         Types::ushort GetWidth() const noexcept { return m_Data.width; }
         Types::ushort GetHeight() const noexcept { return m_Data.height; }
@@ -62,8 +68,13 @@ export namespace GuelderEngine
         void SetCallback(const EventCallbackFunc& callback) noexcept { m_Data.callback = callback; }
         void SetWindow(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480, const std::string& windowTitle = std::string("window"));
         //void SetWindow(GLFWwindow* other, const std::string* otherTitle = nullptr);
-        friend class GEApplication;
+        void ShowFrameRate();
+
+        UpdateFunc onUpdate;
+
     private:
+        friend class GEApplication;
+
         void Init();
         void Shutdown();
 

@@ -7,10 +7,10 @@ import GuelderEngine.Debug;
 export namespace GuelderEngine::Vulkan
 {
     DECLARE_LOG_CATEGORY_EXTERN(VulkanCore, All);
-    class IVulkanBase
+    class IVulkanObject
     {
     public:
-        virtual ~IVulkanBase() = default;
+        virtual ~IVulkanObject() = default;
 
         /*
          *@brief method which must reset all values but not to delete them, so you can use operator=(...) or other assignments

@@ -25,20 +25,14 @@ export namespace GuelderEngine::Vulkan
 
         const std::vector<ValidationLayer> m_Layers;
     };
-    class VulkanDebugManager final : public IVulkanBase, INHERIT_GClass(VulkanDebugManager)
+    class VulkanDebugManager final : public IVulkanObject, INHERIT_GClass(VulkanDebugManager)
     {
     public:
-        VulkanDebugManager() = default;
+        DECLARE_DCAD_AND_CAM(VulkanDebugManager);
         VulkanDebugManager(const vk::Instance& instance/*,
                 const std::vector<const char* const> validationLayers*/);
-        ~VulkanDebugManager() = default;
 
-        VulkanDebugManager(const VulkanDebugManager& other);
-        VulkanDebugManager(VulkanDebugManager&& other) noexcept;
-        VulkanDebugManager& operator=(const VulkanDebugManager& other);
-        VulkanDebugManager& operator=(VulkanDebugManager&& other) noexcept;
-
-        void Reset() noexcept override;
+        virtual void Reset() noexcept override;
         void Cleanup(const vk::Instance& instance) const noexcept;
 
         static void LogDeviceProperties(const vk::PhysicalDevice& device);

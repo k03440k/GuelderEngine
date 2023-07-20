@@ -15,6 +15,11 @@ import <string_view>;
 
 export namespace GuelderEngine
 {
+    namespace Vulkan
+    {
+        class VulkanManager;
+    }
+
     //namespace Events { struct WindowCloseEvent; struct BaseEvent; class EventDispatcher; }
     namespace Layers { class Layer; }
 

@@ -14,11 +14,10 @@ export namespace GuelderEngine
     {
         extern constexpr char resourcesPath[] = "Resources/resources.txt";
 
-        class ResourcesHelper : INHERIT_GClass(ResourcesHelper)
+        class ResourcesHelper// : INHERIT_GClass(ResourcesHelper)
         {
         public:
-            ResourcesHelper() = default;
-            ~ResourcesHelper() = default;
+            DELETE_COPY_AND_MOVING(ResourcesHelper);
             
             using vars = std::unordered_map<std::string, std::string>;
 

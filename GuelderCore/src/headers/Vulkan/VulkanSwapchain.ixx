@@ -5,20 +5,20 @@ module;
 export module GuelderEngine.Vulkan:VulkanSwapchain;
 
 import :IVulkanBase;
+import :VulkanSync;
 import GuelderEngine.Core.Types;
 
 import <optional>;
 
 export namespace GuelderEngine::Vulkan
 {
-    struct QueueFamilyIndices : INHERIT_GClass(QueueFamilyIndices)
+    struct VulkanQueueFamilyIndices : INHERIT_GClass(VulkanQueueFamilyIndices)
     {
-        QueueFamilyIndices() = default;
-        QueueFamilyIndices(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
-        ~QueueFamilyIndices() = default;
+        DECLARE_DEFAULT_CTOR_AND_DTOR(VulkanQueueFamilyIndices);
+        VulkanQueueFamilyIndices(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
 
-        QueueFamilyIndices(const QueueFamilyIndices& other);
-        QueueFamilyIndices& operator=(const QueueFamilyIndices& other);
+        VulkanQueueFamilyIndices(const VulkanQueueFamilyIndices& other);
+        VulkanQueueFamilyIndices& operator=(const VulkanQueueFamilyIndices& other);
 
         //location of graphics Queue Family
         std::optional<Types::uint> graphicsFamily;
@@ -26,53 +26,94 @@ export namespace GuelderEngine::Vulkan
 
         bool IsComplete() const { return graphicsFamily.has_value() && presentFamily.has_value(); }
     };
-    struct SwapChainFrame
+    struct VulkanSwapchainFrame : public IVulkanObject
     {
-        SwapChainFrame() = default;
-        SwapChainFrame(const SwapChainFrame& other);
-        SwapChainFrame& operator=(const SwapChainFrame& other);
+        DECLARE_DCAD_AND_CAM(VulkanSwapchainFrame);
+
+        virtual void Reset() noexcept override;
 
         vk::Image image;
         vk::ImageView imageView;
+        vk::Framebuffer framebuffer;
+        vk::CommandBuffer commandBuffer;
+    };
+    class VulkanFrameBuffer : INHERIT_GClass(VulkanFrameBuffer), public IVulkanObject
+    {
+    public:
+        DELETE_COPY_AND_MOVING(VulkanFrameBuffer);
+
+        static void Make(
+            const vk::Device& device,
+            const vk::RenderPass& renderPass,
+            const vk::Extent2D& swapchainExtent,
+            std::vector<VulkanSwapchainFrame>& frames
+        );
+    };
+    class VulkanCommandBuffer : INHERIT_GClass(VulkanCommandBuffer), public IVulkanObject
+    {
+    public:
+        DECLARE_DCAD_AND_CAM(VulkanCommandBuffer);
+
+        VulkanCommandBuffer(const vk::Device& device, const VulkanQueueFamilyIndices& queueFamilyIndices, const vk::SurfaceKHR& surface, std::vector<VulkanSwapchainFrame>& frames);
+
+        virtual void Reset() noexcept override;
+        void Cleanup(const vk::Device& device) const noexcept;
+    private:
+        static vk::CommandPool MakePool(const vk::Device& device, const VulkanQueueFamilyIndices& queueFamilyIndices, const vk::SurfaceKHR& surface);
+        static vk::CommandBuffer MakeBuffer(const vk::Device& device, const vk::CommandPool& pool, std::vector<VulkanSwapchainFrame>& frames);
+
+        vk::CommandPool m_CommandPool;
+        vk::CommandBuffer m_CommandBuffer;
     };
 }
 
 export namespace GuelderEngine::Vulkan
 {
-    struct SwapChainSupportDetails
+    struct VulkanSwapchainSupportDetails
     {
         vk::SurfaceCapabilitiesKHR capabilities;
         std::vector<vk::SurfaceFormatKHR> formats;
         std::vector<vk::PresentModeKHR> presentModes;
     };
-    class VulkanSwapchain final : public IVulkanBase, INHERIT_GClass(VulkanSwapchain)
+    struct VulkanSwapchainCreateInfo
+    {
+        const vk::Device& device;
+        const vk::PhysicalDevice& physicalDevice;
+        const vk::SurfaceKHR& surface;
+        const Types::uint& width;
+        const Types::uint& height;
+        const VulkanQueueFamilyIndices& queueFamilyIndices;
+    };
+    class VulkanSwapchain final : public IVulkanObject, INHERIT_GClass(VulkanSwapchain)
     {
     public:
-        VulkanSwapchain() = default;
-        VulkanSwapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-            const Types::uint& width, const Types::uint& height, const QueueFamilyIndices& queueFamilyIndices);
-        ~VulkanSwapchain() = default;
+        DECLARE_DCAD_AND_CAM(VulkanSwapchain);
 
-        VulkanSwapchain(const VulkanSwapchain& other);
-        VulkanSwapchain(VulkanSwapchain&& other) noexcept;
-        VulkanSwapchain& operator=(const VulkanSwapchain& other);
-        VulkanSwapchain& operator=(VulkanSwapchain&& other) noexcept;
+        VulkanSwapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
+            const Types::uint& width, const Types::uint& height, const VulkanQueueFamilyIndices& queueFamilyIndices);
+        VulkanSwapchain(const VulkanSwapchainCreateInfo& info);
 
         void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
+
+        void MakeFrames(const vk::Device& device, const vk::RenderPass& renderPass);
+
+        //void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const vk::RenderPass& renderPass, const Types::uint& imageIndex);
     private:
         static vk::SurfaceFormatKHR ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats);
         static vk::PresentModeKHR ChooseSwapchainPresentMode(const std::vector<vk::PresentModeKHR>& presentModes);
         static vk::Extent2D ChooseSwapchainExtent(const Types::uint& width, const Types::uint& height,
             const vk::SurfaceCapabilitiesKHR& capabilities);
-        static SwapChainSupportDetails QuerySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface);
+        static VulkanSwapchainSupportDetails QuerySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface);
 
-        friend class VulkanDeviceManager;
+        friend class VulkanPipeline;
 
-        SwapChainSupportDetails m_Details;
+        VulkanSwapchainSupportDetails m_Details;
+        VulkanCommandBuffer m_CommandBuffer;
+        VulkanSync m_Sync;
 
         vk::SwapchainKHR m_Swapchain;
-        std::vector<SwapChainFrame> m_Frames;
+        std::vector<VulkanSwapchainFrame> m_Frames;
         vk::Format m_Format;
         vk::Extent2D m_Extent;
     };

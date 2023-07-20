@@ -42,9 +42,9 @@ namespace GuelderEngine::Vulkan
     VulkanManager::VulkanManager(VulkanManager&& other) noexcept
     {
         m_Instance = other.m_Instance;
-        m_DeviceManager = other.m_DeviceManager;
+        m_DeviceManager = std::forward<VulkanDeviceManager>(other.m_DeviceManager);
 #ifdef GE_DEBUG_VULKAN
-        m_DebugManager = other.m_DebugManager;
+        m_DebugManager = std::forward<VulkanDebugManager>(other.m_DebugManager);
 #endif //GE_DEBUG_VULKAN
 
         other.Reset();
@@ -68,9 +68,9 @@ namespace GuelderEngine::Vulkan
     VulkanManager& VulkanManager::operator=(VulkanManager&& other) noexcept
     {
         m_Instance = other.m_Instance;
-        m_DeviceManager = other.m_DeviceManager;
+        m_DeviceManager = std::forward<VulkanDeviceManager>(other.m_DeviceManager);
 #ifdef GE_DEBUG_VULKAN
-        m_DebugManager = other.m_DebugManager;
+        m_DebugManager = std::forward<VulkanDebugManager>(other.m_DebugManager);
 #endif //GE_DEBUG_VULKAN
 
         other.Reset();
@@ -82,6 +82,11 @@ namespace GuelderEngine::Vulkan
     VulkanManager::~VulkanManager()
     {
         Cleanup();
+    }
+
+    void VulkanManager::Render() const
+    {
+        m_DeviceManager.Render();
     }
 
     vk::Instance VulkanManager::CreateVkInstance(const char* name)

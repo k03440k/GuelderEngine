@@ -7,17 +7,10 @@ import GuelderEngine.Core.Types;
 
 export namespace GuelderEngine::Vulkan
 {
-    class VulkanShaderManager : INHERIT_GClass(VulkanShaderManager)
+    class VulkanShaderManager// : INHERIT_GClass(VulkanShaderManager)
     {
     public:
-        VulkanShaderManager() = default;
-        //VulkanShaderManager(const std::string_view& );
-        ~VulkanShaderManager() = default;
-
-        VulkanShaderManager(const VulkanShaderManager& other);
-        VulkanShaderManager(VulkanShaderManager&& other) noexcept;
-        VulkanShaderManager& operator=(const VulkanShaderManager& other);
-        VulkanShaderManager& operator=(VulkanShaderManager&& other) noexcept;
+        DELETE_COPY_AND_MOVING(VulkanShaderManager);
 
         static vk::ShaderModule CreateModule(const std::string_view& shaderSource, const vk::Device& device);
     private:

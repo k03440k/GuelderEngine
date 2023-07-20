@@ -66,6 +66,18 @@ namespace GuelderEngine
 
         Init();
     }
+    void Window::ShowFrameRate()//TODO: show fps
+    {
+        if(m_Data.showFrameRate)
+        {
+            const auto fpsTitle = Debug::Logger::Format(m_Data.title, "| fps: ", m_Data.UpdateFrameRate());
+            glfwSetWindowTitle(m_GLFWWindow, fpsTitle.c_str());
+        }
+        else
+        {
+            glfwSetWindowTitle(m_GLFWWindow, m_Data.title.c_str());
+        }
+    }
     void Window::Init()
     {
         if (!is_GLFW_init)
@@ -183,6 +195,7 @@ namespace GuelderEngine
 
         glfwSwapBuffers(m_GLFWWindow);
         glfwPollEvents();
+        ShowFrameRate();
     }
     void Window::OnUpdate(const UpdateFunc& update)
     {
@@ -192,6 +205,7 @@ namespace GuelderEngine
 
         glfwSwapBuffers(m_GLFWWindow);
         glfwPollEvents();
+        ShowFrameRate();
     }
     bool Window::ShouldClose() const
     {
@@ -200,15 +214,9 @@ namespace GuelderEngine
 #pragma endregion
 #pragma region WindowData
     Window::WindowData::WindowData(const std::string& title, const Types::ushort& width,
-        const Types::ushort& height, const bool isVSync,
+        const Types::ushort& height, const bool& showFrameRate, const bool& isVSync,
         const EventCallbackFunc& callback) : title(title), width(width), height(height),
         callback(callback), isVSync(isVSync) {}
-    Window::WindowData::~WindowData()
-    {
-        title = "";
-        width = 0;
-        height = 0;
-    }
     Window::WindowData& Window::WindowData::operator=(const WindowData& other)
     {
         title = other.title;
@@ -218,6 +226,27 @@ namespace GuelderEngine
         isVSync = other.isVSync;
 
         return *this;
+    }
+    float Window::WindowData::UpdateFrameRate()
+    {
+        m_CurrentTime = glfwGetTime();
+        double delta = m_CurrentTime - m_LastTime;
+
+        if(delta >= 1)
+        {
+            const int framerate = std::max(1, int(m_NumFrames / delta));
+            m_LastTime = m_CurrentTime;
+            m_NumFrames = -1;
+            m_FrameRate = float(1000.0 / framerate);
+        }
+
+        ++m_NumFrames;
+
+        return m_FrameRate;
+    }
+    float Window::WindowData::GetFrameRate() const noexcept
+    {
+        return m_FrameRate;
     }
 #pragma endregion
 }

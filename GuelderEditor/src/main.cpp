@@ -29,7 +29,7 @@ int main(int argc, char** argv)
         //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("vert_code")));
         //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("frag_code")));
 
-        //app->Run([] {});
+        app->Run([] {});
     }
     catch (const std::exception& e)
     {

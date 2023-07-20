@@ -44,6 +44,7 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanSwapchain.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanShaderManager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanPipeline.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanSync.cpp
 )
 set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Core/Window.ixx
@@ -54,10 +55,11 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanDebugManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanDeviceManager.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/IVulkanBase.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/IVulkanObject.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanSwapchain.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanShaderManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanPipeline.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanSync.ixx
 )
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx

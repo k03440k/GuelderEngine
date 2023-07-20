@@ -43,6 +43,7 @@ namespace GuelderEngine
         while (!m_CloseWindow)
         {
             m_Window->OnUpdate();
+            m_VulkanManager->Render();
 
             if (!m_LayerStack.IsEmpty())
             {
@@ -56,6 +57,7 @@ namespace GuelderEngine
         while (!m_CloseWindow)
         {
             m_Window->OnUpdate(callOnUpdate);
+            m_VulkanManager->Render();
 
             if (!m_LayerStack.IsEmpty())
             {

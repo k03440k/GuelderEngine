@@ -1,17 +1,27 @@
 module;
 #include <vulkan/vulkan.hpp>
 #include "../../headers/Core/GObject/GClass.hpp"
+#include "GuelderEngine/Utils/Debug.hpp"
 module GuelderEngine.Vulkan;
 import :VulkanPipeline;
 
-import GuelderEngine.Core.Types;
 import :VulkanShaderManager;
+import :VulkanSwapchain;
 import GuelderEngine.Core;
+import GuelderEngine.Core.Types;
 
-export namespace GuelderEngine::Vulkan
+namespace GuelderEngine::Vulkan
 {
-    VulkanPipeline::VulkanPipeline(const vk::Device& device, const vk::Extent2D& extent, const vk::Format& swapchainImageFormat, const std::string_view& vertexPath, const std::string_view& fragmentPath)
+    /*VulkanPipeline::VulkanPipeline(const vk::Device& device, const vk::Extent2D& extent, const vk::Format& swapchainImageFormat, const std::string_view& vertexPath, const std::string_view& fragmentPath)
     {
+        
+    }*/
+    VulkanPipeline::VulkanPipeline(const VulkanSwapchainCreateInfo& swapchainInfo, const std::string_view& vertexPath, const std::string_view& fragmentPath)
+        : m_Swapchain(swapchainInfo)
+    {
+        m_Queues.graphicsQueue = GetGraphicsQueue(swapchainInfo.device, swapchainInfo.queueFamilyIndices);
+        m_Queues.presentQueue = GetPresentQueue(swapchainInfo.device, swapchainInfo.queueFamilyIndices);
+
         constexpr vk::PipelineVertexInputStateCreateInfo vertexInfo(vk::PipelineVertexInputStateCreateFlags(), 0, nullptr, 0);
         constexpr vk::PipelineInputAssemblyStateCreateInfo assemblyInfo(vk::PipelineInputAssemblyStateCreateFlags(), vk::PrimitiveTopology::eTriangleList);
 
@@ -19,20 +29,20 @@ export namespace GuelderEngine::Vulkan
         shaderStages.reserve(2);
 
         //vertex shader
-        const vk::ShaderModule vertex = VulkanShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(vertexPath), device);
+        const vk::ShaderModule vertex = VulkanShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(vertexPath), swapchainInfo.device);
         const vk::PipelineShaderStageCreateInfo vertexShaderInfo(vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertex, "main");
         shaderStages.push_back(vertexShaderInfo);
         //fragment shader
-        const vk::ShaderModule fragment = VulkanShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(fragmentPath), device);
+        const vk::ShaderModule fragment = VulkanShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(fragmentPath), swapchainInfo.device);
         const vk::PipelineShaderStageCreateInfo fragmentShaderInfo(vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragment, "main");
         shaderStages.push_back(fragmentShaderInfo);
 
         //viewport
-        const vk::Viewport viewport(0.0f, 0.0f, extent.width, extent.height, 0.0f, 1.0f);
-        const vk::Rect2D scissor({0, 0}, extent);
+        const vk::Viewport viewport(0.0f, 0.0f, m_Swapchain.m_Extent.width, m_Swapchain.m_Extent.height, 0.0f, 1.0f);
+        const vk::Rect2D scissor({ 0, 0 }, m_Swapchain.m_Extent);
 
         vk::PipelineViewportStateCreateInfo viewportInfo(
-            vk::PipelineViewportStateCreateFlags(), 
+            vk::PipelineViewportStateCreateFlags(),
             1,          //viewports count
             &viewport,  //viewports
             1,          //scissors count
@@ -68,14 +78,14 @@ export namespace GuelderEngine::Vulkan
             vk::LogicOp::eCopy,
             1,
             &colorBlendAttachment,
-            {0, 0, 0, 0}
+            { 0, 0, 0, 0 }
         );
 
-        m_Layout = CreateLayout(device);
-        m_RenderPass = CreateRenderPass(device, swapchainImageFormat);
+        m_Layout = CreateLayout(swapchainInfo.device);
+        m_RenderPass = CreateRenderPass(swapchainInfo.device, m_Swapchain.m_Format);
 
         const vk::GraphicsPipelineCreateInfo createInfo(
-            vk::PipelineCreateFlagBits(), 
+            vk::PipelineCreateFlagBits(),
             shaderStages.size(),
             shaderStages.data(),
             &vertexInfo,
@@ -93,22 +103,30 @@ export namespace GuelderEngine::Vulkan
             nullptr
         );
 
-        m_GraphicsPipeline = device.createGraphicsPipeline(nullptr, createInfo).value;
+        m_GraphicsPipeline = swapchainInfo.device.createGraphicsPipeline(nullptr, createInfo).value;
 
-        device.destroyShaderModule(vertex);
-        device.destroyShaderModule(fragment);
+        swapchainInfo.device.destroyShaderModule(vertex);
+        swapchainInfo.device.destroyShaderModule(fragment);
+        
+        m_Swapchain.MakeFrames(swapchainInfo.device, m_RenderPass);
     }
     VulkanPipeline::VulkanPipeline(const VulkanPipeline& other)
     {
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
+        m_Swapchain = other.m_Swapchain;
     }
     VulkanPipeline::VulkanPipeline(VulkanPipeline&& other) noexcept
     {
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
+        m_Swapchain = std::forward<VulkanSwapchain>(other.m_Swapchain);
 
         other.Reset();
     }
@@ -117,35 +135,110 @@ export namespace GuelderEngine::Vulkan
         if(this == &other)
             return *this;
 
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
+        m_Swapchain = other.m_Swapchain;
 
         return *this;
     }
     VulkanPipeline& VulkanPipeline::operator=(VulkanPipeline&& other) noexcept
     {
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
+        m_Swapchain = std::forward<VulkanSwapchain>(other.m_Swapchain);
 
         other.Reset();
 
         return *this;
     }
-
+    void VulkanPipeline::Reset() noexcept
+    {
+        m_Queues.graphicsQueue = nullptr;
+        m_Queues.presentQueue = nullptr;
+        m_GraphicsPipeline = nullptr;
+        m_Layout = nullptr;
+        m_RenderPass = nullptr;
+        m_Swapchain.Reset();
+    }
     void VulkanPipeline::Cleanup(const vk::Device& device) const noexcept
     {
+        m_Swapchain.Cleanup(device);
         device.destroyPipelineLayout(m_Layout);
         device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
     }
-
-    void VulkanPipeline::Reset() noexcept
+    void VulkanPipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex) const
     {
-        m_GraphicsPipeline = nullptr;
-        m_Layout = nullptr;
-        m_RenderPass = nullptr;
+        const vk::CommandBufferBeginInfo commandBufferBeginInfo{};
+
+        commandBuffer.begin(commandBufferBeginInfo);
+
+        const vk::ClearValue clearColor(/*std::array<float, 4>*/{ 1.0f, 0.5f, 0.25f, 1.0f });
+        const vk::RenderPassBeginInfo renderPassBeginInfo(
+            m_RenderPass,
+            m_Swapchain.m_Frames[imageIndex].framebuffer,
+            vk::Rect2D({ 0, 0 }, m_Swapchain.m_Extent),
+            1,
+            &clearColor
+        );
+
+        commandBuffer.beginRenderPass(&renderPassBeginInfo, vk::SubpassContents::eInline);
+        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_GraphicsPipeline);
+
+        commandBuffer.draw(3, 1, 0, 0);//hardcode
+
+        commandBuffer.endRenderPass();
+        commandBuffer.end();
+    }
+
+    void VulkanPipeline::Render(const vk::Device& device) const
+    {
+        GE_CORE_CLASS_ASSERT(device.waitForFences(1, &m_Swapchain.m_Sync.m_InFlightFence, VK_TRUE, UINT64_MAX) == vk::Result::eSuccess,
+            "cannot wait for fence");
+        GE_CORE_CLASS_ASSERT(device.resetFences(1, &m_Swapchain.m_Sync.m_InFlightFence) == vk::Result::eSuccess,
+            "cannot reset fence");
+
+        const Types::uint imageIndex =
+            device.acquireNextImageKHR(m_Swapchain.m_Swapchain, UINT64_MAX, m_Swapchain.m_Sync.m_ImageAvailable, nullptr).value;
+
+        const auto commandBuffer = m_Swapchain.m_Frames[imageIndex].commandBuffer;
+        commandBuffer.reset();
+
+        RecordDrawCommands(commandBuffer, imageIndex);
+
+        vk::Semaphore waitSemaphores[] = { m_Swapchain.m_Sync.m_ImageAvailable };
+        const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+        const vk::Semaphore signalSemaphores[] = { m_Swapchain.m_Sync.m_RenderFinished };
+
+        const vk::SubmitInfo submitInfo(
+            1,
+            waitSemaphores,
+            waitStages,
+            1,
+            &commandBuffer,
+            1,
+            signalSemaphores
+        );
+
+        m_Queues.graphicsQueue.submit(submitInfo, m_Swapchain.m_Sync.m_InFlightFence);
+
+        const vk::SwapchainKHR swapchains[] = {m_Swapchain.m_Swapchain};
+
+        const vk::PresentInfoKHR presentInfo(
+            1,
+            signalSemaphores,
+            1,
+            swapchains,
+            &imageIndex
+        );
+
+        GE_CORE_CLASS_ASSERT(m_Queues.presentQueue.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
     }
 
     vk::PipelineLayout VulkanPipeline::CreateLayout(const vk::Device& device)
@@ -190,5 +283,13 @@ export namespace GuelderEngine::Vulkan
         );
 
         return device.createRenderPass(info);
+    }
+    vk::Queue VulkanPipeline::GetGraphicsQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept
+    {
+        return device.getQueue(indices.graphicsFamily.value(), 0);
+    }
+    vk::Queue VulkanPipeline::GetPresentQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept
+    {
+        return device.getQueue(indices.presentFamily.value(), 0);
     }
 }

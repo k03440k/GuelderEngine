@@ -23,18 +23,19 @@ namespace GuelderEngine::Vulkan
         m_Surface = cStyle;
 
         m_PhysicalDevice = ChoosePhysicalDevice(instance);
-        m_QueueIndices = QueueFamilyIndices(m_PhysicalDevice, m_Surface);
+        m_QueueIndices = VulkanQueueFamilyIndices(m_PhysicalDevice, m_Surface);
         m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices);
 
-        m_Queues.graphicsQueue = GetGraphicsQueue(m_Device, m_QueueIndices);
-        m_Queues.presentQueue = GetPresentQueue(m_Device, m_QueueIndices);
+        //m_Queues.graphicsQueue = GetGraphicsQueue(m_Device, m_QueueIndices);
+        //m_Queues.presentQueue = GetPresentQueue(m_Device, m_QueueIndices);
 
         int width{}, height{};
         glfwGetWindowSize(glfwWindow, &width, &height);
 
-        m_Swapchain = VulkanSwapchain(m_Device, m_PhysicalDevice, m_Surface, width, height, m_QueueIndices);
+        //m_Swapchain = VulkanSwapchain(m_Device, m_PhysicalDevice, m_Surface, width, height, m_QueueIndices);
 
-        m_Pipeline = VulkanPipeline(m_Device, m_Swapchain.m_Extent, m_Swapchain.m_Format, vertPath, fragPath);
+        m_Pipeline = VulkanPipeline(VulkanSwapchainCreateInfo(m_Device, m_PhysicalDevice, m_Surface, width, height, m_QueueIndices),
+            /* m_Swapchain.m_Extent, m_Swapchain.m_Format,*/ vertPath, fragPath);
     }
     VulkanDeviceManager::VulkanDeviceManager(const VulkanDeviceManager& other)
     {
@@ -42,9 +43,9 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
-        m_Swapchain = other.m_Swapchain;
+        //m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        //m_Queues.presentQueue = other.m_Queues.presentQueue;
+        //m_Swapchain = other.m_Swapchain;
         m_Pipeline = other.m_Pipeline;
     }
     VulkanDeviceManager::VulkanDeviceManager(VulkanDeviceManager&& other) noexcept
@@ -53,10 +54,10 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
-        m_Swapchain = other.m_Swapchain;
-        m_Pipeline = other.m_Pipeline;
+        //m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        //m_Queues.presentQueue = other.m_Queues.presentQueue;
+        //m_Swapchain = other.m_Swapchain;
+        m_Pipeline = std::forward<VulkanPipeline>(other.m_Pipeline);
 
         other.Reset();
     }
@@ -69,9 +70,9 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
-        m_Swapchain = other.m_Swapchain;
+        //m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        //m_Queues.presentQueue = other.m_Queues.presentQueue;
+        //m_Swapchain = other.m_Swapchain;
         m_Pipeline = other.m_Pipeline;
 
         return *this;
@@ -82,10 +83,10 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
-        m_Swapchain = other.m_Swapchain;
-        m_Pipeline = other.m_Pipeline;
+        //m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        //m_Queues.presentQueue = other.m_Queues.presentQueue;
+        //m_Swapchain = other.m_Swapchain;
+        m_Pipeline = std::forward<VulkanPipeline>(other.m_Pipeline);
 
         other.Reset();
 
@@ -98,17 +99,22 @@ namespace GuelderEngine::Vulkan
         m_Device = nullptr;
         m_QueueIndices = {};
         m_Surface = nullptr;
-        m_Queues.presentQueue = nullptr;
-        m_Queues.graphicsQueue = nullptr;
-        m_Swapchain.Reset();
+        //m_Queues.presentQueue = nullptr;
+        //m_Queues.graphicsQueue = nullptr;
+        //m_Swapchain.Reset();
         m_Pipeline.Reset();
     }
     void VulkanDeviceManager::Cleanup(const vk::Instance& instance) const noexcept
     {
+        m_Device.waitIdle();
         m_Pipeline.Cleanup(m_Device);
-        m_Swapchain.Cleanup(m_Device);
+        //m_Swapchain.Cleanup(m_Device);
         m_Device.destroy();
         instance.destroySurfaceKHR(m_Surface);
+    }
+    void VulkanDeviceManager::Render() const
+    {
+        m_Pipeline.Render(m_Device);
     }
     bool VulkanDeviceManager::CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& requestedExtensions)
     {
@@ -184,7 +190,7 @@ namespace GuelderEngine::Vulkan
 
         return physicalDevices[idxToDeviceOftheBiggestMemory];//TODO: Queue Families at the video time of 1:04:11
     }
-    vk::Device VulkanDeviceManager::CreateDevice(const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& indices)
+    vk::Device VulkanDeviceManager::CreateDevice(const vk::PhysicalDevice& physicalDevice, const VulkanQueueFamilyIndices& indices)
     {
         constexpr float queuePriority = 1.0f;
 
@@ -225,12 +231,12 @@ namespace GuelderEngine::Vulkan
 
         return physicalDevice.createDevice(deviceInfo);
     }
-    vk::Queue VulkanDeviceManager::GetGraphicsQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
+    /*vk::Queue VulkanDeviceManager::GetGraphicsQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept
     {
         return device.getQueue(indices.graphicsFamily.value(), 0);
     }
-    vk::Queue VulkanDeviceManager::GetPresentQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
+    vk::Queue VulkanDeviceManager::GetPresentQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept
     {
         return device.getQueue(indices.presentFamily.value(), 0);
-    }
+    }*/
 }

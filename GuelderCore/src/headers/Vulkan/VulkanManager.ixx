@@ -22,7 +22,7 @@ export namespace GuelderEngine::Vulkan
     /*
     * Manager which responsible for all about initialization of Vulkan API
     */
-    class VulkanManager : public IVulkanBase, INHERIT_GClass(VulkanManager)
+    class VulkanManager : public IVulkanObject, INHERIT_GClass(VulkanManager)
     {
     public:
         VulkanManager() = default;
@@ -30,20 +30,17 @@ export namespace GuelderEngine::Vulkan
             const std::string_view& name = "Guelder Engine Editor");
         virtual ~VulkanManager();
 
-        VulkanManager(const VulkanManager& other);//really i don't fucking know is it good idea to make such things
-        VulkanManager(VulkanManager&& other) noexcept;
-        VulkanManager& operator=(VulkanManager&& other) noexcept;
-        VulkanManager& operator=(const VulkanManager& other);
+        DECLARE_COPY_AND_MOVING(VulkanManager);
 
         virtual void Reset() noexcept override;
-        virtual void Cleanup() const noexcept;
 
         static bool AreExtensionsSupported(const std::vector<const char*>& extensions);
-        //static bool IsValidationLayersSupported(const std::vector<const char*>& layers);
         //void LoadVertexShader(const std::string_view& source);
         //void LoadFragmentShader(const std::string_view& source);
+        void Render() const;
     private:
         static vk::Instance CreateVkInstance(const char* name);
+        virtual void Cleanup() const noexcept;
 
         vk::Instance m_Instance;
 
