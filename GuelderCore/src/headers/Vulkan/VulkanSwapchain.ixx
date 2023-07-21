@@ -4,68 +4,11 @@ module;
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:VulkanSwapchain;
 
-import :IVulkanBase;
-import :VulkanSync;
+import :IVulkanObject;
+import :VulkanQueueFamilyIndices;
+import :VulkanCommandBuffer;
+import :VulkanSwapchainFrame;
 import GuelderEngine.Core.Types;
-
-import <optional>;
-
-export namespace GuelderEngine::Vulkan
-{
-    struct VulkanQueueFamilyIndices : INHERIT_GClass(VulkanQueueFamilyIndices)
-    {
-        DECLARE_DEFAULT_CTOR_AND_DTOR(VulkanQueueFamilyIndices);
-        VulkanQueueFamilyIndices(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
-
-        VulkanQueueFamilyIndices(const VulkanQueueFamilyIndices& other);
-        VulkanQueueFamilyIndices& operator=(const VulkanQueueFamilyIndices& other);
-
-        //location of graphics Queue Family
-        std::optional<Types::uint> graphicsFamily;
-        std::optional<Types::uint> presentFamily;
-
-        bool IsComplete() const { return graphicsFamily.has_value() && presentFamily.has_value(); }
-    };
-    struct VulkanSwapchainFrame : public IVulkanObject
-    {
-        DECLARE_DCAD_AND_CAM(VulkanSwapchainFrame);
-
-        virtual void Reset() noexcept override;
-
-        vk::Image image;
-        vk::ImageView imageView;
-        vk::Framebuffer framebuffer;
-        vk::CommandBuffer commandBuffer;
-    };
-    class VulkanFrameBuffer : INHERIT_GClass(VulkanFrameBuffer), public IVulkanObject
-    {
-    public:
-        DELETE_COPY_AND_MOVING(VulkanFrameBuffer);
-
-        static void Make(
-            const vk::Device& device,
-            const vk::RenderPass& renderPass,
-            const vk::Extent2D& swapchainExtent,
-            std::vector<VulkanSwapchainFrame>& frames
-        );
-    };
-    class VulkanCommandBuffer : INHERIT_GClass(VulkanCommandBuffer), public IVulkanObject
-    {
-    public:
-        DECLARE_DCAD_AND_CAM(VulkanCommandBuffer);
-
-        VulkanCommandBuffer(const vk::Device& device, const VulkanQueueFamilyIndices& queueFamilyIndices, const vk::SurfaceKHR& surface, std::vector<VulkanSwapchainFrame>& frames);
-
-        virtual void Reset() noexcept override;
-        void Cleanup(const vk::Device& device) const noexcept;
-    private:
-        static vk::CommandPool MakePool(const vk::Device& device, const VulkanQueueFamilyIndices& queueFamilyIndices, const vk::SurfaceKHR& surface);
-        static vk::CommandBuffer MakeBuffer(const vk::Device& device, const vk::CommandPool& pool, std::vector<VulkanSwapchainFrame>& frames);
-
-        vk::CommandPool m_CommandPool;
-        vk::CommandBuffer m_CommandBuffer;
-    };
-}
 
 export namespace GuelderEngine::Vulkan
 {
@@ -110,7 +53,9 @@ export namespace GuelderEngine::Vulkan
 
         VulkanSwapchainSupportDetails m_Details;
         VulkanCommandBuffer m_CommandBuffer;
-        VulkanSync m_Sync;
+
+        Types::uint m_MaxFramesInFlight;
+        Types::uint m_CurrentFrameNumber;
 
         vk::SwapchainKHR m_Swapchain;
         std::vector<VulkanSwapchainFrame> m_Frames;

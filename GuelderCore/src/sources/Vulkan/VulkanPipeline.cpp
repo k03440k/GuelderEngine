@@ -2,20 +2,21 @@ module;
 #include <vulkan/vulkan.hpp>
 #include "../../headers/Core/GObject/GClass.hpp"
 #include "GuelderEngine/Utils/Debug.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 module GuelderEngine.Vulkan;
 import :VulkanPipeline;
 
 import :VulkanShaderManager;
 import :VulkanSwapchain;
+import :VulkanModel;
+import :VulkanManager;
 import GuelderEngine.Core;
 import GuelderEngine.Core.Types;
 
+//ctors
 namespace GuelderEngine::Vulkan
 {
-    /*VulkanPipeline::VulkanPipeline(const vk::Device& device, const vk::Extent2D& extent, const vk::Format& swapchainImageFormat, const std::string_view& vertexPath, const std::string_view& fragmentPath)
-    {
-        
-    }*/
     VulkanPipeline::VulkanPipeline(const VulkanSwapchainCreateInfo& swapchainInfo, const std::string_view& vertexPath, const std::string_view& fragmentPath)
         : m_Swapchain(swapchainInfo)
     {
@@ -107,7 +108,7 @@ namespace GuelderEngine::Vulkan
 
         swapchainInfo.device.destroyShaderModule(vertex);
         swapchainInfo.device.destroyShaderModule(fragment);
-        
+
         m_Swapchain.MakeFrames(swapchainInfo.device, m_RenderPass);
     }
     VulkanPipeline::VulkanPipeline(const VulkanPipeline& other)
@@ -157,6 +158,13 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
+}
+namespace GuelderEngine::Vulkan
+{
+    /*VulkanPipeline::VulkanPipeline(const vk::Device& device, const vk::Extent2D& extent, const vk::Format& swapchainImageFormat, const std::string_view& vertexPath, const std::string_view& fragmentPath)
+    {
+        
+    }*/
     void VulkanPipeline::Reset() noexcept
     {
         m_Queues.graphicsQueue = nullptr;
@@ -173,7 +181,7 @@ namespace GuelderEngine::Vulkan
         device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
     }
-    void VulkanPipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex) const
+    void VulkanPipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const VulkanScene& scene) const
     {
         const vk::CommandBufferBeginInfo commandBufferBeginInfo{};
 
@@ -191,30 +199,36 @@ namespace GuelderEngine::Vulkan
         commandBuffer.beginRenderPass(&renderPassBeginInfo, vk::SubpassContents::eInline);
         commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_GraphicsPipeline);
 
-        commandBuffer.draw(3, 1, 0, 0);//hardcode
+        for(auto&& position : scene.GetTrianglesPositions())
+        {
+            const auto model = glm::translate(glm::mat4(1.0f), position);
+            const auto vulkanModel = VulkanModel(model);
+            commandBuffer.pushConstants(m_Layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(vulkanModel), &vulkanModel);
+
+            commandBuffer.draw(3, 1, 0, 0);//hardcode
+        }
 
         commandBuffer.endRenderPass();
         commandBuffer.end();
     }
-
-    void VulkanPipeline::Render(const vk::Device& device) const
+    void VulkanPipeline::Render(const vk::Device& device, const VulkanScene& scene)
     {
-        GE_CORE_CLASS_ASSERT(device.waitForFences(1, &m_Swapchain.m_Sync.m_InFlightFence, VK_TRUE, UINT64_MAX) == vk::Result::eSuccess,
-            "cannot wait for fence");
-        GE_CORE_CLASS_ASSERT(device.resetFences(1, &m_Swapchain.m_Sync.m_InFlightFence) == vk::Result::eSuccess,
-            "cannot reset fence");
+        GE_CORE_CLASS_ASSERT(device.waitForFences(1, &m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_InFlightFence, VK_TRUE, UINT64_MAX)
+            == vk::Result::eSuccess, "cannot wait for fence");
+        GE_CORE_CLASS_ASSERT(device.resetFences(1, &m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_InFlightFence)
+            == vk::Result::eSuccess, "cannot reset fence");
 
         const Types::uint imageIndex =
-            device.acquireNextImageKHR(m_Swapchain.m_Swapchain, UINT64_MAX, m_Swapchain.m_Sync.m_ImageAvailable, nullptr).value;
+            device.acquireNextImageKHR(m_Swapchain.m_Swapchain, UINT64_MAX, m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_ImageAvailable, nullptr).value;
 
-        const auto commandBuffer = m_Swapchain.m_Frames[imageIndex].commandBuffer;
+        const auto commandBuffer = m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].commandBuffer;
         commandBuffer.reset();
 
-        RecordDrawCommands(commandBuffer, imageIndex);
+        RecordDrawCommands(commandBuffer, imageIndex, scene);
 
-        vk::Semaphore waitSemaphores[] = { m_Swapchain.m_Sync.m_ImageAvailable };
+        const vk::Semaphore waitSemaphores[] = { m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_ImageAvailable };
         const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-        const vk::Semaphore signalSemaphores[] = { m_Swapchain.m_Sync.m_RenderFinished };
+        const vk::Semaphore signalSemaphores[] = { m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_RenderFinished };
 
         const vk::SubmitInfo submitInfo(
             1,
@@ -226,7 +240,7 @@ namespace GuelderEngine::Vulkan
             signalSemaphores
         );
 
-        m_Queues.graphicsQueue.submit(submitInfo, m_Swapchain.m_Sync.m_InFlightFence);
+        m_Queues.graphicsQueue.submit(submitInfo, m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_InFlightFence);
 
         const vk::SwapchainKHR swapchains[] = {m_Swapchain.m_Swapchain};
 
@@ -239,15 +253,19 @@ namespace GuelderEngine::Vulkan
         );
 
         GE_CORE_CLASS_ASSERT(m_Queues.presentQueue.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
+
+        m_Swapchain.m_CurrentFrameNumber = (m_Swapchain.m_CurrentFrameNumber + 1) % m_Swapchain.m_MaxFramesInFlight;
     }
 
     vk::PipelineLayout VulkanPipeline::CreateLayout(const vk::Device& device)
     {
+        constexpr vk::PushConstantRange constantInfo(vk::ShaderStageFlagBits::eVertex, 0, sizeof(VulkanModel));
         constexpr vk::PipelineLayoutCreateInfo layoutInfo(
         vk::PipelineLayoutCreateFlags(),
         0,
         nullptr,
-        0
+        1,//add in ctor this value?
+        &constantInfo
         );
         return device.createPipelineLayout(layoutInfo);
     }

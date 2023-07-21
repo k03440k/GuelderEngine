@@ -15,7 +15,6 @@
 #include <GuelderEngine/GuelderEngine.hpp>
 
 import <memory>;
-import <string_view>;
 
 DECLARE_LOG_CATEGORY_EXTERN(Editor, All);
 DEFINE_LOG_CATEGORY(Editor);
@@ -29,14 +28,17 @@ int main(int argc, char** argv)
         //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("vert_code")));
         //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("frag_code")));
 
-        app->Run([] {});
+        app->Run([&]
+        {
+
+        });
     }
     catch (const std::exception& e)
     {
         LogError(e.what());
     }
 
-    GE_LOG(Editor, Warning, "Guelder Engine Editor closed");
+    GE_LOG(Editor, Warning, "Guelder Engine Editor has just closed");
     
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 

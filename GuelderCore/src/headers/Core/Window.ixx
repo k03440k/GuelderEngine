@@ -36,7 +36,7 @@ export namespace GuelderEngine
 
             float UpdateFrameRate();
 
-            float GetFrameRate() const noexcept;
+            int GetFrameRate() const noexcept;
 
         private:
             double m_LastTime, m_CurrentTime;
@@ -70,6 +70,7 @@ export namespace GuelderEngine
         void SetWindow(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480, const std::string& windowTitle = std::string("window"));
         //void SetWindow(GLFWwindow* other, const std::string* otherTitle = nullptr);
         void ShowFrameRate();
+        int GetFrameRate() const noexcept { return m_Data.GetFrameRate(); }
 
         UpdateFunc onUpdate;
 

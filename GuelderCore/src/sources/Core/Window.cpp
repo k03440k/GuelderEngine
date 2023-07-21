@@ -63,7 +63,7 @@ namespace GuelderEngine
 
         return m_FrameRate;
     }
-    float Window::WindowData::GetFrameRate() const noexcept
+    int Window::WindowData::GetFrameRate() const noexcept
     {
         return m_FrameRate;
     }
@@ -208,8 +208,7 @@ namespace GuelderEngine
         {
             glfwSetWindowTitle(m_GLFWWindow, m_Data.title.c_str());
         }
-    }
-    void Window::Shutdown()
+    }void Window::Shutdown()
     {
         m_Data.~WindowData();
         glfwDestroyWindow(m_GLFWWindow);

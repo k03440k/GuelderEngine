@@ -4,6 +4,7 @@ export module GuelderEngine.Vulkan;
 
 //export import :IVulkanBase;
 export import :VulkanManager;
+//export import :VulkanQueueFamilyIndices;
 //export import :VulkanDebugManager;
 //export import :VulkanDeviceManager;
 //export import :VulkanShaderManager;

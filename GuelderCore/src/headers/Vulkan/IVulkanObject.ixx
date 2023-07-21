@@ -1,6 +1,6 @@
 module;
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
-export module GuelderEngine.Vulkan:IVulkanBase;
+export module GuelderEngine.Vulkan:IVulkanObject;
 
 import GuelderEngine.Debug;
 

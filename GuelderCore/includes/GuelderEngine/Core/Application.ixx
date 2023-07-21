@@ -66,6 +66,7 @@ export namespace GuelderEngine
 
         void SetOnUpdateFunc(const std::function<void()>& onUpdate) noexcept;
         const std::function<void()>& GetOnUpdateFunc();
+        int GetFrameRate() const noexcept { return m_Window->GetFrameRate(); }
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;

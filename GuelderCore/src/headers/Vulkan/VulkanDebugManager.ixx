@@ -4,7 +4,7 @@ module;
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:VulkanDebugManager;
 
-import :IVulkanBase;
+import :IVulkanObject;
 
 import <vector>;
 //TODO: VulkanDebugManager::CreateDebugMessenger

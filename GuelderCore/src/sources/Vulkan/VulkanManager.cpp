@@ -2,6 +2,7 @@ module;
 #include "../../../includes/GuelderEngine/Utils/Debug.hpp"
 #include <vulkan/vulkan.hpp>
 #include <glfw/glfw3.h>
+#include <glm/glm.hpp>
 module GuelderEngine.Vulkan;
 import :VulkanManager;
 
@@ -21,6 +22,54 @@ using namespace GuelderEngine::Types;
 
 namespace GuelderEngine::Vulkan
 {
+    VulkanScene::VulkanScene()
+    {
+        Types::uint reserve{};
+
+        for(float x = -1.0f; x < 1.0f; x += 0.2f)
+            for(float y = -1.0f; y < 1.0f; y += 0.2f)
+                reserve++;
+
+        m_TrianglePositions.reserve(reserve);
+
+        for (float x =  -1.0f; x < 1.0f; x += 0.2f)
+            for (float y = -1.0f; y < 1.0f; y += 0.2f)
+                m_TrianglePositions.push_back(glm::vec3(x, y, 0.0f));
+    }
+    VulkanScene::VulkanScene(const VulkanScene& other)
+    {
+        m_TrianglePositions = other.m_TrianglePositions;
+    }
+    VulkanScene::VulkanScene(VulkanScene&& other) noexcept
+    {
+        m_TrianglePositions = other.m_TrianglePositions;
+
+        other.Reset();
+    }
+    VulkanScene& VulkanScene::operator=(const VulkanScene& other)
+    {
+        if(this == &other)
+            return *this;
+
+        m_TrianglePositions = other.m_TrianglePositions;
+
+        return *this;
+    }
+    VulkanScene& VulkanScene::operator=(VulkanScene&& other) noexcept
+    {
+        m_TrianglePositions = other.m_TrianglePositions;
+
+        other.Reset();
+
+        return *this;
+    }
+    void VulkanScene::Reset() noexcept
+    {
+        m_TrianglePositions.clear();
+    }
+}
+namespace GuelderEngine::Vulkan
+{
     VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath,
         const std::string_view& name)
     {
@@ -35,6 +84,7 @@ namespace GuelderEngine::Vulkan
     {
         m_Instance = other.m_Instance;
         m_DeviceManager = other.m_DeviceManager;
+        m_Scene = other.m_Scene;
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = other.m_DebugManager;
 #endif //GE_DEBUG_VULKAN
@@ -43,6 +93,7 @@ namespace GuelderEngine::Vulkan
     {
         m_Instance = other.m_Instance;
         m_DeviceManager = std::forward<VulkanDeviceManager>(other.m_DeviceManager);
+        m_Scene = std::forward<VulkanScene>(other.m_Scene);
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = std::forward<VulkanDebugManager>(other.m_DebugManager);
 #endif //GE_DEBUG_VULKAN
@@ -59,6 +110,7 @@ namespace GuelderEngine::Vulkan
 
         m_Instance = other.m_Instance;
         m_DeviceManager = other.m_DeviceManager;
+        m_Scene = other.m_Scene;
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = other.m_DebugManager;
 #endif //GE_DEBUG_VULKAN
@@ -69,6 +121,7 @@ namespace GuelderEngine::Vulkan
     {
         m_Instance = other.m_Instance;
         m_DeviceManager = std::forward<VulkanDeviceManager>(other.m_DeviceManager);
+        m_Scene = std::forward<VulkanScene>(other.m_Scene);
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = std::forward<VulkanDebugManager>(other.m_DebugManager);
 #endif //GE_DEBUG_VULKAN
@@ -84,9 +137,9 @@ namespace GuelderEngine::Vulkan
         Cleanup();
     }
 
-    void VulkanManager::Render() const
+    void VulkanManager::Render()
     {
-        m_DeviceManager.Render();
+        m_DeviceManager.Render(m_Scene);
     }
 
     vk::Instance VulkanManager::CreateVkInstance(const char* name)

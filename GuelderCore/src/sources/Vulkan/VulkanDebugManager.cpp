@@ -4,7 +4,7 @@ module;
 module GuelderEngine.Vulkan;
 import :VulkanDebugManager;
 
-import :IVulkanBase;
+import :IVulkanObject;
 import GuelderEngine.Debug;
 
 import <vector>;

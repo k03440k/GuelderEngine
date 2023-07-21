@@ -3,7 +3,7 @@ module;
 #include "../../headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan:VulkanSync;
 
-import :IVulkanBase;
+import :IVulkanObject;
 import GuelderEngine.Core.Types;
 
 export namespace GuelderEngine::Vulkan
@@ -17,12 +17,12 @@ export namespace GuelderEngine::Vulkan
 
         virtual void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
-    private:
-        friend class VulkanSwapchain;
-        friend class VulkanPipeline;
 
         static vk::Semaphore MakeSemaphore(const vk::Device& device);
         static vk::Fence MakeFence(const vk::Device& device);
+    private:
+        friend class VulkanSwapchain;
+        friend class VulkanPipeline;
 
         vk::Fence m_InFlightFence;
         vk::Semaphore m_ImageAvailable;

@@ -5,7 +5,7 @@ module;
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:VulkanDeviceManager;
 
-import :IVulkanBase;
+import :IVulkanObject;
 import :VulkanDebugManager;
 import :VulkanSwapchain;
 import :VulkanPipeline;
@@ -28,7 +28,7 @@ export namespace GuelderEngine::Vulkan
         void Reset() noexcept override;
         void Cleanup(const vk::Instance& instance) const noexcept;
 
-        void Render() const;
+        void Render(const VulkanScene& scene);
     private:
         static bool CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice,
             const std::vector<const char*>& requestedExtensions);

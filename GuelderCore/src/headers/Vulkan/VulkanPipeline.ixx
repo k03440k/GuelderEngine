@@ -3,7 +3,7 @@ module;
 #include "../../headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan:VulkanPipeline;
 
-import :IVulkanBase;
+import :IVulkanObject;
 import :VulkanSwapchain;
 import GuelderEngine.Core.Types;
 
@@ -11,6 +11,8 @@ import <vector>;
 
 export namespace GuelderEngine::Vulkan
 {
+    struct VulkanQueueFamilyIndices;
+
     class VulkanPipeline : INHERIT_GClass(VulkanPipeline), public IVulkanObject
     {
     public:
@@ -21,19 +23,11 @@ export namespace GuelderEngine::Vulkan
         */
         VulkanPipeline(const VulkanSwapchainCreateInfo& swapchainInfo, const std::string_view& vertexPath, const std::string_view& fragmentPath);
 
-        //VulkanPipeline(
-        //    const vk::Device& device,
-        //    /*const vk::Extent2D& extent,
-        //    const vk::Format& swapchainImageFormat,*/
-        //    const std::string_view& vertexPath,
-        //    const std::string_view& fragmentPath
-        //);
-
         virtual void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
 
-        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex) const;
-        void Render(const vk::Device& device) const;
+        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const class VulkanScene& scene) const;
+        void Render(const vk::Device& device, const class VulkanScene& scene);
     private:
         static vk::PipelineLayout CreateLayout(const vk::Device& device);
         static vk::RenderPass CreateRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat);

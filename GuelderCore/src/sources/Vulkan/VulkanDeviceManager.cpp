@@ -112,9 +112,9 @@ namespace GuelderEngine::Vulkan
         m_Device.destroy();
         instance.destroySurfaceKHR(m_Surface);
     }
-    void VulkanDeviceManager::Render() const
+    void VulkanDeviceManager::Render(const VulkanScene& scene)
     {
-        m_Pipeline.Render(m_Device);
+        m_Pipeline.Render(m_Device ,scene);
     }
     bool VulkanDeviceManager::CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& requestedExtensions)
     {

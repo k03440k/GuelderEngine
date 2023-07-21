@@ -3,9 +3,10 @@ module;
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 #include <glfw/glfw3.h>
+#include <glm/glm.hpp>
 export module GuelderEngine.Vulkan:VulkanManager;
 
-import :IVulkanBase;
+import :IVulkanObject;
 import :VulkanDebugManager;
 import :VulkanDeviceManager;
 import GuelderEngine.Core.Types;
@@ -17,6 +18,23 @@ import <optional>;
 
 using namespace GuelderEngine::Types;
 
+export namespace GuelderEngine::Vulkan
+{
+    class VulkanScene : public IVulkanObject
+    {
+    public:
+        DECLARE_COPY_AND_MOVING(VulkanScene);
+
+        VulkanScene();
+        ~VulkanScene() = default;
+
+        void Reset() noexcept override;
+
+        const std::vector<glm::vec3>& GetTrianglesPositions() const noexcept { return m_TrianglePositions; }
+    private:
+        std::vector<glm::vec3> m_TrianglePositions;
+    };
+}
 export namespace GuelderEngine::Vulkan
 {
     /*
@@ -37,7 +55,7 @@ export namespace GuelderEngine::Vulkan
         static bool AreExtensionsSupported(const std::vector<const char*>& extensions);
         //void LoadVertexShader(const std::string_view& source);
         //void LoadFragmentShader(const std::string_view& source);
-        void Render() const;
+        void Render();
     private:
         static vk::Instance CreateVkInstance(const char* name);
         virtual void Cleanup() const noexcept;
@@ -45,6 +63,7 @@ export namespace GuelderEngine::Vulkan
         vk::Instance m_Instance;
 
         VulkanDeviceManager m_DeviceManager;
+        VulkanScene m_Scene;
 #ifdef GE_DEBUG_VULKAN
         VulkanDebugManager m_DebugManager;
 #endif //GE_DEBUG_VULKAN
