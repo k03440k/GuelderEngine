@@ -70,7 +70,7 @@ export namespace GuelderEngine
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;
     private:
-        std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;//TODO: remove std::unique_ptr and define for all Vulkan classes moving ctors and operators=
+        std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;
 
         bool OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept;
 

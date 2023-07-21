@@ -31,9 +31,6 @@ namespace GuelderEngine
             resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName),
             resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName),
             info.title);
-        //m_VulkanManager = Vulkan::VulkanManager(m_Window->m_GLFWWindow, windowTitle);
-
-        //this->m_CallOnUpdate = callOnUpdate;
     }
     GEApplication::~GEApplication()
     {

@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 {
     try
     {
-        auto app = std::make_unique<GEApplication>(argv[0]);
+        const auto app = std::make_unique<GEApplication>(argv[0]);
         
         //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("vert_code")));
         //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("frag_code")));
