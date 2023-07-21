@@ -11,6 +11,63 @@ import GuelderEngine.Debug;
 
 import <stdexcept>;
 
+//ctors
+namespace GuelderEngine
+{
+    Window::Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
+        const std::string& windowTitle, const UpdateFunc& update, const bool& enableVSync) :
+        m_Data(windowTitle, windowWidth, windowHeight, enableVSync), onUpdate(update)
+    {
+        Init();
+    }
+    Window::Window(const WindowData& data)
+    {
+        this->m_Data = data;
+        Init();
+    }
+    Window::~Window()
+    {
+        Shutdown();
+    }
+}
+namespace GuelderEngine
+{
+    Window::WindowData::WindowData(const std::string& title, const Types::ushort& width,
+        const Types::ushort& height, const bool& showFrameRate, const bool& isVSync,
+        const EventCallbackFunc& callback) : title(title), width(width), height(height),
+        callback(callback), showFrameRate(showFrameRate), isVSync(isVSync) {}
+    Window::WindowData& Window::WindowData::operator=(const WindowData& other)
+    {
+        title = other.title;
+        width = other.width;
+        height = other.height;
+        callback = other.callback;
+        isVSync = other.isVSync;
+
+        return *this;
+    }
+    float Window::WindowData::UpdateFrameRate()
+    {
+        m_CurrentTime = glfwGetTime();
+        const double delta = m_CurrentTime - m_LastTime;
+
+        if(delta >= 1)
+        {
+            m_FrameRate = std::max(1, static_cast<int>(m_NumFrames / delta));
+            m_LastTime = m_CurrentTime;
+            m_NumFrames = -1;
+            m_FrameTime = static_cast<float>(1000.0 / m_FrameRate);
+        }
+
+        ++m_NumFrames;
+
+        return m_FrameRate;
+    }
+    float Window::WindowData::GetFrameRate() const noexcept
+    {
+        return m_FrameRate;
+    }
+}
 namespace GuelderEngine
 {
     inline bool is_GLFW_init = false;
@@ -22,67 +79,12 @@ namespace GuelderEngine
             GE_THROW("GuelderEngine::GLFWErrorCallback: error code: ", errorCode);
         }
     }
-    //TEST
-    void Window::TEST_DrawImGui()
-    {
-        
-    }
-    void ImGui_Init()
-    {
-        /*IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGui_ImplOpenGL3_Init();*/
-    }
-    Window::Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
-        const std::string& windowTitle, const UpdateFunc& update, const bool& enableVSync) :
-        m_Data(windowTitle, windowWidth, windowHeight, enableVSync), onUpdate(update)
-    {
-        Init();
 
-        ImGui_Init();
-    }
-    Window::Window(const WindowData& data)
-    {
-        this->m_Data = data;
-        Init();
-
-        ImGui_Init();
-    }
-    Window::~Window()
-    {
-        Shutdown();
-    }
-    void Window::SetVSync(const bool& isEnable)
-    {
-        if (isEnable) glfwSwapInterval(1);
-        else glfwSwapInterval(0);
-        m_Data.isVSync = isEnable;
-    }
-    void Window::SetWindow(const Types::ushort& windowWidth, const Types::ushort& windowHeight, const std::string& windowTitle)
-    {
-        m_Data = Window::WindowData(windowTitle, windowWidth, windowHeight);
-
-        if (m_GLFWWindow) glfwDestroyWindow(m_GLFWWindow);
-
-        Init();
-    }
-    void Window::ShowFrameRate()//TODO: show fps
-    {
-        if(m_Data.showFrameRate)
-        {
-            const auto fpsTitle = Debug::Logger::Format(m_Data.title, "| fps: ", m_Data.UpdateFrameRate());
-            glfwSetWindowTitle(m_GLFWWindow, fpsTitle.c_str());
-        }
-        else
-        {
-            glfwSetWindowTitle(m_GLFWWindow, m_Data.title.c_str());
-        }
-    }
     void Window::Init()
     {
-        if (!is_GLFW_init)
+        if(!is_GLFW_init)
         {
-            if (!glfwInit())
+            if(!glfwInit())
             {
                 glfwSetErrorCallback(Events::GLFWErrorCallback);
                 glfwTerminate();
@@ -97,7 +99,7 @@ namespace GuelderEngine
 
         m_GLFWWindow = glfwCreateWindow(m_Data.width, m_Data.height, m_Data.title.c_str(), nullptr, nullptr);
 
-        if (!m_GLFWWindow)
+        if(!m_GLFWWindow)
         {
             glfwTerminate();
             GE_CORE_CLASS_THROW("window is nullptr");
@@ -126,7 +128,7 @@ namespace GuelderEngine
         glfwSetKeyCallback(m_GLFWWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
             {
                 WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-                switch (action)
+                switch(action)
                 {
                 case GLFW_PRESS:
                 {
@@ -151,7 +153,7 @@ namespace GuelderEngine
         glfwSetMouseButtonCallback(m_GLFWWindow, [](GLFWwindow* window, int button, int action, int mods)
             {
                 WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-                switch (action)
+                switch(action)
                 {
                 case GLFW_PRESS:
                 {
@@ -181,6 +183,32 @@ namespace GuelderEngine
                 data.callback(event);
             });
     }
+    void Window::SetVSync(const bool& isEnable)
+    {
+        if (isEnable) glfwSwapInterval(1);
+        else glfwSwapInterval(0);
+        m_Data.isVSync = isEnable;
+    }
+    void Window::SetWindow(const Types::ushort& windowWidth, const Types::ushort& windowHeight, const std::string& windowTitle)
+    {
+        m_Data = Window::WindowData(windowTitle, windowWidth, windowHeight);
+
+        if (m_GLFWWindow) glfwDestroyWindow(m_GLFWWindow);
+
+        Init();
+    }
+    void Window::ShowFrameRate()//TODO: show fps
+    {
+        if(m_Data.showFrameRate)
+        {
+            const auto fpsTitle = Debug::Logger::Format(m_Data.title, " | fps: ", m_Data.UpdateFrameRate());
+            glfwSetWindowTitle(m_GLFWWindow, fpsTitle.c_str());
+        }
+        else
+        {
+            glfwSetWindowTitle(m_GLFWWindow, m_Data.title.c_str());
+        }
+    }
     void Window::Shutdown()
     {
         m_Data.~WindowData();
@@ -190,63 +218,24 @@ namespace GuelderEngine
     void Window::OnUpdate()
     {
         onUpdate();
-
-        TEST_DrawImGui();
+        
+        ShowFrameRate();
 
         glfwSwapBuffers(m_GLFWWindow);
         glfwPollEvents();
-        ShowFrameRate();
     }
     void Window::OnUpdate(const UpdateFunc& update)
     {
         update();
 
-        TEST_DrawImGui();
+        ShowFrameRate();
 
         glfwSwapBuffers(m_GLFWWindow);
         glfwPollEvents();
-        ShowFrameRate();
     }
     bool Window::ShouldClose() const
     {
         return glfwWindowShouldClose(m_GLFWWindow);
-    }
-#pragma endregion
-#pragma region WindowData
-    Window::WindowData::WindowData(const std::string& title, const Types::ushort& width,
-        const Types::ushort& height, const bool& showFrameRate, const bool& isVSync,
-        const EventCallbackFunc& callback) : title(title), width(width), height(height),
-        callback(callback), isVSync(isVSync) {}
-    Window::WindowData& Window::WindowData::operator=(const WindowData& other)
-    {
-        title = other.title;
-        width = other.width;
-        height = other.height;
-        callback = other.callback;
-        isVSync = other.isVSync;
-
-        return *this;
-    }
-    float Window::WindowData::UpdateFrameRate()
-    {
-        m_CurrentTime = glfwGetTime();
-        double delta = m_CurrentTime - m_LastTime;
-
-        if(delta >= 1)
-        {
-            const int framerate = std::max(1, int(m_NumFrames / delta));
-            m_LastTime = m_CurrentTime;
-            m_NumFrames = -1;
-            m_FrameRate = float(1000.0 / framerate);
-        }
-
-        ++m_NumFrames;
-
-        return m_FrameRate;
-    }
-    float Window::WindowData::GetFrameRate() const noexcept
-    {
-        return m_FrameRate;
     }
 #pragma endregion
 }

@@ -41,7 +41,8 @@ export namespace GuelderEngine
         private:
             double m_LastTime, m_CurrentTime;
             int m_NumFrames;
-            float m_FrameRate;
+            float m_FrameTime;
+            int m_FrameRate;
         };
 
         DELETE_COPY_AND_MOVING(Window);
@@ -49,7 +50,7 @@ export namespace GuelderEngine
         Window() = default;
         Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
             const std::string& windowTitle, const UpdateFunc& update = [] {}, const bool& enableVSync = false);
-        explicit Window(const WindowData& data);
+        Window(const WindowData& data);
         virtual ~Window();
 
         virtual void OnUpdate();
@@ -80,8 +81,5 @@ export namespace GuelderEngine
 
         WindowData m_Data;
         GLFWwindow* m_GLFWWindow;
-
-        //TEST
-        void TEST_DrawImGui();
     };
 }
