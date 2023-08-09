@@ -55,7 +55,7 @@ export namespace GuelderEngine::Vulkan
         static bool AreExtensionsSupported(const std::vector<const char*>& extensions);
         //void LoadVertexShader(const std::string_view& source);
         //void LoadFragmentShader(const std::string_view& source);
-        void Render();
+        void Render(GLFWwindow* glfwWindow);
     private:
         static vk::Instance CreateVkInstance(const char* name);
         virtual void Cleanup() const noexcept;

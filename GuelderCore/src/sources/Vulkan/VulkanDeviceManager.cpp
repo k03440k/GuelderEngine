@@ -12,19 +12,20 @@ import GuelderEngine.Core.Types;
 
 import <optional>;
 import <set>;
+import <ranges>;
 
 namespace GuelderEngine::Vulkan
 {
-    VulkanDeviceManager::VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath)
+    VulkanDeviceManager::VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath, const std::vector<const char*>& extensions)
     {
         VkSurfaceKHR cStyle;
         GE_CORE_CLASS_ASSERT(glfwCreateWindowSurface(instance, glfwWindow, nullptr, &cStyle) == VK_SUCCESS,
             "cannot abstract GLFWwindow for vulkan surface");
         m_Surface = cStyle;
 
-        m_PhysicalDevice = ChoosePhysicalDevice(instance);
+        m_PhysicalDevice = ChoosePhysicalDevice(instance, extensions);
         m_QueueIndices = VulkanQueueFamilyIndices(m_PhysicalDevice, m_Surface);
-        m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices);
+        m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices, extensions);
 
         //m_Queues.graphicsQueue = GetGraphicsQueue(m_Device, m_QueueIndices);
         //m_Queues.presentQueue = GetPresentQueue(m_Device, m_QueueIndices);
@@ -92,7 +93,9 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-
+}
+namespace GuelderEngine::Vulkan
+{
     void VulkanDeviceManager::Reset() noexcept
     {
         m_PhysicalDevice = nullptr;
@@ -112,32 +115,38 @@ namespace GuelderEngine::Vulkan
         m_Device.destroy();
         instance.destroySurfaceKHR(m_Surface);
     }
-    void VulkanDeviceManager::Render(const VulkanScene& scene)
+    void VulkanDeviceManager::Render(GLFWwindow* glfwWindow, const VulkanScene& scene)
     {
-        m_Pipeline.Render(m_Device ,scene);
+        int width{}, height{};
+        glfwGetFramebufferSize(glfwWindow, &width, &height);
+
+        m_Pipeline.Render({m_Device, scene, m_PhysicalDevice, m_Surface,
+            static_cast<Types::uint>(width), static_cast<Types::uint>(height), m_QueueIndices});
     }
     bool VulkanDeviceManager::CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& requestedExtensions)
     {
         std::set<std::string> requiredExtensions(requestedExtensions.begin(), requestedExtensions.end());
-#ifdef GE_DEBUG_VULKAN
-        GE_LOG(VulkanCore, Info, "Device can support following extensions:");
-#endif
+
+        //GE_LOG(VulkanCore, Info, "Device can support following extensions:");
 
         for (auto&& extension : physicalDevice.enumerateDeviceExtensionProperties())
         {
-#ifdef GE_DEBUG_VULKAN
-            GE_LOG(VulkanCore, Info, '\t', extension.extensionName);
-#endif
+            //GE_LOG(VulkanCore, Info, '\t', extension.extensionName);
+
             //remove this from the list of required extensions (set checks for equality automatically)
             requiredExtensions.erase(extension.extensionName);
         }
 
         return requiredExtensions.empty();
     }
-    bool VulkanDeviceManager::IsDeviceSuitable(const vk::PhysicalDevice& physicalDevice)
+    bool VulkanDeviceManager::IsDeviceSuitable(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& extensions)
     {
-        if (const std::vector requestedExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-            !CheckDeviceExtensionsSupport(physicalDevice, requestedExtensions))
+        std::vector requestedExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+        if(!extensions.empty())
+            std::ranges::copy(extensions, std::back_inserter(requestedExtensions));
+
+        if (!CheckDeviceExtensionsSupport(physicalDevice, requestedExtensions))
         {
             //Debug::LogError("Device cannot support requested extensions");
             return false;
@@ -145,7 +154,7 @@ namespace GuelderEngine::Vulkan
 
         return true;
     }
-    vk::PhysicalDevice VulkanDeviceManager::ChoosePhysicalDevice(const vk::Instance& instance)
+    vk::PhysicalDevice VulkanDeviceManager::ChoosePhysicalDevice(const vk::Instance& instance, const std::vector<const char*>& extensions)
     {
         const std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 
@@ -158,8 +167,8 @@ namespace GuelderEngine::Vulkan
             VulkanDebugManager::LogDeviceProperties(device);
         }
 #endif // GE_DEBUG_VULKAN
-        //device choosing
 
+        //device choosing
         double theBiggestDeviceMemorySize{};
         Types::uint idxToDeviceOftheBiggestMemory{};
         //takes the most powerful device
@@ -179,7 +188,7 @@ namespace GuelderEngine::Vulkan
                     memoryOfWholeDevice += static_cast<double>(heap.size) / (1024 * 1024 * 1024);
                 }
             }
-            if (theBiggestDeviceMemorySize < memoryOfWholeDevice && IsDeviceSuitable(physicalDevices[i]))
+            if (theBiggestDeviceMemorySize < memoryOfWholeDevice && IsDeviceSuitable(physicalDevices[i], extensions))
             {
                 theBiggestDeviceMemorySize = memoryOfWholeDevice;
                 idxToDeviceOftheBiggestMemory = i;
@@ -188,9 +197,9 @@ namespace GuelderEngine::Vulkan
 
         GE_CORE_CLASS_ASSERT(theBiggestDeviceMemorySize > 0, "cannot choose device");
 
-        return physicalDevices[idxToDeviceOftheBiggestMemory];//TODO: Queue Families at the video time of 1:04:11
+        return physicalDevices[idxToDeviceOftheBiggestMemory];
     }
-    vk::Device VulkanDeviceManager::CreateDevice(const vk::PhysicalDevice& physicalDevice, const VulkanQueueFamilyIndices& indices)
+    vk::Device VulkanDeviceManager::CreateDevice(const vk::PhysicalDevice& physicalDevice, const VulkanQueueFamilyIndices& indices, const std::vector<const char*>& extensions)
     {
         constexpr float queuePriority = 1.0f;
 
@@ -210,6 +219,11 @@ namespace GuelderEngine::Vulkan
         }
 
         std::vector<const char*> deviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+        deviceExtensions.reserve(deviceExtensions.size() + extensions.size());
+
+        if(!extensions.empty())
+            std::ranges::copy(extensions, std::back_inserter(deviceExtensions));
 
         const auto deviceFeatures = physicalDevice.getFeatures();//mine is .getFeatures()
 

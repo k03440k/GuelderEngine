@@ -5,7 +5,7 @@ import GuelderEngine.Core.Types;
 #define INHERIT_GClass(className) public virtual ::GuelderEngine::Core::GClass<className>
 
 #define DELETE_COPY(className)\
-    className(const className &) = delete;\
+    className(const className&) = delete;\
     className& operator=(const className&) = delete
 
 #define DELETE_MOVING(className)\

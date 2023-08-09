@@ -64,11 +64,11 @@ namespace GuelderEngine::Vulkan
         const std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 
 #ifdef GE_DEBUG_VULKAN
-        GE_LOG(VulkanCore, Info, "Device can support following layers:");
+        /*GE_LOG(VulkanCore, Info, "Device can support following layers:");
         for (const auto& layer : supportedLayers)
         {
             GE_LOG(VulkanCore, Info, '\t', layer.layerName);
-        }
+        }*/
 #endif // GE_DEBUG_VULKAN
 
         bool found = false;
@@ -80,16 +80,14 @@ namespace GuelderEngine::Vulkan
                 if (strcmp(extension, supportedExtension.layerName) == 0)
                 {
                     found = true;
-#ifdef GE_DEBUG_VULKAN
-                    GE_LOG(VulkanCore, Info, "Layer \"", extension, "\" is supported");
-#endif //GE_DEBUG_VULKAN
+
+                    //GE_LOG(VulkanCore, Info, "Layer \"", extension, "\" is supported");
                 }
             }
             if (!found)
             {
-#ifdef GE_DEBUG_VULKAN
-                GE_LOG(VulkanCore, Info, "Layer \"", extension, "\" is not supported");
-#endif //GE_DEBUG_VULKAN
+                //GE_LOG(VulkanCore, Info, "Layer \"", extension, "\" is not supported");
+
                 return false;
             }
         }

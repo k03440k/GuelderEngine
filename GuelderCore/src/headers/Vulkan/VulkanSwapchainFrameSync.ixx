@@ -8,12 +8,12 @@ import GuelderEngine.Core.Types;
 
 export namespace GuelderEngine::Vulkan
 {
-    class VulkanSync : public IVulkanObject
+    class VulkanSwapchainFrameSync : public IVulkanObject
     {
     public:
-        DECLARE_DCAD_AND_CAM(VulkanSync);
+        DECLARE_DCAD_AND_CAM(VulkanSwapchainFrameSync);
 
-        VulkanSync(const vk::Device& device);
+        VulkanSwapchainFrameSync(const vk::Device& device);
 
         virtual void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
@@ -23,6 +23,7 @@ export namespace GuelderEngine::Vulkan
     private:
         friend class VulkanSwapchain;
         friend class VulkanPipeline;
+        friend struct VulkanSwapchainFrame;
 
         vk::Fence m_InFlightFence;
         vk::Semaphore m_ImageAvailable;

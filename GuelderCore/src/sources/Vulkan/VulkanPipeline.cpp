@@ -1,7 +1,8 @@
 module;
-#include <vulkan/vulkan.hpp>
 #include "../../headers/Core/GObject/GClass.hpp"
 #include "GuelderEngine/Utils/Debug.hpp"
+#include <glfw/glfw3.h>
+#include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 module GuelderEngine.Vulkan;
@@ -44,9 +45,9 @@ namespace GuelderEngine::Vulkan
 
         vk::PipelineViewportStateCreateInfo viewportInfo(
             vk::PipelineViewportStateCreateFlags(),
-            1,          //viewports count
+            1,          //viewports
             &viewport,  //viewports
-            1,          //scissors count
+            1,          //scissors
             &scissor    //scissors
         );
 
@@ -71,8 +72,14 @@ namespace GuelderEngine::Vulkan
 
         //color blend
         vk::PipelineColorBlendAttachmentState colorBlendAttachment;
-        colorBlendAttachment.blendEnable = VK_FALSE;
         colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+        colorBlendAttachment.blendEnable = VK_TRUE;
+        colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
+        colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+        colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
+        colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne;
+        colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
+        colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
         const vk::PipelineColorBlendStateCreateInfo colorBlendInfo(
             vk::PipelineColorBlendStateCreateFlags(),
             VK_FALSE,
@@ -163,7 +170,7 @@ namespace GuelderEngine::Vulkan
 {
     /*VulkanPipeline::VulkanPipeline(const vk::Device& device, const vk::Extent2D& extent, const vk::Format& swapchainImageFormat, const std::string_view& vertexPath, const std::string_view& fragmentPath)
     {
-        
+
     }*/
     void VulkanPipeline::Reset() noexcept
     {
@@ -186,13 +193,16 @@ namespace GuelderEngine::Vulkan
         const vk::CommandBufferBeginInfo commandBufferBeginInfo{};
 
         commandBuffer.begin(commandBufferBeginInfo);
+        
+        const float greenValue = (sin(glfwGetTime()) / 2.0f) + 0.5f;
 
-        const vk::ClearValue clearColor(/*std::array<float, 4>*/{ 1.0f, 0.5f, 0.25f, 1.0f });
+        //const vk::ClearValue clearColor[2] = { vk::ClearColorValue{ 1.0f, greenValue, 0.25f, 1.0f }, vk::ClearDepthStencilValue{ 1.0f, 0 } };
+        const vk::ClearValue clearColor({ 1.0f, greenValue, 0.25f, 1.0f });
         const vk::RenderPassBeginInfo renderPassBeginInfo(
             m_RenderPass,
             m_Swapchain.m_Frames[imageIndex].framebuffer,
             vk::Rect2D({ 0, 0 }, m_Swapchain.m_Extent),
-            1,
+            2,
             &clearColor
         );
 
@@ -211,24 +221,31 @@ namespace GuelderEngine::Vulkan
         commandBuffer.endRenderPass();
         commandBuffer.end();
     }
-    void VulkanPipeline::Render(const vk::Device& device, const VulkanScene& scene)
+    void VulkanPipeline::Render(const VulkanPipelineRenderCreateInfo& info)
     {
-        GE_CORE_CLASS_ASSERT(device.waitForFences(1, &m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_InFlightFence, VK_TRUE, UINT64_MAX)
-            == vk::Result::eSuccess, "cannot wait for fence");
-        GE_CORE_CLASS_ASSERT(device.resetFences(1, &m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_InFlightFence)
-            == vk::Result::eSuccess, "cannot reset fence");
+        const auto& currentFrame = m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber];
 
-        const Types::uint imageIndex =
-            device.acquireNextImageKHR(m_Swapchain.m_Swapchain, UINT64_MAX, m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_ImageAvailable, nullptr).value;
+        //GE_CORE_CLASS_ASSERT(info.device.waitForFences(1, &currentFrame.sync.m_InFlightFence, VK_TRUE, UINT64_MAX) == vk::Result::eSuccess, "cannot wait for fence");
+        currentFrame.WaitForImage(info.device);
 
-        const auto commandBuffer = m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].commandBuffer;
+        const auto acquire = info.device.acquireNextImageKHR(m_Swapchain.m_Swapchain, UINT64_MAX, currentFrame.sync.m_ImageAvailable, nullptr);
+
+        /*if(acquire.result == vk::Result::eErrorOutOfDateKHR)
+        {
+            m_Swapchain.Recreate(info.device, info.physicalDevice, info.surface, info.width, info.height, info.queueFamilyIndices);
+            return;
+        }*/
+
+        const Types::uint imageIndex = acquire.value;
+
+        const auto& commandBuffer = currentFrame.commandBuffer;
         commandBuffer.reset();
 
-        RecordDrawCommands(commandBuffer, imageIndex, scene);
+        RecordDrawCommands(commandBuffer, imageIndex, info.scene);
 
-        const vk::Semaphore waitSemaphores[] = { m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_ImageAvailable };
+        const vk::Semaphore waitSemaphores[] = { currentFrame.sync.m_ImageAvailable };
         const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-        const vk::Semaphore signalSemaphores[] = { m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_RenderFinished };
+        const vk::Semaphore signalSemaphores[] = { currentFrame.sync.m_RenderFinished };
 
         const vk::SubmitInfo submitInfo(
             1,
@@ -240,9 +257,12 @@ namespace GuelderEngine::Vulkan
             signalSemaphores
         );
 
-        m_Queues.graphicsQueue.submit(submitInfo, m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber].sync.m_InFlightFence);
+        //GE_CORE_CLASS_ASSERT(info.device.resetFences(1, &currentFrame.sync.m_InFlightFence) == vk::Result::eSuccess, "cannot reset fence");
+        currentFrame.ResetFence(info.device);
 
-        const vk::SwapchainKHR swapchains[] = {m_Swapchain.m_Swapchain};
+        m_Queues.graphicsQueue.submit(submitInfo, currentFrame.sync.m_InFlightFence);
+
+        const vk::SwapchainKHR swapchains[] = { m_Swapchain.m_Swapchain };
 
         const vk::PresentInfoKHR presentInfo(
             1,
@@ -252,7 +272,23 @@ namespace GuelderEngine::Vulkan
             &imageIndex
         );
 
-        GE_CORE_CLASS_ASSERT(m_Queues.presentQueue.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
+        //GE_CORE_CLASS_ASSERT(m_Queues.presentQueue.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
+
+        vk::Result presentResult;
+        try
+        {
+            presentResult = m_Queues.presentQueue.presentKHR(presentInfo);
+        }
+        catch(const vk::OutOfDateKHRError& error)
+        {
+            presentResult = vk::Result::eErrorOutOfDateKHR;
+        }
+
+        if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR)
+        {
+            m_Swapchain.Recreate(info.device, info.physicalDevice, info.surface, info.width, info.height, info.queueFamilyIndices);
+            return;
+        }
 
         m_Swapchain.m_CurrentFrameNumber = (m_Swapchain.m_CurrentFrameNumber + 1) % m_Swapchain.m_MaxFramesInFlight;
     }
@@ -261,11 +297,11 @@ namespace GuelderEngine::Vulkan
     {
         constexpr vk::PushConstantRange constantInfo(vk::ShaderStageFlagBits::eVertex, 0, sizeof(VulkanModel));
         constexpr vk::PipelineLayoutCreateInfo layoutInfo(
-        vk::PipelineLayoutCreateFlags(),
-        0,
-        nullptr,
-        1,//add in ctor this value?
-        &constantInfo
+            vk::PipelineLayoutCreateFlags(),
+            0,
+            nullptr,
+            1,//add in ctor this value?
+            &constantInfo
         );
         return device.createPipelineLayout(layoutInfo);
     }

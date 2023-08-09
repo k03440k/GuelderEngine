@@ -5,32 +5,29 @@ import GuelderEngine.Core.Types;
 
 import <vector>;
 
-export namespace GuelderEngine
+export namespace GuelderEngine::Layers
 {
-    namespace Layers
+    class LayerStack
     {
-        class LayerStack
-        {
-        public:
-            using LayerVec = std::vector<Layer*>;
+    public:
+        using LayerVec = std::vector<Layer*>;
 
-            LayerStack();
-            explicit LayerStack(Layer* layer);
-            ~LayerStack();
+        LayerStack();
+        explicit LayerStack(Layer* layer);
+        ~LayerStack();
 
-            void PushLayer(Layer* layer);
-            void PushOverlay(Layer* overlay);
-            void PopLayer(Layer* layer);
-            void PopOverlay(Layer* overlay);
+        void PushLayer(Layer* layer);
+        void PushOverlay(Layer* overlay);
+        void PopLayer(const Layer* layer);
+        void PopOverlay(const Layer* overlay);
 
-            LayerVec::iterator begin() { return m_Layers.begin(); }
-            LayerVec::iterator end() { return m_Layers.end(); }
+        LayerVec::iterator begin() { return m_Layers.begin(); }
+        LayerVec::iterator end() { return m_Layers.end(); }
 
-            Types::ubyte size() const { return (Types::ubyte)m_Layers.size(); }
-            bool IsEmpty() const { return !m_Layers.size(); }
-        private:
-            LayerVec m_Layers;
-            LayerVec::iterator m_LayerInsert;
-        };
-    }
+        Types::ubyte size() const { return (Types::ubyte)m_Layers.size(); }
+        bool IsEmpty() const { return !m_Layers.size(); }
+    private:
+        LayerVec m_Layers;
+        LayerVec::iterator m_LayerInsert;
+    };
 }

@@ -2,6 +2,9 @@
 
 //#define ENABLE_MEMORY_LEAKS_CHECKING
 
+#pragma warning(disable : 5103)
+#pragma warning(disable : 4844)
+
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 
 #define _CRTDBG_MAP_ALLOC
@@ -24,7 +27,7 @@ int main(int argc, char** argv)
     try
     {
         const auto app = std::make_unique<GEApplication>(argv[0]);
-        
+
         //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("vert_code")));
         //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("frag_code")));
 
@@ -35,7 +38,7 @@ int main(int argc, char** argv)
     }
     catch (const std::exception& e)
     {
-        LogError(e.what());
+        GE_LOG(Editor, Error, e.what());
     }
 
     GE_LOG(Editor, Warning, "Guelder Engine Editor has just closed");

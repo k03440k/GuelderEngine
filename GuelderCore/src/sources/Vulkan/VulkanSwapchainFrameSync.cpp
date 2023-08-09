@@ -9,13 +9,13 @@ import GuelderEngine.Core.Types;
 
 namespace GuelderEngine::Vulkan
 {
-    VulkanSync::VulkanSync(const VulkanSync& other)
+    VulkanSwapchainFrameSync::VulkanSwapchainFrameSync(const VulkanSwapchainFrameSync& other)
     {
         m_InFlightFence = other.m_InFlightFence;
         m_ImageAvailable = other.m_ImageAvailable;
         m_RenderFinished = other.m_RenderFinished;
     }
-    VulkanSync::VulkanSync(VulkanSync&& other) noexcept
+    VulkanSwapchainFrameSync::VulkanSwapchainFrameSync(VulkanSwapchainFrameSync&& other) noexcept
     {
         m_InFlightFence = other.m_InFlightFence;
         m_ImageAvailable = other.m_ImageAvailable;
@@ -23,7 +23,7 @@ namespace GuelderEngine::Vulkan
 
         other.Reset();
     }
-    VulkanSync& VulkanSync::operator=(const VulkanSync& other)
+    VulkanSwapchainFrameSync& VulkanSwapchainFrameSync::operator=(const VulkanSwapchainFrameSync& other)
     {
         if(this == &other)
             return *this;
@@ -34,7 +34,7 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    VulkanSync& VulkanSync::operator=(VulkanSync&& other) noexcept
+    VulkanSwapchainFrameSync& VulkanSwapchainFrameSync::operator=(VulkanSwapchainFrameSync&& other) noexcept
     {
         m_InFlightFence = other.m_InFlightFence;
         m_ImageAvailable = other.m_ImageAvailable;
@@ -44,31 +44,31 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    VulkanSync::VulkanSync(const vk::Device& device)
+    VulkanSwapchainFrameSync::VulkanSwapchainFrameSync(const vk::Device& device)
     {
         m_InFlightFence = MakeFence(device);
         m_ImageAvailable = MakeSemaphore(device);
         m_RenderFinished = MakeSemaphore(device);
     }
-    void VulkanSync::Reset() noexcept
+    void VulkanSwapchainFrameSync::Reset() noexcept
     {
         m_InFlightFence = nullptr;
         m_ImageAvailable = nullptr;
         m_RenderFinished = nullptr;
     }
-    void VulkanSync::Cleanup(const vk::Device& device) const noexcept
+    void VulkanSwapchainFrameSync::Cleanup(const vk::Device& device) const noexcept
     {
         device.destroyFence(m_InFlightFence);
         device.destroySemaphore(m_ImageAvailable);
         device.destroySemaphore(m_RenderFinished);
     }
-    vk::Semaphore VulkanSync::MakeSemaphore(const vk::Device& device)
+    vk::Semaphore VulkanSwapchainFrameSync::MakeSemaphore(const vk::Device& device)
     {
         const vk::SemaphoreCreateInfo semaphoreInfo{vk::SemaphoreCreateFlags()};
 
         return device.createSemaphore(semaphoreInfo);
     }
-    vk::Fence VulkanSync::MakeFence(const vk::Device& device)
+    vk::Fence VulkanSwapchainFrameSync::MakeFence(const vk::Device& device)
     {
         const vk::FenceCreateInfo fenceInfo(vk::FenceCreateFlags() | vk::FenceCreateFlagBits::eSignaled);
 

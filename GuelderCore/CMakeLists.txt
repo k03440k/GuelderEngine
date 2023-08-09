@@ -44,7 +44,7 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanSwapchain.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanShaderManager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanPipeline.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanSync.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanSwapchainFrameSync.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanQueueFamilyIndices.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanCommandBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VulkanFrameBuffer.cpp
@@ -64,7 +64,7 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanSwapchain.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanShaderManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanPipeline.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanSync.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanSwapchainFrameSync.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanModel.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanQueueFamilyIndices.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/VulkanCommandBuffer.ixx

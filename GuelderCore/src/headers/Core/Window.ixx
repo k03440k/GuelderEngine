@@ -11,7 +11,6 @@ import GuelderEngine.Events;
 
 export namespace GuelderEngine
 {
-    namespace Events { struct BaseEvent; }
     class Window : INHERIT_GClass(Window)
     {
     public:

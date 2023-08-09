@@ -13,6 +13,17 @@ export namespace GuelderEngine::Vulkan
 {
     struct VulkanQueueFamilyIndices;
 
+    struct VulkanPipelineRenderCreateInfo
+    {
+        const vk::Device& device;
+        const class VulkanScene& scene;
+        const vk::PhysicalDevice& physicalDevice;
+        const vk::SurfaceKHR& surface;
+        const Types::uint& width;
+        const Types::uint& height;
+        const VulkanQueueFamilyIndices& queueFamilyIndices;
+    };
+
     class VulkanPipeline : INHERIT_GClass(VulkanPipeline), public IVulkanObject
     {
     public:
@@ -26,13 +37,14 @@ export namespace GuelderEngine::Vulkan
         virtual void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
 
-        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const class VulkanScene& scene) const;
-        void Render(const vk::Device& device, const class VulkanScene& scene);
+        void Render(const VulkanPipelineRenderCreateInfo& info);
     private:
         static vk::PipelineLayout CreateLayout(const vk::Device& device);
         static vk::RenderPass CreateRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat);
         static vk::Queue GetGraphicsQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept;
         static vk::Queue GetPresentQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept;
+
+        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const VulkanScene& scene) const;
 
         vk::RenderPass m_RenderPass;
         vk::PipelineLayout m_Layout;

@@ -137,9 +137,9 @@ namespace GuelderEngine::Vulkan
         Cleanup();
     }
 
-    void VulkanManager::Render()
+    void VulkanManager::Render(GLFWwindow* glfwWindow)
     {
-        m_DeviceManager.Render(m_Scene);
+        m_DeviceManager.Render(glfwWindow, m_Scene);
     }
 
     vk::Instance VulkanManager::CreateVkInstance(const char* name)
@@ -197,11 +197,11 @@ namespace GuelderEngine::Vulkan
         const std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
 
 #ifdef GE_DEBUG_VULKAN
-        GE_LOG(VulkanCore, Info, "Device can support following extensions:");
+        /*GE_LOG(VulkanCore, Info, "Device can support following extensions:");
         for(const auto& supportedExtension : supportedExtensions)
         {
             GE_LOG(VulkanCore, Info, '\t', supportedExtension.extensionName);
-        }
+        }*/
 #endif //GE_DEBUG_VULKAN
 
         bool found = false;
@@ -213,16 +213,14 @@ namespace GuelderEngine::Vulkan
                 if(strcmp(extension, supportedExtension.extensionName) == 0)
                 {
                     found = true;
-#ifdef GE_DEBUG_VULKAN
-                    GE_LOG(VulkanCore, Info, "Extension \"", extension, "\" is supported");
-#endif //GE_DEBUG_VULKAN
+
+                    //GE_LOG(VulkanCore, Info, "Extension \"", extension, "\" is supported");
                 }
             }
             if(!found)
             {
-#ifdef GE_DEBUG_VULKAN
-                GE_LOG(VulkanCore, Info, "Extension \"", extension, "\" is not supported");
-#endif //GE_DEBUG_VULKAN
+                //GE_LOG(VulkanCore, Info, "Extension \"", extension, "\" is not supported");
+
                 return false;
             }
         }

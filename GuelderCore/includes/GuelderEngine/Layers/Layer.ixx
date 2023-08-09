@@ -9,7 +9,6 @@ import <string_view>;
 
 export namespace GuelderEngine
 {
-    namespace Events { struct BaseEvent; }
     namespace Layers
     {
         class Layer : INHERIT_GClass(Layer)

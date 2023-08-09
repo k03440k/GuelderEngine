@@ -7,7 +7,6 @@ export module GuelderEngine.Vulkan:VulkanDebugManager;
 import :IVulkanObject;
 
 import <vector>;
-//TODO: VulkanDebugManager::CreateDebugMessenger
 
 export namespace GuelderEngine::Vulkan
 {

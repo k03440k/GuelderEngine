@@ -1,5 +1,4 @@
 module;
-#include "../src/headers/Events/Event.hpp"
 #include "../src/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Events:BaseEvent;
 

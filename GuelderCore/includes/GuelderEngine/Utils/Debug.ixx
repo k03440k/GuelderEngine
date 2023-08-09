@@ -1,8 +1,6 @@
 module;
 #include <Windows.h>
-#include <ctime>
 export module GuelderEngine.Debug;
-//TODO: structs like debug categories
 
 export import GuelderEngine.Core.Types;
 
@@ -107,7 +105,7 @@ export namespace GuelderEngine::Debug
     //};
 
     template<LogLevel LoggingLevels>
-    struct LoggingCategory//TODO: this struct and add colors support to this struct
+    struct LoggingCategory//TODO: add colors support to this struct
     {
         LoggingCategory(const std::string_view& name)
             : name(name) {}
@@ -124,7 +122,7 @@ export namespace GuelderEngine::Debug
         const LogLevel supportedLoggingLevels = LoggingLevels;
         const std::string name;
     };
-
+    
     /*
     * @note I use HANDE but i don't do CloseHandle in dtor
     */
@@ -145,8 +143,10 @@ export namespace GuelderEngine::Debug
         }
 
         //throws an error
-        static void Throw(const std::string_view& message, const char* const fileName, const Types::uint& line);
+        [[noreturn]]
+        static void Throw(const std::string_view& message, const char* fileName, const Types::uint& line);
 
+        [[noreturn]]
         static void Throw(const std::string_view& message);
 
         /*
@@ -161,7 +161,7 @@ export namespace GuelderEngine::Debug
         }
 
         /*if input bool is false, then it will bring throw of runtime_error*/
-        static void Assert(const bool& condition, const std::string& message = "", const char* const file = __FILE__, const Types::uint& line = __LINE__);
+        static void Assert(const bool& condition, const std::string& message = "", const char* file = __FILE__, const Types::uint& line = __LINE__);
 
     private:
         template<ConsoleColorAttributes... Attributes>

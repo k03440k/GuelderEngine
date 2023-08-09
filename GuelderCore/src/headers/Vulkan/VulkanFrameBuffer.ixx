@@ -3,7 +3,6 @@ module;
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:VulkanFrameBuffer;
 
-//import :VulkanSwapchainFrame;
 import <vector>;
 
 export namespace GuelderEngine::Vulkan

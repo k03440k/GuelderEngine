@@ -23,18 +23,18 @@ export namespace GuelderEngine::Vulkan
     public:
         DECLARE_DCAD_AND_CAM(VulkanDeviceManager);
 
-        VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath);
+        VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath, const std::vector<const char*>& extensions = {});
 
         void Reset() noexcept override;
         void Cleanup(const vk::Instance& instance) const noexcept;
 
-        void Render(const VulkanScene& scene);
+        void Render(GLFWwindow* glfwWindow, const VulkanScene& scene);
     private:
         static bool CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice,
             const std::vector<const char*>& requestedExtensions);
-        static bool IsDeviceSuitable(const vk::PhysicalDevice& physicalDevice);
-        static vk::PhysicalDevice ChoosePhysicalDevice(const vk::Instance& instance);
-        static vk::Device CreateDevice(const vk::PhysicalDevice& physicalDevice, const VulkanQueueFamilyIndices& indices);
+        static bool IsDeviceSuitable(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& extensions = {});
+        static vk::PhysicalDevice ChoosePhysicalDevice(const vk::Instance& instance, const std::vector<const char*>& extensions = {});
+        static vk::Device CreateDevice(const vk::PhysicalDevice& physicalDevice, const VulkanQueueFamilyIndices& indices, const std::vector<const char*>& extensions = {});
 
         friend class VulkanManager;
 
