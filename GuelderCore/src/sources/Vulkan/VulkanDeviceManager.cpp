@@ -6,8 +6,9 @@ module;
 module GuelderEngine.Vulkan;
 import :VulkanDeviceManager;
 
-import :VulkanSwapchain;
 import :VulkanDebugManager;
+import :VulkanSwapchain;
+import :VulkanPipeline;
 import GuelderEngine.Core.Types;
 
 import <optional>;
@@ -35,7 +36,7 @@ namespace GuelderEngine::Vulkan
 
         //m_Swapchain = VulkanSwapchain(m_Device, m_PhysicalDevice, m_Surface, width, height, m_QueueIndices);
 
-        m_Pipeline = VulkanPipeline(VulkanSwapchainCreateInfo(m_Device, m_PhysicalDevice, m_Surface, width, height, m_QueueIndices),
+        m_Pipeline = VulkanPipeline(m_Device, m_PhysicalDevice, m_Surface, width, height, m_QueueIndices,
             /* m_Swapchain.m_Extent, m_Swapchain.m_Format,*/ vertPath, fragPath);
     }
     VulkanDeviceManager::VulkanDeviceManager(const VulkanDeviceManager& other)
@@ -117,11 +118,13 @@ namespace GuelderEngine::Vulkan
     }
     void VulkanDeviceManager::Render(GLFWwindow* glfwWindow, const VulkanScene& scene)
     {
-        int width{}, height{};
-        glfwGetFramebufferSize(glfwWindow, &width, &height);
+        int width = 0, height = 0;
+        while(width == 0 || height == 0) {
+            glfwGetFramebufferSize(glfwWindow, &width, &height);
+            glfwWaitEvents();
+        }
 
-        m_Pipeline.Render({m_Device, scene, m_PhysicalDevice, m_Surface,
-            static_cast<Types::uint>(width), static_cast<Types::uint>(height), m_QueueIndices});
+        m_Pipeline.Render(m_Device, m_PhysicalDevice, m_Surface, {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}, m_QueueIndices, scene);
     }
     bool VulkanDeviceManager::CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& requestedExtensions)
     {

@@ -28,9 +28,6 @@ int main(int argc, char** argv)
     {
         const auto app = std::make_unique<GEApplication>(argv[0]);
 
-        //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("vert_code")));
-        //GE_LOG(Editor, Info, '\n', (app->resourceManager.FindResourcesVariableFileContent("frag_code")));
-
         app->Run([&]
         {
 
@@ -41,7 +38,7 @@ int main(int argc, char** argv)
         GE_LOG(Editor, Error, e.what());
     }
 
-    GE_LOG(Editor, Warning, "Guelder Engine Editor has just closed");
+    GE_LOG(Editor, Warning, "Guelder Engine Editor has just closed successfully");
     
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 

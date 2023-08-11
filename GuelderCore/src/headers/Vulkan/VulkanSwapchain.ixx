@@ -6,9 +6,12 @@ export module GuelderEngine.Vulkan:VulkanSwapchain;
 
 import :IVulkanObject;
 import :VulkanQueueFamilyIndices;
-import :VulkanCommandBuffer;
+import :VulkanCommandPool;
 import :VulkanSwapchainFrame;
+import :VulkanShaderManager;
 import GuelderEngine.Core.Types;
+
+import <functional>;
 
 export namespace GuelderEngine::Vulkan
 {
@@ -18,46 +21,42 @@ export namespace GuelderEngine::Vulkan
         std::vector<vk::SurfaceFormatKHR> formats;
         std::vector<vk::PresentModeKHR> presentModes;
     };
-    struct VulkanSwapchainCreateInfo
-    {
-        const vk::Device& device;
-        const vk::PhysicalDevice& physicalDevice;
-        const vk::SurfaceKHR& surface;
-        const Types::uint& width;
-        const Types::uint& height;
-        const VulkanQueueFamilyIndices& queueFamilyIndices;
-    };
     class VulkanSwapchain final : public IVulkanObject, INHERIT_GClass(VulkanSwapchain)
     {
     public:
         DECLARE_DCAD_AND_CAM(VulkanSwapchain);
 
         VulkanSwapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-            const Types::uint& width, const Types::uint& height, const VulkanQueueFamilyIndices& queueFamilyIndices);
-        VulkanSwapchain(const VulkanSwapchainCreateInfo& info);
+            const vk::Extent2D& extent, const VulkanQueueFamilyIndices& queueFamilyIndices);
 
         void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
 
         void MakeFrames(const vk::Device& device, const vk::RenderPass& renderPass);
-
-        //void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const vk::RenderPass& renderPass, const Types::uint& imageIndex);
-        void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-            const Types::uint& width, const Types::uint& height, const VulkanQueueFamilyIndices& queueFamilyIndices);
+        
+        /*
+         *@brief Certain cleanup before recreation. Must be called after cleanups of vk::RenderPass'es, vk::Pipeline's
+        */
+        void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
+            const VulkanQueueFamilyIndices& queueFamilyIndices);
     private:
         static vk::SurfaceFormatKHR ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats);
         static vk::PresentModeKHR ChooseSwapchainPresentMode(const std::vector<vk::PresentModeKHR>& presentModes);
-        static vk::Extent2D ChooseSwapchainExtent(const Types::uint& width, const Types::uint& height,
-            const vk::SurfaceCapabilitiesKHR& capabilities);
+        static vk::Extent2D ChooseSwapchainExtent(const vk::Extent2D& extent, const vk::SurfaceCapabilitiesKHR& capabilities);
         static VulkanSwapchainSupportDetails QuerySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface);
 
-        void Create(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-            const Types::uint& width, const Types::uint& height, const VulkanQueueFamilyIndices& queueFamilyIndices);
+        void Create(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
+            const VulkanQueueFamilyIndices& queueFamilyIndices);
+        /*
+         *@brief For ctor
+        */
+        void CreateFrames(const vk::Device& device, const vk::Format& format, const std::vector<vk::Image>& images);
 
         friend class VulkanPipeline;
 
+        VulkanShaderManager m_ShaderManager;
         VulkanSwapchainSupportDetails m_Details;
-        VulkanCommandBuffer m_CommandBuffer;
+        VulkanCommandPool m_CommandPool;
 
         Types::uint m_MaxFramesInFlight;
         Types::uint m_CurrentFrameNumber;

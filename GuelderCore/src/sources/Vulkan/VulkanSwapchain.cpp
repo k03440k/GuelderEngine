@@ -7,23 +7,30 @@ import :VulkanSwapchain;
 import :VulkanSync;
 import :VulkanQueueFamilyIndices;
 import :VulkanSwapchainFrame;
-import :VulkanCommandBuffer;
+import :VulkanCommandPool;
 import :VulkanFrameBuffer;
 import :VulkanDebugManager;
 
 import <vector>;
+import <functional>;
 
 //ctors and operator='s
 namespace GuelderEngine::Vulkan
 {
-    VulkanSwapchain::VulkanSwapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice,
-        const vk::SurfaceKHR& surface, const Types::uint& width, const Types::uint& height,
-        const VulkanQueueFamilyIndices& queueFamilyIndices)
+    VulkanSwapchain::VulkanSwapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
+        const vk::Extent2D& extent, const VulkanQueueFamilyIndices& queueFamilyIndices)
     {
-        Create(device, physicalDevice, surface, width, height, queueFamilyIndices);
+        Create(device, physicalDevice, surface, extent, queueFamilyIndices);
+
+        m_CommandPool = VulkanCommandPool(device, queueFamilyIndices);
+
+        const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
+
+        CreateFrames(device, m_Format, images);
+
+        m_MaxFramesInFlight = m_Frames.size();
+        m_CurrentFrameNumber = 0;
     }
-    VulkanSwapchain::VulkanSwapchain(const VulkanSwapchainCreateInfo& info)
-        : VulkanSwapchain(info.device, info.physicalDevice, info.surface, info.width, info.height, info.queueFamilyIndices) {}
     VulkanSwapchain::VulkanSwapchain(const VulkanSwapchain& other)
     {
         m_Details = other.m_Details;
@@ -31,7 +38,7 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandBuffer = other.m_CommandBuffer;
+        m_CommandPool = other.m_CommandPool;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
     }
@@ -42,7 +49,7 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandBuffer = std::forward<VulkanCommandBuffer>(other.m_CommandBuffer);
+        m_CommandPool = std::forward<VulkanCommandPool>(other.m_CommandPool);
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
 
@@ -58,7 +65,7 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandBuffer = other.m_CommandBuffer;
+        m_CommandPool = other.m_CommandPool;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
 
@@ -71,7 +78,7 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandBuffer = std::forward<VulkanCommandBuffer>(other.m_CommandBuffer);
+        m_CommandPool = std::forward<VulkanCommandPool>(other.m_CommandPool);
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
 
@@ -82,35 +89,12 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    void VulkanSwapchain::Reset() noexcept
-    {
-        m_Details = {};
-        m_Extent = vk::Extent2D{};
-        m_Format = {};
-        m_Swapchain = nullptr;
-
-        for(auto&& frame : m_Frames)//idk
-            frame.Reset();
-
-        m_Frames.clear();
-        m_CommandBuffer.Reset();
-        m_MaxFramesInFlight = 0;
-        m_CurrentFrameNumber = 0;
-    }
-    void VulkanSwapchain::Cleanup(const vk::Device& device) const noexcept
-    {
-        for(auto&& frame : m_Frames)
-            frame.Cleanup(device);
-
-        m_CommandBuffer.Cleanup(device);
-        device.destroySwapchainKHR(m_Swapchain);
-    }
-    void VulkanSwapchain::Create(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const Types::uint& width, const Types::uint& height, const VulkanQueueFamilyIndices& queueFamilyIndices)
+    void VulkanSwapchain::Create(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent, const VulkanQueueFamilyIndices& queueFamilyIndices)
     {
         m_Details = QuerySwapChainSupport(physicalDevice, surface);
         const auto format = ChooseSwapchainSurfaceFormat(m_Details.formats);
         const auto present = ChooseSwapchainPresentMode(m_Details.presentModes);
-        const auto extent = ChooseSwapchainExtent(width, height, m_Details.capabilities);
+        const auto chosenExtent = ChooseSwapchainExtent(extent, m_Details.capabilities);
 
         const Types::uint imageCount = std::min(m_Details.capabilities.maxImageCount, m_Details.capabilities.minImageCount+1);
 
@@ -121,7 +105,7 @@ namespace GuelderEngine::Vulkan
         createInfo.surface = surface;
         createInfo.imageFormat = format.format;
         createInfo.imageColorSpace = format.colorSpace;
-        createInfo.imageExtent = extent;
+        createInfo.imageExtent = chosenExtent;
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
         createInfo.preTransform = m_Details.capabilities.currentTransform;
@@ -143,7 +127,34 @@ namespace GuelderEngine::Vulkan
 
         m_Swapchain = device.createSwapchainKHR(createInfo);
 
-        const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
+        m_Format = format.format;
+        m_Extent = chosenExtent;
+    }
+    void VulkanSwapchain::Reset() noexcept
+    {
+        m_Details = {};
+        m_Extent = vk::Extent2D{};
+        m_Format = {};
+        m_Swapchain = nullptr;
+
+        for(auto&& frame : m_Frames)//idk
+            frame.Reset();
+
+        m_Frames.clear();
+        m_CommandPool.Reset();
+        m_MaxFramesInFlight = 0;
+        m_CurrentFrameNumber = 0;
+    }
+    void VulkanSwapchain::Cleanup(const vk::Device& device) const noexcept
+    {
+        for(auto&& frame : m_Frames)
+            frame.Cleanup(device);
+
+        m_CommandPool.Cleanup(device);
+        device.destroySwapchainKHR(m_Swapchain);
+    }
+    void VulkanSwapchain::CreateFrames(const vk::Device& device, const vk::Format& format, const std::vector<vk::Image>& images)
+    {
         m_Frames.resize(images.size());
 
         GE_LOG(VulkanCore, Info, "images count: ", images.size());
@@ -163,19 +174,17 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.subresourceRange.levelCount = 1;
             imageViewInfo.subresourceRange.baseArrayLayer = 0;
             imageViewInfo.subresourceRange.layerCount = 1;
-            imageViewInfo.format = format.format;
+            imageViewInfo.format = format;
 
-            m_Frames[i] = VulkanSwapchainFrame(device, images[i], imageViewInfo);
+
+            m_Frames[i] = VulkanSwapchainFrame(device, imageViewInfo, m_CommandPool);
         }
-
-        m_Format = format.format;
-        m_Extent = extent;
-
-        m_MaxFramesInFlight = m_Frames.size();
-        m_CurrentFrameNumber = 0;
-
-        m_CommandBuffer = VulkanCommandBuffer(device, queueFamilyIndices, m_Frames);
     }
+    void VulkanSwapchain::MakeFrames(const vk::Device& device, const vk::RenderPass& renderPass)
+    {
+        VulkanFrameBuffer::Make(device, renderPass, m_Extent, m_Frames);
+    }
+
     VulkanSwapchainSupportDetails VulkanSwapchain::QuerySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
     {
         VulkanSwapchainSupportDetails support;
@@ -192,16 +201,6 @@ namespace GuelderEngine::Vulkan
 #endif
 
         return support;
-    }
-    void VulkanSwapchain::MakeFrames(const vk::Device& device, const vk::RenderPass& renderPass)
-    {
-        VulkanFrameBuffer::Make(device, renderPass, m_Extent, m_Frames);
-    }
-    void VulkanSwapchain::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice,
-        const vk::SurfaceKHR& surface, const Types::uint& width, const Types::uint& height, 
-        const VulkanQueueFamilyIndices& queueFamilyIndices)
-    {
-
     }
     vk::SurfaceFormatKHR VulkanSwapchain::ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
     {
@@ -223,7 +222,7 @@ namespace GuelderEngine::Vulkan
         GE_LOG(VulkanCore, Warning, "the device doesn't support Mailbox present mode. Choosing Fifo");
         return vk::PresentModeKHR::eFifo;
     }
-    vk::Extent2D VulkanSwapchain::ChooseSwapchainExtent(const Types::uint& width, const Types::uint& height, const vk::SurfaceCapabilitiesKHR& capabilities)
+    vk::Extent2D VulkanSwapchain::ChooseSwapchainExtent(const vk::Extent2D& extent, const vk::SurfaceCapabilitiesKHR& capabilities)
     {
         GE_LOG(VulkanCore, Info, "\nmin width: ", capabilities.minImageExtent.width, "; min height: ", capabilities.minImageExtent.height, '\n',
             "max width: ", capabilities.maxImageExtent.width, "; max height: ", capabilities.maxImageExtent.height);
@@ -232,12 +231,42 @@ namespace GuelderEngine::Vulkan
             return capabilities.currentExtent;
         else
         {
-            vk::Extent2D extent;
-
-            extent.width = std::min(capabilities.maxImageExtent.width, std::max(capabilities.minImageExtent.width, width));
-            extent.height = std::min(capabilities.maxImageExtent.height, std::max(capabilities.minImageExtent.height, height));
+            vk::Extent2D extent{
+                extent.width = std::min(capabilities.maxImageExtent.width, std::max(capabilities.minImageExtent.width, extent.width)),
+                extent.height = std::min(capabilities.maxImageExtent.height, std::max(capabilities.minImageExtent.height, extent.height))
+            };
 
             return extent;
+        }
+    }
+
+    void VulkanSwapchain::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
+        const VulkanQueueFamilyIndices& queueFamilyIndices)
+    {
+        device.destroySwapchainKHR(m_Swapchain);
+
+        Create(device, physicalDevice, surface, extent, queueFamilyIndices);
+
+        const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
+
+        for(Types::uint i = 0; i < images.size(); i++)
+        {
+            vk::ImageViewCreateInfo imageViewInfo{};
+            imageViewInfo.image = images[i];
+            imageViewInfo.viewType = vk::ImageViewType::e2D;
+            imageViewInfo.components.r = vk::ComponentSwizzle::eIdentity;
+            imageViewInfo.components.g = vk::ComponentSwizzle::eIdentity;
+            imageViewInfo.components.b = vk::ComponentSwizzle::eIdentity;
+            imageViewInfo.components.a = vk::ComponentSwizzle::eIdentity;
+            imageViewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            imageViewInfo.subresourceRange.baseMipLevel = 0;
+            imageViewInfo.subresourceRange.levelCount = 1;
+            imageViewInfo.subresourceRange.baseArrayLayer = 0;
+            imageViewInfo.subresourceRange.layerCount = 1;
+            imageViewInfo.format = m_Format;
+
+            m_Frames[i].Recreate(device, renderPass,
+                extent, imageViewInfo, m_CommandPool);
         }
     }
 }

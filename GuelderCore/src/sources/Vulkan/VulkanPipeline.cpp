@@ -15,15 +15,79 @@ import :VulkanManager;
 import GuelderEngine.Core;
 import GuelderEngine.Core.Types;
 
+import <vector>;
+
 //ctors
 namespace GuelderEngine::Vulkan
 {
-    VulkanPipeline::VulkanPipeline(const VulkanSwapchainCreateInfo& swapchainInfo, const std::string_view& vertexPath, const std::string_view& fragmentPath)
-        : m_Swapchain(swapchainInfo)
+    VulkanPipeline::VulkanPipeline(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
+        const Types::uint& width, const Types::uint& height, const VulkanQueueFamilyIndices& queueFamilyIndices, const std::string_view& vertexPath, const std::string_view& fragmentPath)
+        : m_Swapchain(device, physicalDevice, surface, {width, height}, queueFamilyIndices)
     {
-        m_Queues.graphicsQueue = GetGraphicsQueue(swapchainInfo.device, swapchainInfo.queueFamilyIndices);
-        m_Queues.presentQueue = GetPresentQueue(swapchainInfo.device, swapchainInfo.queueFamilyIndices);
+        m_Queues.graphicsQueue = GetGraphicsQueue(device, queueFamilyIndices);
+        m_Queues.presentQueue = GetPresentQueue(device, queueFamilyIndices);
 
+        m_ShaderManager = VulkanShaderManager(vertexPath, fragmentPath);
+
+        Create(device, vertexPath, fragmentPath);
+        m_Swapchain.MakeFrames(device, m_RenderPass);
+    }
+    VulkanPipeline::VulkanPipeline(const VulkanPipeline& other)
+    {
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_GraphicsPipeline = other.m_GraphicsPipeline;
+        m_Layout = other.m_Layout;
+        m_RenderPass = other.m_RenderPass;
+        m_Swapchain = other.m_Swapchain;
+        m_ShaderManager = other.m_ShaderManager;
+    }
+    VulkanPipeline::VulkanPipeline(VulkanPipeline&& other) noexcept
+    {
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_GraphicsPipeline = other.m_GraphicsPipeline;
+        m_Layout = other.m_Layout;
+        m_RenderPass = other.m_RenderPass;
+        m_Swapchain = std::forward<VulkanSwapchain>(other.m_Swapchain);
+        m_ShaderManager = std::forward<VulkanShaderManager>(other.m_ShaderManager);
+
+        other.Reset();
+    }
+    VulkanPipeline& VulkanPipeline::operator=(const VulkanPipeline& other)
+    {
+        if(this == &other)
+            return *this;
+
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_GraphicsPipeline = other.m_GraphicsPipeline;
+        m_Layout = other.m_Layout;
+        m_RenderPass = other.m_RenderPass;
+        m_Swapchain = other.m_Swapchain;
+        m_ShaderManager = other.m_ShaderManager;
+
+        return *this;
+    }
+    VulkanPipeline& VulkanPipeline::operator=(VulkanPipeline&& other) noexcept
+    {
+        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
+        m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_GraphicsPipeline = other.m_GraphicsPipeline;
+        m_Layout = other.m_Layout;
+        m_RenderPass = other.m_RenderPass;
+        m_Swapchain = std::forward<VulkanSwapchain>(other.m_Swapchain);
+        m_ShaderManager = std::forward<VulkanShaderManager>(other.m_ShaderManager);
+
+        other.Reset();
+
+        return *this;
+    }
+}
+namespace GuelderEngine::Vulkan
+{
+    void VulkanPipeline::Create(const vk::Device& device, const std::string_view& vertexPath, const std::string_view& fragmentPath)
+    {
         constexpr vk::PipelineVertexInputStateCreateInfo vertexInfo(vk::PipelineVertexInputStateCreateFlags(), 0, nullptr, 0);
         constexpr vk::PipelineInputAssemblyStateCreateInfo assemblyInfo(vk::PipelineInputAssemblyStateCreateFlags(), vk::PrimitiveTopology::eTriangleList);
 
@@ -31,11 +95,11 @@ namespace GuelderEngine::Vulkan
         shaderStages.reserve(2);
 
         //vertex shader
-        const vk::ShaderModule vertex = VulkanShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(vertexPath), swapchainInfo.device);
+        const vk::ShaderModule vertex = VulkanShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(vertexPath), device);
         const vk::PipelineShaderStageCreateInfo vertexShaderInfo(vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertex, "main");
         shaderStages.push_back(vertexShaderInfo);
         //fragment shader
-        const vk::ShaderModule fragment = VulkanShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(fragmentPath), swapchainInfo.device);
+        const vk::ShaderModule fragment = VulkanShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(fragmentPath), device);
         const vk::PipelineShaderStageCreateInfo fragmentShaderInfo(vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragment, "main");
         shaderStages.push_back(fragmentShaderInfo);
 
@@ -89,8 +153,8 @@ namespace GuelderEngine::Vulkan
             { 0, 0, 0, 0 }
         );
 
-        m_Layout = CreateLayout(swapchainInfo.device);
-        m_RenderPass = CreateRenderPass(swapchainInfo.device, m_Swapchain.m_Format);
+        m_Layout = CreateLayout(device);
+        m_RenderPass = CreateRenderPass(device, m_Swapchain.m_Format);
 
         const vk::GraphicsPipelineCreateInfo createInfo(
             vk::PipelineCreateFlagBits(),
@@ -111,67 +175,11 @@ namespace GuelderEngine::Vulkan
             nullptr
         );
 
-        m_GraphicsPipeline = swapchainInfo.device.createGraphicsPipeline(nullptr, createInfo).value;
+        m_GraphicsPipeline = device.createGraphicsPipeline(nullptr, createInfo).value;
 
-        swapchainInfo.device.destroyShaderModule(vertex);
-        swapchainInfo.device.destroyShaderModule(fragment);
-
-        m_Swapchain.MakeFrames(swapchainInfo.device, m_RenderPass);
+        device.destroyShaderModule(vertex);
+        device.destroyShaderModule(fragment);
     }
-    VulkanPipeline::VulkanPipeline(const VulkanPipeline& other)
-    {
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
-        m_GraphicsPipeline = other.m_GraphicsPipeline;
-        m_Layout = other.m_Layout;
-        m_RenderPass = other.m_RenderPass;
-        m_Swapchain = other.m_Swapchain;
-    }
-    VulkanPipeline::VulkanPipeline(VulkanPipeline&& other) noexcept
-    {
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
-        m_GraphicsPipeline = other.m_GraphicsPipeline;
-        m_Layout = other.m_Layout;
-        m_RenderPass = other.m_RenderPass;
-        m_Swapchain = std::forward<VulkanSwapchain>(other.m_Swapchain);
-
-        other.Reset();
-    }
-    VulkanPipeline& VulkanPipeline::operator=(const VulkanPipeline& other)
-    {
-        if(this == &other)
-            return *this;
-
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
-        m_GraphicsPipeline = other.m_GraphicsPipeline;
-        m_Layout = other.m_Layout;
-        m_RenderPass = other.m_RenderPass;
-        m_Swapchain = other.m_Swapchain;
-
-        return *this;
-    }
-    VulkanPipeline& VulkanPipeline::operator=(VulkanPipeline&& other) noexcept
-    {
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
-        m_GraphicsPipeline = other.m_GraphicsPipeline;
-        m_Layout = other.m_Layout;
-        m_RenderPass = other.m_RenderPass;
-        m_Swapchain = std::forward<VulkanSwapchain>(other.m_Swapchain);
-
-        other.Reset();
-
-        return *this;
-    }
-}
-namespace GuelderEngine::Vulkan
-{
-    /*VulkanPipeline::VulkanPipeline(const vk::Device& device, const vk::Extent2D& extent, const vk::Format& swapchainImageFormat, const std::string_view& vertexPath, const std::string_view& fragmentPath)
-    {
-
-    }*/
     void VulkanPipeline::Reset() noexcept
     {
         m_Queues.graphicsQueue = nullptr;
@@ -180,6 +188,7 @@ namespace GuelderEngine::Vulkan
         m_Layout = nullptr;
         m_RenderPass = nullptr;
         m_Swapchain.Reset();
+        m_ShaderManager.Reset();
     }
     void VulkanPipeline::Cleanup(const vk::Device& device) const noexcept
     {
@@ -187,110 +196,6 @@ namespace GuelderEngine::Vulkan
         device.destroyPipelineLayout(m_Layout);
         device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
-    }
-    void VulkanPipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const VulkanScene& scene) const
-    {
-        const vk::CommandBufferBeginInfo commandBufferBeginInfo{};
-
-        commandBuffer.begin(commandBufferBeginInfo);
-        
-        const float greenValue = (sin(glfwGetTime()) / 2.0f) + 0.5f;
-
-        //const vk::ClearValue clearColor[2] = { vk::ClearColorValue{ 1.0f, greenValue, 0.25f, 1.0f }, vk::ClearDepthStencilValue{ 1.0f, 0 } };
-        const vk::ClearValue clearColor({ 1.0f, greenValue, 0.25f, 1.0f });
-        const vk::RenderPassBeginInfo renderPassBeginInfo(
-            m_RenderPass,
-            m_Swapchain.m_Frames[imageIndex].framebuffer,
-            vk::Rect2D({ 0, 0 }, m_Swapchain.m_Extent),
-            2,
-            &clearColor
-        );
-
-        commandBuffer.beginRenderPass(&renderPassBeginInfo, vk::SubpassContents::eInline);
-        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_GraphicsPipeline);
-
-        for(auto&& position : scene.GetTrianglesPositions())
-        {
-            const auto model = glm::translate(glm::mat4(1.0f), position);
-            const auto vulkanModel = VulkanModel(model);
-            commandBuffer.pushConstants(m_Layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(vulkanModel), &vulkanModel);
-
-            commandBuffer.draw(3, 1, 0, 0);//hardcode
-        }
-
-        commandBuffer.endRenderPass();
-        commandBuffer.end();
-    }
-    void VulkanPipeline::Render(const VulkanPipelineRenderCreateInfo& info)
-    {
-        const auto& currentFrame = m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber];
-
-        //GE_CORE_CLASS_ASSERT(info.device.waitForFences(1, &currentFrame.sync.m_InFlightFence, VK_TRUE, UINT64_MAX) == vk::Result::eSuccess, "cannot wait for fence");
-        currentFrame.WaitForImage(info.device);
-
-        const auto acquire = info.device.acquireNextImageKHR(m_Swapchain.m_Swapchain, UINT64_MAX, currentFrame.sync.m_ImageAvailable, nullptr);
-
-        /*if(acquire.result == vk::Result::eErrorOutOfDateKHR)
-        {
-            m_Swapchain.Recreate(info.device, info.physicalDevice, info.surface, info.width, info.height, info.queueFamilyIndices);
-            return;
-        }*/
-
-        const Types::uint imageIndex = acquire.value;
-
-        const auto& commandBuffer = currentFrame.commandBuffer;
-        commandBuffer.reset();
-
-        RecordDrawCommands(commandBuffer, imageIndex, info.scene);
-
-        const vk::Semaphore waitSemaphores[] = { currentFrame.sync.m_ImageAvailable };
-        const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-        const vk::Semaphore signalSemaphores[] = { currentFrame.sync.m_RenderFinished };
-
-        const vk::SubmitInfo submitInfo(
-            1,
-            waitSemaphores,
-            waitStages,
-            1,
-            &commandBuffer,
-            1,
-            signalSemaphores
-        );
-
-        //GE_CORE_CLASS_ASSERT(info.device.resetFences(1, &currentFrame.sync.m_InFlightFence) == vk::Result::eSuccess, "cannot reset fence");
-        currentFrame.ResetFence(info.device);
-
-        m_Queues.graphicsQueue.submit(submitInfo, currentFrame.sync.m_InFlightFence);
-
-        const vk::SwapchainKHR swapchains[] = { m_Swapchain.m_Swapchain };
-
-        const vk::PresentInfoKHR presentInfo(
-            1,
-            signalSemaphores,
-            1,
-            swapchains,
-            &imageIndex
-        );
-
-        //GE_CORE_CLASS_ASSERT(m_Queues.presentQueue.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
-
-        vk::Result presentResult;
-        try
-        {
-            presentResult = m_Queues.presentQueue.presentKHR(presentInfo);
-        }
-        catch(const vk::OutOfDateKHRError& error)
-        {
-            presentResult = vk::Result::eErrorOutOfDateKHR;
-        }
-
-        if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR)
-        {
-            m_Swapchain.Recreate(info.device, info.physicalDevice, info.surface, info.width, info.height, info.queueFamilyIndices);
-            return;
-        }
-
-        m_Swapchain.m_CurrentFrameNumber = (m_Swapchain.m_CurrentFrameNumber + 1) % m_Swapchain.m_MaxFramesInFlight;
     }
 
     vk::PipelineLayout VulkanPipeline::CreateLayout(const vk::Device& device)
@@ -338,6 +243,7 @@ namespace GuelderEngine::Vulkan
 
         return device.createRenderPass(info);
     }
+
     vk::Queue VulkanPipeline::GetGraphicsQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept
     {
         return device.getQueue(indices.graphicsFamily.value(), 0);
@@ -345,5 +251,137 @@ namespace GuelderEngine::Vulkan
     vk::Queue VulkanPipeline::GetPresentQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept
     {
         return device.getQueue(indices.presentFamily.value(), 0);
+    }
+
+    void VulkanPipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const VulkanScene& scene) const
+    {
+        const vk::CommandBufferBeginInfo commandBufferBeginInfo{};
+
+        commandBuffer.begin(commandBufferBeginInfo);
+
+        const float greenValue = (sin(glfwGetTime()) / 2.0f) + 0.5f;
+
+        const vk::ClearValue clearValue{{ 1.0f, greenValue, 0.25f, 1.0f }};
+        const vk::RenderPassBeginInfo renderPassBeginInfo(
+            m_RenderPass,
+            m_Swapchain.m_Frames[imageIndex].framebuffer,
+            vk::Rect2D({ 0, 0 }, m_Swapchain.m_Extent),
+            1,
+            &clearValue
+        );
+
+        commandBuffer.beginRenderPass(&renderPassBeginInfo, vk::SubpassContents::eInline);
+        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_GraphicsPipeline);
+
+        for(auto&& position : scene.GetTrianglesPositions())
+        {
+            const auto model = glm::translate(glm::mat4(1.0f), position);
+            const auto vulkanModel = VulkanModel(model);
+            commandBuffer.pushConstants(m_Layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(vulkanModel), &vulkanModel);
+
+            commandBuffer.draw(3, 1, 0, 0);//hardcode
+        }
+
+        commandBuffer.endRenderPass();
+        commandBuffer.end();
+    }
+    void VulkanPipeline::Render(const vk::Device& device, const vk::PhysicalDevice& physicalDevice,  const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
+        const VulkanQueueFamilyIndices& queueFamilyIndices, const VulkanScene& scene)
+    {
+        const auto& currentFrame = m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber];
+
+        //GE_CORE_CLASS_ASSERT(info.device.waitForFences(1, &currentFrame.sync.m_InFlightFence, VK_TRUE, UINT64_MAX) == vk::Result::eSuccess, "cannot wait for fence");
+        currentFrame.WaitForImage(device);
+
+        Types::uint imageIndex;
+        try
+        {
+            const auto result = device.acquireNextImageKHR(m_Swapchain.m_Swapchain, UINT64_MAX, currentFrame.sync.m_ImageAvailable, nullptr);
+            imageIndex = result.value;
+        }
+        catch(const vk::OutOfDateKHRError error)
+        {
+            Recreate( device, physicalDevice, surface, m_RenderPass, extent, queueFamilyIndices);
+            return;
+        }
+        catch(const vk::SystemError)
+        {
+            GE_THROW("Failed to acquire next swapchain image");
+        }
+
+        //const Types::uint imageIndex = acquire.value;
+
+        const auto& commandBuffer = currentFrame.commandBuffer;
+        commandBuffer.reset();
+
+        RecordDrawCommands(commandBuffer, imageIndex, scene);
+
+        const vk::Semaphore waitSemaphores[] = { currentFrame.sync.m_ImageAvailable };
+        const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+        const vk::Semaphore signalSemaphores[] = { currentFrame.sync.m_RenderFinished };
+
+        const vk::SubmitInfo submitInfo(
+            1,
+            waitSemaphores,
+            waitStages,
+            1,
+            &commandBuffer,
+            1,
+            signalSemaphores
+        );
+
+        //GE_CORE_CLASS_ASSERT(info.device.resetFences(1, &currentFrame.sync.m_InFlightFence) == vk::Result::eSuccess, "cannot reset fence");
+        currentFrame.ResetFence(device);
+
+        m_Queues.graphicsQueue.submit(submitInfo, currentFrame.sync.m_InFlightFence);
+
+        const vk::SwapchainKHR swapchains[] = { m_Swapchain.m_Swapchain };
+
+        const vk::PresentInfoKHR presentInfo(
+            1,
+            signalSemaphores,
+            1,
+            swapchains,
+            &imageIndex
+        );
+
+        //GE_CORE_CLASS_ASSERT(m_Queues.presentQueue.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
+
+        vk::Result presentResult;
+        try
+        {
+            presentResult = m_Queues.presentQueue.presentKHR(presentInfo);
+        }
+        catch(const vk::OutOfDateKHRError& error)
+        {
+            presentResult = vk::Result::eErrorOutOfDateKHR;
+        }
+        catch(const vk::SystemError& error)
+        {
+            GE_THROW("Cannot present image");
+        }
+
+        if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR)
+        {
+            Recreate( device, physicalDevice, surface, m_RenderPass,
+                extent, queueFamilyIndices );
+            return;
+        }
+
+        m_Swapchain.m_CurrentFrameNumber = (m_Swapchain.m_CurrentFrameNumber + 1) % m_Swapchain.m_MaxFramesInFlight;
+    }
+
+    void VulkanPipeline::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
+        const VulkanQueueFamilyIndices& queueFamilyIndices)
+    {
+        device.waitIdle();
+
+        device.destroyPipelineLayout(m_Layout);
+        device.destroyRenderPass(m_RenderPass);
+        device.destroyPipeline(m_GraphicsPipeline);
+
+        Create( device, m_ShaderManager.GetVertexPath(), m_ShaderManager.GetFragmentPath());
+
+        m_Swapchain.Recreate( device, physicalDevice, surface, renderPass, extent, queueFamilyIndices );
     }
 }

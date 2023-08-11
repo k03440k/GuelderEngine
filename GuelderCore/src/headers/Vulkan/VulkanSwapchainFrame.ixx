@@ -8,17 +8,22 @@ import :VulkanSync;
 
 export namespace GuelderEngine::Vulkan
 {
-    struct VulkanSwapchainFrame : INHERIT_GClass(VulkanSwapchainFrame), public IVulkanObject
+    class VulkanCommandPool;
+
+    struct VulkanSwapchainFrame : public IVulkanObject, INHERIT_GClass(VulkanSwapchainFrame)
     {
     public:
         DECLARE_DCAD_AND_CAM(VulkanSwapchainFrame);
-
-        VulkanSwapchainFrame(const vk::Device& device, const vk::Image& image, const vk::ImageViewCreateInfo& viewInfo);
+        
+        VulkanSwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const VulkanCommandPool& pool);
 
         virtual void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
 
         void CreateFrameBuffer(const vk::Device& device, const vk::FramebufferCreateInfo& info);
+
+        void Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,
+            const vk::ImageViewCreateInfo& viewInfo, const VulkanCommandPool& pool);
 
         /*
          *@brief waits for fence
@@ -33,6 +38,12 @@ export namespace GuelderEngine::Vulkan
         VulkanSwapchainFrameSync sync;
 
     private:
-        void CreateImage(const vk::Device& device, const vk::Image& image, const vk::ImageViewCreateInfo& viewInfo);
+        void CleanupImageView(const vk::Device& device) const noexcept;
+        void CleanupFramebuffer(const vk::Device& device) const noexcept;
+        void FreeCommandBuffer(const VulkanCommandPool& pool, const vk::Device& device) const noexcept;
+
+        void CreateFrameBuffer(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent);
+        void CreateImage(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo);
+        void CreateCommandBuffer(const vk::Device& device, const VulkanCommandPool& pool);
     };
 }

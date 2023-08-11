@@ -6,15 +6,16 @@ module GuelderEngine.Vulkan;
 import :VulkanSwapchainFrame;
 
 import :VulkanSync;
-import :VulkanCommandBuffer;
+import :VulkanCommandPool;
 
+//Ctors
 namespace GuelderEngine::Vulkan
 {
-    VulkanSwapchainFrame::VulkanSwapchainFrame(const vk::Device& device, const vk::Image& image, const vk::ImageViewCreateInfo& viewInfo)
+    VulkanSwapchainFrame::VulkanSwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const VulkanCommandPool& pool)
     {
-        CreateImage(device, image, viewInfo);
+        CreateImage(device, viewInfo);
+        CreateCommandBuffer(device, pool);
         sync = VulkanSwapchainFrameSync(device);
-        //don't allocate command buffer, because we don't have actual access to vk::CommandPool
     }
     VulkanSwapchainFrame::VulkanSwapchainFrame(const VulkanSwapchainFrame& other)
     {
@@ -59,6 +60,10 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
+}
+//Cleanups
+namespace GuelderEngine::Vulkan
+{
     void VulkanSwapchainFrame::Reset() noexcept
     {
         image = nullptr;
@@ -70,13 +75,54 @@ namespace GuelderEngine::Vulkan
     void VulkanSwapchainFrame::Cleanup(const vk::Device& device) const noexcept
     {
         device.destroyImageView(imageView);
-        device.destroyFramebuffer(framebuffer);
+        CleanupFramebuffer(device);
         sync.Cleanup(device);
     }
+    void VulkanSwapchainFrame::CleanupImageView(const vk::Device& device) const noexcept
+    {
+        device.destroyImageView(imageView);
+    }
+    void VulkanSwapchainFrame::CleanupFramebuffer(const vk::Device& device) const noexcept
+    {
+        device.destroyFramebuffer(framebuffer);
+    }
+    void VulkanSwapchainFrame::FreeCommandBuffer(const VulkanCommandPool& pool, const vk::Device& device) const noexcept
+    {
+        pool.FreeCommandBuffer(device, commandBuffer);
+    }
+}
+namespace GuelderEngine::Vulkan
+{
     void VulkanSwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::FramebufferCreateInfo& info)
     {
         framebuffer = device.createFramebuffer(info);
     }
+    void VulkanSwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent)
+    {
+        const std::vector attachments{imageView};//idk
+
+        const vk::FramebufferCreateInfo framebufferInfo(
+            vk::FramebufferCreateFlags(),
+            renderPass,
+            attachments.size(),
+            attachments.data(),
+            swapchainExtent.width,
+            swapchainExtent.height,
+            1
+        );
+        
+        framebuffer = device.createFramebuffer(framebufferInfo);
+    }
+    void VulkanSwapchainFrame::CreateImage(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo)
+    {
+        this->image = viewInfo.image;
+        imageView = device.createImageView(viewInfo);
+    }
+    void VulkanSwapchainFrame::CreateCommandBuffer(const vk::Device& device, const VulkanCommandPool& pool)
+    {
+        commandBuffer = pool.CreateCommandBuffer(device);
+    }
+
     void VulkanSwapchainFrame::WaitForImage(const vk::Device& device, const uint64_t& delay) const
     {
         GE_CORE_CLASS_ASSERT(device.waitForFences(1, &sync.m_InFlightFence, VK_TRUE, delay) == vk::Result::eSuccess, "cannot wait for fence");
@@ -85,9 +131,16 @@ namespace GuelderEngine::Vulkan
     {
         GE_CORE_CLASS_ASSERT(device.resetFences(1, &sync.m_InFlightFence) == vk::Result::eSuccess, "cannot reset fence");
     }
-    void VulkanSwapchainFrame::CreateImage(const vk::Device& device, const vk::Image& image, const vk::ImageViewCreateInfo& viewInfo)
+
+    void VulkanSwapchainFrame::Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,
+        const vk::ImageViewCreateInfo& viewInfo, const VulkanCommandPool& pool)
     {
-        this->image = image;
-        imageView = device.createImageView(viewInfo);
+        CleanupImageView(device);
+        CleanupFramebuffer(device);
+        FreeCommandBuffer(pool, device);
+
+        CreateImage(device, viewInfo);
+        CreateFrameBuffer(device, renderPass, swapchainExtent);
+        CreateCommandBuffer(device, pool);
     }
 }
