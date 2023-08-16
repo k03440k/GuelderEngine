@@ -15,8 +15,8 @@ import <stdexcept>;
 namespace GuelderEngine
 {
     Window::Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
-        const std::string& windowTitle, const UpdateFunc& update, const bool& enableVSync) :
-        m_Data(windowTitle, windowWidth, windowHeight, enableVSync), onUpdate(update)
+        const std::string& windowTitle) :
+        m_Data(windowWidth, windowHeight, windowTitle)
     {
         Init();
     }
@@ -32,17 +32,16 @@ namespace GuelderEngine
 }
 namespace GuelderEngine
 {
-    Window::WindowData::WindowData(const std::string& title, const Types::ushort& width,
-        const Types::ushort& height, const bool& showFrameRate, const bool& isVSync,
+    Window::WindowData::WindowData(const Types::ushort& width,
+        const Types::ushort& height, const std::string& title, const bool& showFrameRate,
         const EventCallbackFunc& callback) : title(title), width(width), height(height),
-        callback(callback), showFrameRate(showFrameRate), isVSync(isVSync) {}
+        callback(callback), showFrameRate(showFrameRate) {}
     Window::WindowData& Window::WindowData::operator=(const WindowData& other)
     {
         title = other.title;
         width = other.width;
         height = other.height;
         callback = other.callback;
-        isVSync = other.isVSync;
 
         return *this;
     }
@@ -67,16 +66,21 @@ namespace GuelderEngine
     {
         return m_FrameRate;
     }
+    void Window::WindowData::SetSize(const Types::uint& width, const Types::uint& height) noexcept
+    {
+        this->width = width;
+        this->height = height;
+    }
 }
 namespace GuelderEngine
 {
-    inline bool is_GLFW_init = false;
+    bool is_GLFW_init = false;
 #pragma region Window
     namespace Events
     {
-        static void GLFWErrorCallback(int errorCode, const char* description)
+        [[noreturn]] void GLFWErrorCallback(int errorCode, const char* description)
         {
-            GE_THROW("GuelderEngine::GLFWErrorCallback: error code: ", errorCode);
+            GE_THROW("GLFW error(", errorCode, "), description: ", description);
         }
     }
 
@@ -107,7 +111,6 @@ namespace GuelderEngine
 
         glfwMakeContextCurrent(m_GLFWWindow);
         glfwSetWindowUserPointer(m_GLFWWindow, &m_Data);
-        SetVSync(m_Data.isVSync);
 
         //set glfw callbacks
         glfwSetWindowSizeCallback(m_GLFWWindow, [](GLFWwindow* window, int width, int height)
@@ -183,21 +186,30 @@ namespace GuelderEngine
                 data.callback(event);
             });
     }
-    void Window::SetVSync(const bool& isEnable)
+    Types::ushort Window::GetWidth() const noexcept { return m_Data.width; }
+    Types::ushort Window::GetHeight() const noexcept { return m_Data.height; }
+    WindowSize Window::GetWindowSize() const noexcept
     {
-        if (isEnable) glfwSwapInterval(1);
-        else glfwSwapInterval(0);
-        m_Data.isVSync = isEnable;
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(m_GLFWWindow, &width, &height);
+        return { static_cast<Types::uint>(width), static_cast<Types::uint>(height) };
     }
+    std::string Window::GetTitle() const noexcept { return m_Data.title; }
     void Window::SetWindow(const Types::ushort& windowWidth, const Types::ushort& windowHeight, const std::string& windowTitle)
     {
-        m_Data = Window::WindowData(windowTitle, windowWidth, windowHeight);
+        m_Data = Window::WindowData(windowWidth, windowHeight, windowTitle);
 
         if (m_GLFWWindow) glfwDestroyWindow(m_GLFWWindow);
 
         Init();
     }
-    void Window::ShowFrameRate()//TODO: show fps
+    void Window::SetWindowSize(const Types::ushort& width, const Types::ushort& height)
+    {
+        m_Data.width = width;
+        m_Data.height = height;
+        glfwSetWindowSize(m_GLFWWindow, m_Data.width, m_Data.height);
+    }
+    void Window::ShowFrameRate()
     {
         if(m_Data.showFrameRate)
         {
@@ -214,20 +226,25 @@ namespace GuelderEngine
         glfwDestroyWindow(m_GLFWWindow);
         glfwTerminate();
     }
+    void Window::UpdateSize()
+    {
+        int width, height;
+        glfwGetFramebufferSize(m_GLFWWindow, &width, &height);
+
+        m_Data.SetSize(width, height);
+
+        while(m_Data.width == 0 || m_Data.height == 0)
+        {
+            glfwGetFramebufferSize(m_GLFWWindow, &width, &height);
+            m_Data.SetSize(width, height);
+            glfwWaitEvents();
+        }
+    }
     void Window::OnUpdate()
     {
-        onUpdate();
-        
         ShowFrameRate();
 
-        glfwSwapBuffers(m_GLFWWindow);
-        glfwPollEvents();
-    }
-    void Window::OnUpdate(const UpdateFunc& update)
-    {
-        update();
-
-        ShowFrameRate();
+        UpdateSize();
 
         glfwSwapBuffers(m_GLFWWindow);
         glfwPollEvents();

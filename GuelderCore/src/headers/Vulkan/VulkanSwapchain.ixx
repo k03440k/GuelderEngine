@@ -2,6 +2,7 @@ module;
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
+#include <glfw/glfw3.h>
 export module GuelderEngine.Vulkan:VulkanSwapchain;
 
 import :IVulkanObject;
@@ -39,6 +40,7 @@ export namespace GuelderEngine::Vulkan
         */
         void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
             const VulkanQueueFamilyIndices& queueFamilyIndices);
+
     private:
         static vk::SurfaceFormatKHR ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats);
         static vk::PresentModeKHR ChooseSwapchainPresentMode(const std::vector<vk::PresentModeKHR>& presentModes);
@@ -57,6 +59,9 @@ export namespace GuelderEngine::Vulkan
         VulkanShaderManager m_ShaderManager;
         VulkanSwapchainSupportDetails m_Details;
         VulkanCommandPool m_CommandPool;
+
+        //if the swapchain was created
+        bool m_IsSwapchain : 1;
 
         Types::uint m_MaxFramesInFlight;
         Types::uint m_CurrentFrameNumber;

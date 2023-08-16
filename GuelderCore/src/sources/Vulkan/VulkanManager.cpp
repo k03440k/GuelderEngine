@@ -70,11 +70,11 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath,
+    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const std::string_view& vertPath, const std::string_view& fragPath,
         const std::string_view& name)
     {
         m_Instance = CreateVkInstance(name.data());
-        m_DeviceManager = VulkanDeviceManager(m_Instance, glfwWindow, vertPath, fragPath);
+        m_DeviceManager = VulkanDeviceManager(m_Instance, glfwWindow, { width, height }, vertPath, fragPath);
 
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = VulkanDebugManager(m_Instance);
@@ -137,9 +137,9 @@ namespace GuelderEngine::Vulkan
         Cleanup();
     }
 
-    void VulkanManager::Render(GLFWwindow* glfwWindow)
+    void VulkanManager::Render(Types::uint width, Types::uint height)
     {
-        m_DeviceManager.Render(glfwWindow, m_Scene);
+        m_DeviceManager.Render(width, height, m_Scene);
     }
 
     vk::Instance VulkanManager::CreateVkInstance(const char* name)

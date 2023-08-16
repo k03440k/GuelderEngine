@@ -39,6 +39,7 @@ export namespace GuelderEngine
     class GEApplication : public IApplication, INHERIT_GClass(GEApplication)
     {
     public:
+        using UpdateFunc = std::function<void()>;
         /*
          *@param executablePath - path where .exe file stores, can be found in main
          *@param info - info about size of window, its name, etc
@@ -64,8 +65,7 @@ export namespace GuelderEngine
 
         //Window& GetWindow() { return *window; }
 
-        void SetOnUpdateFunc(const std::function<void()>& onUpdate) noexcept;
-        const std::function<void()>& GetOnUpdateFunc();
+        void SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept;
         int GetFrameRate() const noexcept { return m_Window->GetFrameRate(); }
 
         Events::EventDispatcher eventDispatcher;
@@ -78,6 +78,7 @@ export namespace GuelderEngine
         //std::function<void()> m_CallOnUpdate;
 
         //std::unique_ptr<class Window> m_Window;
+        UpdateFunc m_OnUpdate;
 
         Layers::LayerStack m_LayerStack;
 

@@ -17,7 +17,7 @@ import <ranges>;
 
 namespace GuelderEngine::Vulkan
 {
-    VulkanDeviceManager::VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath, const std::vector<const char*>& extensions)
+    VulkanDeviceManager::VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const vk::Extent2D& windowSize, const std::string_view& vertPath, const std::string_view& fragPath, const std::vector<const char*>& extensions)
     {
         VkSurfaceKHR cStyle;
         GE_CORE_CLASS_ASSERT(glfwCreateWindowSurface(instance, glfwWindow, nullptr, &cStyle) == VK_SUCCESS,
@@ -28,16 +28,8 @@ namespace GuelderEngine::Vulkan
         m_QueueIndices = VulkanQueueFamilyIndices(m_PhysicalDevice, m_Surface);
         m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices, extensions);
 
-        //m_Queues.graphicsQueue = GetGraphicsQueue(m_Device, m_QueueIndices);
-        //m_Queues.presentQueue = GetPresentQueue(m_Device, m_QueueIndices);
-
-        int width{}, height{};
-        glfwGetWindowSize(glfwWindow, &width, &height);
-
-        //m_Swapchain = VulkanSwapchain(m_Device, m_PhysicalDevice, m_Surface, width, height, m_QueueIndices);
-
-        m_Pipeline = VulkanPipeline(m_Device, m_PhysicalDevice, m_Surface, width, height, m_QueueIndices,
-            /* m_Swapchain.m_Extent, m_Swapchain.m_Format,*/ vertPath, fragPath);
+        m_Pipeline = VulkanPipeline(m_Device, m_PhysicalDevice, m_Surface, windowSize.width, windowSize.height, m_QueueIndices,
+             vertPath, fragPath);
     }
     VulkanDeviceManager::VulkanDeviceManager(const VulkanDeviceManager& other)
     {
@@ -45,9 +37,6 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        //m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        //m_Queues.presentQueue = other.m_Queues.presentQueue;
-        //m_Swapchain = other.m_Swapchain;
         m_Pipeline = other.m_Pipeline;
     }
     VulkanDeviceManager::VulkanDeviceManager(VulkanDeviceManager&& other) noexcept
@@ -56,9 +45,6 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        //m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        //m_Queues.presentQueue = other.m_Queues.presentQueue;
-        //m_Swapchain = other.m_Swapchain;
         m_Pipeline = std::forward<VulkanPipeline>(other.m_Pipeline);
 
         other.Reset();
@@ -72,9 +58,6 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        //m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        //m_Queues.presentQueue = other.m_Queues.presentQueue;
-        //m_Swapchain = other.m_Swapchain;
         m_Pipeline = other.m_Pipeline;
 
         return *this;
@@ -85,9 +68,6 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        //m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        //m_Queues.presentQueue = other.m_Queues.presentQueue;
-        //m_Swapchain = other.m_Swapchain;
         m_Pipeline = std::forward<VulkanPipeline>(other.m_Pipeline);
 
         other.Reset();
@@ -103,28 +83,18 @@ namespace GuelderEngine::Vulkan
         m_Device = nullptr;
         m_QueueIndices = {};
         m_Surface = nullptr;
-        //m_Queues.presentQueue = nullptr;
-        //m_Queues.graphicsQueue = nullptr;
-        //m_Swapchain.Reset();
         m_Pipeline.Reset();
     }
     void VulkanDeviceManager::Cleanup(const vk::Instance& instance) const noexcept
     {
         m_Device.waitIdle();
         m_Pipeline.Cleanup(m_Device);
-        //m_Swapchain.Cleanup(m_Device);
         m_Device.destroy();
         instance.destroySurfaceKHR(m_Surface);
     }
-    void VulkanDeviceManager::Render(GLFWwindow* glfwWindow, const VulkanScene& scene)
+    void VulkanDeviceManager::Render(Types::uint width, Types::uint height, const VulkanScene& scene)
     {
-        int width = 0, height = 0;
-        while(width == 0 || height == 0) {
-            glfwGetFramebufferSize(glfwWindow, &width, &height);
-            glfwWaitEvents();
-        }
-
-        m_Pipeline.Render(m_Device, m_PhysicalDevice, m_Surface, {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}, m_QueueIndices, scene);
+        m_Pipeline.Render(m_Device, m_PhysicalDevice, m_Surface, {width, height}, m_QueueIndices, scene);
     }
     bool VulkanDeviceManager::CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& requestedExtensions)
     {
@@ -248,12 +218,4 @@ namespace GuelderEngine::Vulkan
 
         return physicalDevice.createDevice(deviceInfo);
     }
-    /*vk::Queue VulkanDeviceManager::GetGraphicsQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept
-    {
-        return device.getQueue(indices.graphicsFamily.value(), 0);
-    }
-    vk::Queue VulkanDeviceManager::GetPresentQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept
-    {
-        return device.getQueue(indices.presentFamily.value(), 0);
-    }*/
 }

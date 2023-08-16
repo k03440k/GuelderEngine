@@ -301,12 +301,8 @@ namespace GuelderEngine::Vulkan
         }
         catch(const vk::OutOfDateKHRError error)
         {
-            Recreate( device, physicalDevice, surface, m_RenderPass, extent, queueFamilyIndices);
+            Recreate( device, physicalDevice, surface, extent, queueFamilyIndices);
             return;
-        }
-        catch(const vk::SystemError)
-        {
-            GE_THROW("Failed to acquire next swapchain image");
         }
 
         //const Types::uint imageIndex = acquire.value;
@@ -329,9 +325,9 @@ namespace GuelderEngine::Vulkan
             1,
             signalSemaphores
         );
+        currentFrame.ResetFence(device);
 
         //GE_CORE_CLASS_ASSERT(info.device.resetFences(1, &currentFrame.sync.m_InFlightFence) == vk::Result::eSuccess, "cannot reset fence");
-        currentFrame.ResetFence(device);
 
         m_Queues.graphicsQueue.submit(submitInfo, currentFrame.sync.m_InFlightFence);
 
@@ -356,32 +352,39 @@ namespace GuelderEngine::Vulkan
         {
             presentResult = vk::Result::eErrorOutOfDateKHR;
         }
-        catch(const vk::SystemError& error)
-        {
-            GE_THROW("Cannot present image");
-        }
 
         if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR)
         {
-            Recreate( device, physicalDevice, surface, m_RenderPass,
-                extent, queueFamilyIndices );
+            Recreate( device, physicalDevice, surface,  extent, queueFamilyIndices );
             return;
         }
 
         m_Swapchain.m_CurrentFrameNumber = (m_Swapchain.m_CurrentFrameNumber + 1) % m_Swapchain.m_MaxFramesInFlight;
     }
 
-    void VulkanPipeline::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
+    void VulkanPipeline::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
         const VulkanQueueFamilyIndices& queueFamilyIndices)
     {
         device.waitIdle();
 
-        device.destroyPipelineLayout(m_Layout);
+        GE_LOG(VulkanCore, Info, "Recreating Swapchain");
+
+        Cleanup(device);
+        m_Swapchain.Reset();
+        m_Swapchain = VulkanSwapchain(device, physicalDevice, surface, extent, queueFamilyIndices);
+
+        m_Queues.graphicsQueue = GetGraphicsQueue(device, queueFamilyIndices);
+        m_Queues.presentQueue = GetPresentQueue(device, queueFamilyIndices);
+
+        Create(device, m_ShaderManager.GetVertexPath(), m_ShaderManager.GetFragmentPath());
+        m_Swapchain.MakeFrames(device, m_RenderPass);
+        //TODO: find out why lower recreation didn't work(maybe sync objects)
+        /*device.destroyPipelineLayout(m_Layout);
         device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
 
         Create( device, m_ShaderManager.GetVertexPath(), m_ShaderManager.GetFragmentPath());
 
-        m_Swapchain.Recreate( device, physicalDevice, surface, renderPass, extent, queueFamilyIndices );
+        m_Swapchain.Recreate( device, physicalDevice, surface, m_RenderPass, extent, queueFamilyIndices );*/
     }
 }

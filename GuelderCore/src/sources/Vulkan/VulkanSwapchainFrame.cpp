@@ -7,6 +7,7 @@ import :VulkanSwapchainFrame;
 
 import :VulkanSync;
 import :VulkanCommandPool;
+import GuelderEngine.Core.Types;
 
 //Ctors
 namespace GuelderEngine::Vulkan
@@ -72,8 +73,9 @@ namespace GuelderEngine::Vulkan
         commandBuffer = nullptr;
         sync.Reset();
     }
-    void VulkanSwapchainFrame::Cleanup(const vk::Device& device) const noexcept
+    void VulkanSwapchainFrame::Cleanup(const vk::Device& device, const VulkanCommandPool& pool) const noexcept
     {
+        FreeCommandBuffer(pool, device);
         device.destroyImageView(imageView);
         CleanupFramebuffer(device);
         sync.Cleanup(device);
@@ -111,7 +113,7 @@ namespace GuelderEngine::Vulkan
             1
         );
         
-        framebuffer = device.createFramebuffer(framebufferInfo);
+        CreateFrameBuffer(device, framebufferInfo);
     }
     void VulkanSwapchainFrame::CreateImage(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo)
     {

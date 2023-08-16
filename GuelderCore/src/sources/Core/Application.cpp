@@ -23,11 +23,13 @@ namespace GuelderEngine
         const std::string_view& fragmentShaderVarName)
     : resourceManager(executablePath)
     {
-        m_Window = std::make_unique<Window>(Window::WindowData(info.title.data(), info.width, info.height));
+        m_Window = std::make_unique<Window>(Window::WindowData(info.width, info.height, info.title.data()));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));
 
         m_VulkanManager = std::make_unique<Vulkan::VulkanManager>(
-            m_Window->m_GLFWWindow, 
+            m_Window->m_GLFWWindow,
+            m_Window->GetWidth(),
+            m_Window->GetHeight(),
             resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName),
             resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName),
             info.title);
@@ -37,14 +39,18 @@ namespace GuelderEngine
     }
     void GEApplication::Run()
     {
-        while (!m_CloseWindow)
+        while(!m_CloseWindow)
         {
             m_Window->OnUpdate();
-            m_VulkanManager->Render(m_Window->m_GLFWWindow);
 
-            if (!m_LayerStack.IsEmpty())
+            if(m_Window->GetWidth() != 0 && m_Window->GetHeight() != 0)
+                m_VulkanManager->Render(m_Window->GetWidth(), m_Window->GetHeight());
+
+            m_OnUpdate();
+
+            if(!m_LayerStack.IsEmpty())
             {
-                for (Layers::Layer* layer : m_LayerStack)
+                for(Layers::Layer* layer : m_LayerStack)
                     layer->OnUpdate();
             }
         }
@@ -53,8 +59,12 @@ namespace GuelderEngine
     {
         while (!m_CloseWindow)
         {
-            m_Window->OnUpdate(callOnUpdate);
-            m_VulkanManager->Render(m_Window->m_GLFWWindow);
+            m_Window->OnUpdate();
+
+            if(m_Window->GetWidth() != 0 && m_Window->GetHeight() != 0)
+                m_VulkanManager->Render(m_Window->GetWidth(), m_Window->GetHeight());
+
+            callOnUpdate();
 
             if (!m_LayerStack.IsEmpty())
             {
@@ -62,7 +72,6 @@ namespace GuelderEngine
                     layer->OnUpdate();
             }
         }
-        m_Window->onUpdate = callOnUpdate;
     }
     void GEApplication::OnEvent(Events::BaseEvent& event)
     {
@@ -87,8 +96,7 @@ namespace GuelderEngine
     {
         m_LayerStack.PushOverlay(overlay);
     }
-    void GEApplication::SetOnUpdateFunc(const std::function<void()>& onUpdate) noexcept { m_Window->onUpdate = onUpdate; }
-    const std::function<void()>& GEApplication::GetOnUpdateFunc() { return m_Window->onUpdate; }
+    void GEApplication::SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept { m_OnUpdate = onUpdate; }
     bool GEApplication::OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept
     {
         m_CloseWindow = true;

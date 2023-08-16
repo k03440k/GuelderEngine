@@ -9,6 +9,8 @@ import :VulkanSwapchain;
 import :VulkanShaderManager;
 import GuelderEngine.Core.Types;
 
+//import GuelderEngine.Core;
+
 import <vector>;
 
 export namespace GuelderEngine::Vulkan
@@ -41,10 +43,10 @@ export namespace GuelderEngine::Vulkan
 
         void Create(const vk::Device& device, const std::string_view& vertexPath, const std::string_view& fragmentPath);
 
-        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const VulkanScene& scene) const;
-
-        void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
+        void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
             const VulkanQueueFamilyIndices& queueFamilyIndices);
+
+        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const VulkanScene& scene) const;
 
         VulkanShaderManager m_ShaderManager;
         VulkanSwapchain m_Swapchain;

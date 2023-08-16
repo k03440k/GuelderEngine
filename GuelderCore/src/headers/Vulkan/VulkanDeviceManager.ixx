@@ -23,12 +23,12 @@ export namespace GuelderEngine::Vulkan
     public:
         DECLARE_DCAD_AND_CAM(VulkanDeviceManager);
 
-        VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath, const std::vector<const char*>& extensions = {});
+        VulkanDeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const vk::Extent2D& windowSize, const std::string_view& vertPath, const std::string_view& fragPath, const std::vector<const char*>& extensions = {});
 
         void Reset() noexcept override;
         void Cleanup(const vk::Instance& instance) const noexcept;
 
-        void Render(GLFWwindow* glfwWindow, const VulkanScene& scene);
+        void Render(Types::uint width, Types::uint height, const VulkanScene& scene);
     private:
         static bool CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice,
             const std::vector<const char*>& requestedExtensions);
@@ -43,8 +43,7 @@ export namespace GuelderEngine::Vulkan
         VulkanQueueFamilyIndices m_QueueIndices;
 
         vk::SurfaceKHR m_Surface;
-
-        //VulkanSwapchain m_Swapchain;
+        
         VulkanPipeline m_Pipeline;
     };
 }

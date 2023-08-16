@@ -18,7 +18,7 @@ export namespace GuelderEngine::Vulkan
         VulkanSwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const VulkanCommandPool& pool);
 
         virtual void Reset() noexcept override;
-        void Cleanup(const vk::Device& device) const noexcept;
+        void Cleanup(const vk::Device& device, const VulkanCommandPool& pool) const noexcept;
 
         void CreateFrameBuffer(const vk::Device& device, const vk::FramebufferCreateInfo& info);
 

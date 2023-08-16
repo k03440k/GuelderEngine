@@ -44,7 +44,7 @@ export namespace GuelderEngine::Vulkan
     {
     public:
         VulkanManager() = default;
-        VulkanManager(GLFWwindow* glfwWindow, const std::string_view& vertPath, const std::string_view& fragPath,
+        VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const std::string_view& vertPath, const std::string_view& fragPath,
             const std::string_view& name = "Guelder Engine Editor");
         virtual ~VulkanManager();
 
@@ -55,7 +55,11 @@ export namespace GuelderEngine::Vulkan
         static bool AreExtensionsSupported(const std::vector<const char*>& extensions);
         //void LoadVertexShader(const std::string_view& source);
         //void LoadFragmentShader(const std::string_view& source);
-        void Render(GLFWwindow* glfwWindow);
+        /**
+         * \param width window width
+         * \param height window height
+         */
+        void Render(Types::uint width, Types::uint height);
     private:
         static vk::Instance CreateVkInstance(const char* name);
         virtual void Cleanup() const noexcept;
