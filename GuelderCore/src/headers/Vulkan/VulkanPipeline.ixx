@@ -41,7 +41,7 @@ export namespace GuelderEngine::Vulkan
         static vk::Queue GetGraphicsQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept;
         static vk::Queue GetPresentQueue(const vk::Device& device, const VulkanQueueFamilyIndices& indices) noexcept;
 
-        void Create(const vk::Device& device, const std::string_view& vertexPath, const std::string_view& fragmentPath);
+        void Create(const vk::Device& device, const vk::Extent2D& extent, const std::string_view& vertexPath, const std::string_view& fragmentPath);
 
         void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
             const VulkanQueueFamilyIndices& queueFamilyIndices);

@@ -29,7 +29,7 @@ namespace GuelderEngine::Vulkan
 
         m_ShaderManager = VulkanShaderManager(vertexPath, fragmentPath);
 
-        Create(device, vertexPath, fragmentPath);
+        Create(device, { width, height }, vertexPath, fragmentPath);
         m_Swapchain.MakeFrames(device, m_RenderPass);
     }
     VulkanPipeline::VulkanPipeline(const VulkanPipeline& other)
@@ -86,7 +86,7 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    void VulkanPipeline::Create(const vk::Device& device, const std::string_view& vertexPath, const std::string_view& fragmentPath)
+    void VulkanPipeline::Create(const vk::Device& device, const vk::Extent2D& extent, const std::string_view& vertexPath, const std::string_view& fragmentPath)
     {
         constexpr vk::PipelineVertexInputStateCreateInfo vertexInfo(vk::PipelineVertexInputStateCreateFlags(), 0, nullptr, 0);
         constexpr vk::PipelineInputAssemblyStateCreateInfo assemblyInfo(vk::PipelineInputAssemblyStateCreateFlags(), vk::PrimitiveTopology::eTriangleList);
@@ -104,8 +104,8 @@ namespace GuelderEngine::Vulkan
         shaderStages.push_back(fragmentShaderInfo);
 
         //viewport
-        const vk::Viewport viewport(0.0f, 0.0f, m_Swapchain.m_Extent.width, m_Swapchain.m_Extent.height, 0.0f, 1.0f);
-        const vk::Rect2D scissor({ 0, 0 }, m_Swapchain.m_Extent);
+        const vk::Viewport viewport(0.0f, 0.0f, extent.width, extent.height, 0.0f, 1.0f);
+        const vk::Rect2D scissor({ 0, 0 }, extent);
 
         vk::PipelineViewportStateCreateInfo viewportInfo(
             vk::PipelineViewportStateCreateFlags(),
@@ -369,7 +369,7 @@ namespace GuelderEngine::Vulkan
 
         GE_LOG(VulkanCore, Info, "Recreating Swapchain");
 
-        Cleanup(device);
+        /*Cleanup(device);
         m_Swapchain.Reset();
         m_Swapchain = VulkanSwapchain(device, physicalDevice, surface, extent, queueFamilyIndices);
 
@@ -377,14 +377,14 @@ namespace GuelderEngine::Vulkan
         m_Queues.presentQueue = GetPresentQueue(device, queueFamilyIndices);
 
         Create(device, m_ShaderManager.GetVertexPath(), m_ShaderManager.GetFragmentPath());
-        m_Swapchain.MakeFrames(device, m_RenderPass);
+        m_Swapchain.MakeFrames(device, m_RenderPass);*/
         //TODO: find out why lower recreation didn't work(maybe sync objects)
-        /*device.destroyPipelineLayout(m_Layout);
+        device.destroyPipelineLayout(m_Layout);
         device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
 
-        Create( device, m_ShaderManager.GetVertexPath(), m_ShaderManager.GetFragmentPath());
+        Create(device, extent, m_ShaderManager.GetVertexPath(), m_ShaderManager.GetFragmentPath());
 
-        m_Swapchain.Recreate( device, physicalDevice, surface, m_RenderPass, extent, queueFamilyIndices );*/
+        m_Swapchain.Recreate( device, physicalDevice, surface, m_RenderPass, extent, queueFamilyIndices );
     }
 }
