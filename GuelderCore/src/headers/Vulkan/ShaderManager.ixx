@@ -1,7 +1,7 @@
 module;
 #include <vulkan/vulkan.hpp>
 #include "../../headers/Core/GObject/GClass.hpp"
-export module GuelderEngine.Vulkan:VulkanShaderManager;
+export module GuelderEngine.Vulkan:ShaderManager;
 
 import :IVulkanObject;
 import GuelderEngine.Core.Types;
@@ -11,12 +11,12 @@ import <string_view>;
 
 export namespace GuelderEngine::Vulkan
 {
-    class VulkanShaderManager : public IVulkanObject
+    class ShaderManager : public IVulkanObject
     {
     public:
-        DECLARE_DCAD_AND_CAM(VulkanShaderManager);
+        DECLARE_DCAD_AND_CAM(ShaderManager);
 
-        VulkanShaderManager(const std::string_view& vertexPath, const std::string_view& fragmentPath);
+        ShaderManager(const std::string_view& vertexPath, const std::string_view& fragmentPath);
 
         virtual void Reset() noexcept override;
 

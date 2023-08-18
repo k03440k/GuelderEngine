@@ -4,12 +4,12 @@ module;
 export module GuelderEngine.Vulkan;
 import :VulkanSwapchain;
 
-import :VulkanSync;
-import :VulkanQueueFamilyIndices;
-import :VulkanSwapchainFrame;
-import :VulkanCommandPool;
-import :VulkanFrameBuffer;
-import :VulkanDebugManager;
+//import :SwapchainFrameSync;//removed because of lnk1227
+import :QueueFamilyIndices;
+import :SwapchainFrame;
+import :CommandPool;
+import :FrameBuffer;
+import :DebugManager;
 
 import <vector>;
 import <functional>;
@@ -17,13 +17,13 @@ import <functional>;
 //ctors and operator='s
 namespace GuelderEngine::Vulkan
 {
-    VulkanSwapchain::VulkanSwapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-        const vk::Extent2D& extent, const VulkanQueueFamilyIndices& queueFamilyIndices)
+    Swapchain::Swapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
+        const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices)
     {
         m_IsSwapchain = false;
         Create(device, physicalDevice, surface, extent, queueFamilyIndices);
 
-        m_CommandPool = VulkanCommandPool(device, queueFamilyIndices);
+        m_CommandPool = CommandPool(device, queueFamilyIndices);
 
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
 
@@ -32,7 +32,7 @@ namespace GuelderEngine::Vulkan
         m_MaxFramesInFlight = m_Frames.size();
         m_CurrentFrameNumber = 0;
     }
-    VulkanSwapchain::VulkanSwapchain(const VulkanSwapchain& other)
+    Swapchain::Swapchain(const Swapchain& other)
     {
         m_Details = other.m_Details;
         m_Extent = other.m_Extent;
@@ -44,21 +44,21 @@ namespace GuelderEngine::Vulkan
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
     }
-    VulkanSwapchain::VulkanSwapchain(VulkanSwapchain&& other) noexcept
+    Swapchain::Swapchain(Swapchain&& other) noexcept
     {
         m_Details = other.m_Details;
         m_Extent = other.m_Extent;
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandPool = std::forward<VulkanCommandPool>(other.m_CommandPool);
+        m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
 
         other.Reset();
     }
-    VulkanSwapchain& VulkanSwapchain::operator=(const VulkanSwapchain& other)
+    Swapchain& Swapchain::operator=(const Swapchain& other)
     {
         if(this == &other)
             return *this;
@@ -75,14 +75,14 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    VulkanSwapchain& VulkanSwapchain::operator=(VulkanSwapchain&& other) noexcept
+    Swapchain& Swapchain::operator=(Swapchain&& other) noexcept
     {
         m_Details = other.m_Details;
         m_Extent = other.m_Extent;
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandPool = std::forward<VulkanCommandPool>(other.m_CommandPool);
+        m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
@@ -94,7 +94,7 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    void VulkanSwapchain::Create(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent, const VulkanQueueFamilyIndices& queueFamilyIndices)
+    void Swapchain::Create(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices)
     {
         m_Details = QuerySwapChainSupport(physicalDevice, surface);
         const auto format = ChooseSwapchainSurfaceFormat(m_Details.formats);
@@ -117,11 +117,11 @@ namespace GuelderEngine::Vulkan
         createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
         createInfo.presentMode = present;
         createInfo.clipped = VK_TRUE;
+
         if(!m_IsSwapchain)
             createInfo.oldSwapchain = vk::SwapchainKHR(nullptr);
         else
             createInfo.oldSwapchain = m_Swapchain;
-        
 
         if(queueFamilyIndices.graphicsFamily.value() != queueFamilyIndices.presentFamily.value())
         {
@@ -137,10 +137,12 @@ namespace GuelderEngine::Vulkan
         const auto newSwapchain = device.createSwapchainKHR(createInfo);
 
         if(!m_IsSwapchain)
+        {
             m_Swapchain = newSwapchain;
+            m_IsSwapchain = true;
+        }
         else
         {
-            m_IsSwapchain = true;
             device.destroySwapchainKHR(m_Swapchain);
             m_Swapchain = newSwapchain;
         }
@@ -148,7 +150,7 @@ namespace GuelderEngine::Vulkan
         m_Format = format.format;
         m_Extent = chosenExtent;
     }
-    void VulkanSwapchain::Reset() noexcept
+    void Swapchain::Reset() noexcept
     {
         m_Details = {};
         m_Extent = vk::Extent2D{};
@@ -164,7 +166,7 @@ namespace GuelderEngine::Vulkan
         m_MaxFramesInFlight = 0;
         m_CurrentFrameNumber = 0;
     }
-    void VulkanSwapchain::Cleanup(const vk::Device& device) const noexcept
+    void Swapchain::Cleanup(const vk::Device& device) const noexcept
     {
         for(auto&& frame : m_Frames)
             frame.Cleanup(device, m_CommandPool);
@@ -172,7 +174,7 @@ namespace GuelderEngine::Vulkan
         m_CommandPool.Cleanup(device);
         device.destroySwapchainKHR(m_Swapchain);
     }
-    void VulkanSwapchain::CreateFrames(const vk::Device& device, const vk::Format& format, const std::vector<vk::Image>& images)
+    void Swapchain::CreateFrames(const vk::Device& device, const vk::Format& format, const std::vector<vk::Image>& images)
     {
         m_Frames.resize(images.size());
 
@@ -196,17 +198,17 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.format = format;
 
 
-            m_Frames[i] = VulkanSwapchainFrame(device, imageViewInfo, m_CommandPool);
+            m_Frames[i] = Vulkan::SwapchainFrame(device, imageViewInfo, m_CommandPool);
         }
     }
-    void VulkanSwapchain::MakeFrames(const vk::Device& device, const vk::RenderPass& renderPass)
+    void Swapchain::MakeFrames(const vk::Device& device, const vk::RenderPass& renderPass)
     {
-        VulkanFrameBuffer::Make(device, renderPass, m_Extent, m_Frames);
+        FrameBuffer::Make(device, renderPass, m_Extent, m_Frames);
     }
 
-    VulkanSwapchainSupportDetails VulkanSwapchain::QuerySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
+    SwapchainSupportDetails Swapchain::QuerySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
     {
-        VulkanSwapchainSupportDetails support;
+        SwapchainSupportDetails support;
         support.capabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
         support.formats = physicalDevice.getSurfaceFormatsKHR(surface);
         support.presentModes = physicalDevice.getSurfacePresentModesKHR(surface);
@@ -215,13 +217,13 @@ namespace GuelderEngine::Vulkan
         /*GE_LOG(VulkanCore, Info, "The device can support following Present Modes:");
         for(auto&& mode : support.presentModes)
         {
-            VulkanDebugManager::LogPresentMode(mode);
+            DebugManager::LogPresentMode(mode);
         }*/
 #endif
 
         return support;
     }
-    vk::SurfaceFormatKHR VulkanSwapchain::ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
+    vk::SurfaceFormatKHR Swapchain::ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
     {
         for(auto&& format : formats)
             if(format.format == vk::Format::eB8G8R8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
@@ -230,7 +232,7 @@ namespace GuelderEngine::Vulkan
         GE_LOG(VulkanCore, Warning, "the device doesn't support: vk::Format::eB8G8R8A8Unorm and vk::ColorSpaceKHR::eSrgbNonlinear");
         return formats[0];
     }
-    vk::PresentModeKHR VulkanSwapchain::ChooseSwapchainPresentMode(const std::vector<vk::PresentModeKHR>& presentModes)
+    vk::PresentModeKHR Swapchain::ChooseSwapchainPresentMode(const std::vector<vk::PresentModeKHR>& presentModes)
     {
         for(auto&& presentMode : presentModes)
         {
@@ -241,29 +243,24 @@ namespace GuelderEngine::Vulkan
         GE_LOG(VulkanCore, Warning, "the device doesn't support Mailbox present mode. Choosing Fifo");
         return vk::PresentModeKHR::eFifo;
     }
-    vk::Extent2D VulkanSwapchain::ChooseSwapchainExtent(const vk::Extent2D& extent, const vk::SurfaceCapabilitiesKHR& capabilities)
+    vk::Extent2D Swapchain::ChooseSwapchainExtent(const vk::Extent2D& extent, const vk::SurfaceCapabilitiesKHR& capabilities)
     {
-        //GE_LOG(VulkanCore, Info, "\nmin width: ", capabilities.minImageExtent.width, "; min height: ", capabilities.minImageExtent.height, '\n',
-        //    "max width: ", capabilities.maxImageExtent.width, "; max height: ", capabilities.maxImageExtent.height);
-
         if(capabilities.currentExtent.width != UINT32_MAX)
             return capabilities.currentExtent;
         else
         {
-            vk::Extent2D extent{
-                extent.width = std::min(capabilities.maxImageExtent.width, std::max(capabilities.minImageExtent.width, extent.width)),
-                extent.height = std::min(capabilities.maxImageExtent.height, std::max(capabilities.minImageExtent.height, extent.height))
+            vk::Extent2D chosenExtent{
+                std::min(capabilities.maxImageExtent.width, std::max(capabilities.minImageExtent.width, extent.width)),
+                std::min(capabilities.maxImageExtent.height, std::max(capabilities.minImageExtent.height, extent.height))
             };
 
-            return extent;
+            return chosenExtent;
         }
     }
 
-    void VulkanSwapchain::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
-        const VulkanQueueFamilyIndices& queueFamilyIndices)
+    void Swapchain::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
+        const QueueFamilyIndices& queueFamilyIndices)
     {
-        device.destroySwapchainKHR(m_Swapchain);
-
         Create(device, physicalDevice, surface, extent, queueFamilyIndices);
 
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);

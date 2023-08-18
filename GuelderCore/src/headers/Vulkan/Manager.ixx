@@ -4,11 +4,11 @@ module;
 #include <vulkan/vulkan.hpp>
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
-export module GuelderEngine.Vulkan:VulkanManager;
+export module GuelderEngine.Vulkan:Manager;
 
 import :IVulkanObject;
-import :VulkanDebugManager;
-import :VulkanDeviceManager;
+import :DebugManager;
+import :DeviceManager;
 import GuelderEngine.Core.Types;
 //import :VulkanSurfaceManager;
 
@@ -20,13 +20,13 @@ using namespace GuelderEngine::Types;
 
 export namespace GuelderEngine::Vulkan
 {
-    class VulkanScene : public IVulkanObject
+    class Scene : public IVulkanObject
     {
     public:
-        DECLARE_COPY_AND_MOVING(VulkanScene);
+        DECLARE_COPY_AND_MOVING(Scene);
 
-        VulkanScene();
-        ~VulkanScene() = default;
+        Scene();
+        ~Scene() = default;
 
         void Reset() noexcept override;
 
@@ -66,10 +66,10 @@ export namespace GuelderEngine::Vulkan
 
         vk::Instance m_Instance;
 
-        VulkanDeviceManager m_DeviceManager;
-        VulkanScene m_Scene;
+        DeviceManager m_DeviceManager;
+        Scene m_Scene;
 #ifdef GE_DEBUG_VULKAN
-        VulkanDebugManager m_DebugManager;
+        DebugManager m_DebugManager;
 #endif //GE_DEBUG_VULKAN
     };
 }

@@ -2,7 +2,7 @@ module;
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
 #include <vulkan/vulkan.hpp>
 module GuelderEngine.Vulkan;
-import :VulkanDebugManager;
+import :DebugManager;
 
 import :IVulkanObject;
 import GuelderEngine.Debug;
@@ -14,24 +14,24 @@ namespace GuelderEngine::Vulkan
     DEFINE_LOG_CATEGORY(VulkanCore);
 
 #pragma region operators_and_ctors
-    VulkanDebugManager::VulkanDebugManager(const vk::Instance& instance)
+    DebugManager::DebugManager(const vk::Instance& instance)
     {
         m_DLDI = vk::DispatchLoaderDynamic(instance, vkGetInstanceProcAddr);
         m_DebugMessenger = CreateDebugMessenger(instance, m_DLDI);
     }
-    VulkanDebugManager::VulkanDebugManager(const VulkanDebugManager& other)
+    DebugManager::DebugManager(const DebugManager& other)
     {
         m_DebugMessenger = other.m_DebugMessenger;
         m_DLDI = other.m_DLDI;
     }
-    VulkanDebugManager::VulkanDebugManager(VulkanDebugManager&& other) noexcept
+    DebugManager::DebugManager(DebugManager&& other) noexcept
     {
         m_DebugMessenger = other.m_DebugMessenger;
         m_DLDI = other.m_DLDI;
 
         //other.Reset();//idk why error occurs
     }
-    VulkanDebugManager& VulkanDebugManager::operator=(const VulkanDebugManager& other)
+    DebugManager& DebugManager::operator=(const DebugManager& other)
     {
         if(this == &other)
             return *this;
@@ -41,7 +41,7 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    VulkanDebugManager& VulkanDebugManager::operator=(VulkanDebugManager&& other) noexcept
+    DebugManager& DebugManager::operator=(DebugManager&& other) noexcept
     {
         m_DebugMessenger = other.m_DebugMessenger;
         m_DLDI = other.m_DLDI;
@@ -52,12 +52,12 @@ namespace GuelderEngine::Vulkan
     }
 #pragma endregion
 
-    VulkanDebugLayersManager::VulkanDebugLayersManager(const std::vector<ValidationLayer>& layers)
+    DebugLayersManager::DebugLayersManager(const std::vector<ValidationLayer>& layers)
         : m_Layers(layers)
     {
         GE_CORE_CLASS_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
     }
-    bool VulkanDebugLayersManager::AreValidationLayersSupported(const std::vector<ValidationLayer>& layers)
+    bool DebugLayersManager::AreValidationLayersSupported(const std::vector<ValidationLayer>& layers)
     {
         GE_CORE_CLASS_ASSERT(layers.size() > 0, "layers size is zero");
 
@@ -95,16 +95,16 @@ namespace GuelderEngine::Vulkan
         return true;
     }
 
-    void VulkanDebugManager::Reset() noexcept
+    void DebugManager::Reset() noexcept
     {
         m_DebugMessenger = nullptr;
         m_DLDI = nullptr;
     }
-    void VulkanDebugManager::Cleanup(const vk::Instance& instance) const noexcept
+    void DebugManager::Cleanup(const vk::Instance& instance) const noexcept
     {
         instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DLDI);
     }
-    void VulkanDebugManager::LogDeviceProperties(const vk::PhysicalDevice& device)
+    void DebugManager::LogDeviceProperties(const vk::PhysicalDevice& device)
     {
         const vk::PhysicalDeviceProperties properties = device.getProperties();
 
@@ -147,7 +147,7 @@ namespace GuelderEngine::Vulkan
             }
         }
     }
-    void VulkanDebugManager::LogPresentMode(const vk::PresentModeKHR& mode)
+    void DebugManager::LogPresentMode(const vk::PresentModeKHR& mode)
     {
         using enum vk::PresentModeKHR;
         if(mode == eMailbox)
@@ -163,7 +163,7 @@ namespace GuelderEngine::Vulkan
         if(mode == eSharedDemandRefresh)
             GE_LOG(VulkanCore, Info, "\tSharedDemandRefresh");
     }
-    vk::DebugUtilsMessengerEXT VulkanDebugManager::CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
+    vk::DebugUtilsMessengerEXT DebugManager::CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi)
     {
         constexpr vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
             vk::DebugUtilsMessengerCreateFlagsEXT(),
@@ -177,7 +177,7 @@ namespace GuelderEngine::Vulkan
 
         return instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
     }
-    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugManager::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VKAPI_ATTR VkBool32 VKAPI_CALL DebugManager::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                                      VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                                      const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
                                                                      void* userData)

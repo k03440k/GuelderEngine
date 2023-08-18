@@ -2,44 +2,44 @@ module;
 #include <vulkan/vulkan.hpp>
 #include "../../headers/Core/GObject/GClass.hpp"
 module GuelderEngine.Vulkan;
-import :VulkanShaderManager;
+import :ShaderManager;
 
 import GuelderEngine.Core.Types;
 import GuelderEngine.Core;
 
 namespace GuelderEngine::Vulkan
 {
-    VulkanShaderManager::VulkanShaderManager(const std::string_view& vertexPath, const std::string_view& fragmentPath)
+    ShaderManager::ShaderManager(const std::string_view& vertexPath, const std::string_view& fragmentPath)
         : vertexPath(vertexPath), fragmentPath(fragmentPath)
     {
 
     }
-    void VulkanShaderManager::Reset() noexcept
+    void ShaderManager::Reset() noexcept
     {
         vertexPath.clear();
         fragmentPath.clear();
     }
-    std::string VulkanShaderManager::GetVertexPath() const noexcept
+    std::string ShaderManager::GetVertexPath() const noexcept
     {
         return vertexPath;
     }
-    std::string VulkanShaderManager::GetFragmentPath() const noexcept
+    std::string ShaderManager::GetFragmentPath() const noexcept
     {
         return fragmentPath;
     }
-    VulkanShaderManager::VulkanShaderManager(const VulkanShaderManager& other)
+    ShaderManager::ShaderManager(const ShaderManager& other)
     {
         vertexPath = other.vertexPath;
         fragmentPath = other.fragmentPath;
     }
-    VulkanShaderManager::VulkanShaderManager(VulkanShaderManager&& other) noexcept
+    ShaderManager::ShaderManager(ShaderManager&& other) noexcept
     {
         vertexPath = std::forward<std::string>(other.vertexPath);
         fragmentPath = std::forward<std::string>(other.fragmentPath);
 
         other.Reset();
     }
-    VulkanShaderManager& VulkanShaderManager::operator=(const VulkanShaderManager& other)
+    ShaderManager& ShaderManager::operator=(const ShaderManager& other)
     {
         if(this == &other)
             return *this;
@@ -49,7 +49,7 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    VulkanShaderManager& VulkanShaderManager::operator=(VulkanShaderManager&& other) noexcept
+    ShaderManager& ShaderManager::operator=(ShaderManager&& other) noexcept
     {
         vertexPath = std::forward<std::string>(other.vertexPath);
         fragmentPath = std::forward<std::string>(other.fragmentPath);
@@ -61,7 +61,7 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    vk::ShaderModule VulkanShaderManager::CreateModule(const std::string_view& shaderSource, const vk::Device& device)
+    vk::ShaderModule ShaderManager::CreateModule(const std::string_view& shaderSource, const vk::Device& device)
     {
         const vk::ShaderModuleCreateInfo moduleInfo(vk::ShaderModuleCreateFlags(), shaderSource.size(),
             reinterpret_cast<const uint32_t*>(shaderSource.data()));

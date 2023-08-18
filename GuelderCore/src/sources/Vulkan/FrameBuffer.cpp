@@ -1,16 +1,16 @@
 module;
 #include <vulkan/vulkan.hpp>
 module GuelderEngine.Vulkan;
-import :VulkanFrameBuffer;
+import :FrameBuffer;
 
-import :VulkanSwapchainFrame;
+import :SwapchainFrame;
 
 import <vector>;
 
 namespace GuelderEngine::Vulkan
 {
-    void VulkanFrameBuffer::Make(const vk::Device& device, const vk::RenderPass& renderPass,
-        const vk::Extent2D& swapchainExtent, std::vector<VulkanSwapchainFrame>& frames)
+    void FrameBuffer::Make(const vk::Device& device, const vk::RenderPass& renderPass,
+        const vk::Extent2D& swapchainExtent, std::vector<SwapchainFrame>& frames)
     {
         for(Types::uint i = 0; i < frames.size(); ++i)
         {

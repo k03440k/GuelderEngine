@@ -12,9 +12,8 @@ export namespace GuelderEngine::Vulkan
     public:
         virtual ~IVulkanObject() = default;
 
-        /*
-         *@brief method which must reset all values but not to delete them, so you can use operator=(...) or other assignments
-         *@brief simply set all vk namespace values to nullptr
+        /**
+         *@brief method which must reset all values but not to delete them, so you can use operator=(...) or other assignments. simply set all vk namespace values to nullptr
         */
         virtual void Reset() noexcept = 0;
     };

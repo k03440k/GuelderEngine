@@ -2,7 +2,7 @@ module;
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
 #include <vulkan/vulkan.hpp>
 module GuelderEngine.Vulkan;
-import :VulkanQueueFamilyIndices;
+import :QueueFamilyIndices;
 
 import :IVulkanObject;
 
@@ -10,7 +10,7 @@ import <optional>;
 
 namespace GuelderEngine::Vulkan
 {
-    VulkanQueueFamilyIndices::VulkanQueueFamilyIndices(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface)
+    QueueFamilyIndices::QueueFamilyIndices(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface)
     {
         const std::vector queueFamilies = device.getQueueFamilyProperties();
 
@@ -35,12 +35,12 @@ namespace GuelderEngine::Vulkan
 
         GE_CORE_CLASS_ASSERT(IsComplete(), "Cannot complete Queue Family(device doesn't support requirements)");
     }
-    VulkanQueueFamilyIndices::VulkanQueueFamilyIndices(const VulkanQueueFamilyIndices& other)
+    QueueFamilyIndices::QueueFamilyIndices(const QueueFamilyIndices& other)
     {
         graphicsFamily = other.graphicsFamily;
         presentFamily = other.presentFamily;
     }
-    VulkanQueueFamilyIndices& VulkanQueueFamilyIndices::operator=(const VulkanQueueFamilyIndices& other)
+    QueueFamilyIndices& QueueFamilyIndices::operator=(const QueueFamilyIndices& other)
     {
         if(this == &other)
             return *this;
@@ -50,7 +50,7 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    bool VulkanQueueFamilyIndices::IsComplete() const noexcept
+    bool QueueFamilyIndices::IsComplete() const noexcept
     {
         return graphicsFamily.has_value() && presentFamily.has_value();
     }

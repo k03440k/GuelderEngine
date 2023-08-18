@@ -1,24 +1,24 @@
 module;
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
-export module GuelderEngine.Vulkan:VulkanFrameBuffer;
+export module GuelderEngine.Vulkan:FrameBuffer;
 
 import <vector>;
 
 export namespace GuelderEngine::Vulkan
 {
-    struct VulkanSwapchainFrame;
+    struct SwapchainFrame;
 
-    class VulkanFrameBuffer
+    class FrameBuffer
     {
     public:
-        DELETE_COPY_AND_MOVING(VulkanFrameBuffer);
+        DELETE_COPY_AND_MOVING(FrameBuffer);
 
         static void Make(
             const vk::Device& device,
             const vk::RenderPass& renderPass,
             const vk::Extent2D& swapchainExtent,
-            std::vector<VulkanSwapchainFrame>& frames
+            std::vector<SwapchainFrame>& frames
         );
     };
 }

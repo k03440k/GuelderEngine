@@ -3,22 +3,22 @@ module;
 
 #include "GuelderEngine/Utils/Debug.hpp"
 module GuelderEngine.Vulkan;
-import :VulkanSwapchainFrame;
+import :SwapchainFrame;
 
-import :VulkanSync;
-import :VulkanCommandPool;
+import :SwapchainFrameSync;
+import :CommandPool;
 import GuelderEngine.Core.Types;
 
 //Ctors
 namespace GuelderEngine::Vulkan
 {
-    VulkanSwapchainFrame::VulkanSwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const VulkanCommandPool& pool)
+    SwapchainFrame::SwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const CommandPool& pool)
     {
         CreateImage(device, viewInfo);
         CreateCommandBuffer(device, pool);
-        sync = VulkanSwapchainFrameSync(device);
+        sync = SwapchainFrameSync(device);
     }
-    VulkanSwapchainFrame::VulkanSwapchainFrame(const VulkanSwapchainFrame& other)
+    SwapchainFrame::SwapchainFrame(const SwapchainFrame& other)
     {
         image = other.image;
         imageView = other.imageView;
@@ -26,17 +26,17 @@ namespace GuelderEngine::Vulkan
         commandBuffer = other.commandBuffer;
         sync = other.sync;
     }
-    VulkanSwapchainFrame::VulkanSwapchainFrame(VulkanSwapchainFrame&& other) noexcept
+    SwapchainFrame::SwapchainFrame(SwapchainFrame&& other) noexcept
     {
         image = other.image;
         imageView = other.imageView;
         framebuffer = other.framebuffer;
         commandBuffer = other.commandBuffer;
-        sync = std::forward<VulkanSwapchainFrameSync>(other.sync);
+        sync = std::forward<SwapchainFrameSync>(other.sync);
 
         other.Reset();
     }
-    VulkanSwapchainFrame& VulkanSwapchainFrame::operator=(const VulkanSwapchainFrame& other)
+    SwapchainFrame& SwapchainFrame::operator=(const SwapchainFrame& other)
     {
         if(this == &other)
             return *this;
@@ -49,13 +49,13 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    VulkanSwapchainFrame& VulkanSwapchainFrame::operator=(VulkanSwapchainFrame&& other) noexcept
+    SwapchainFrame& SwapchainFrame::operator=(SwapchainFrame&& other) noexcept
     {
         image = other.image;
         imageView = other.imageView;
         framebuffer = other.framebuffer;
         commandBuffer = other.commandBuffer;
-        sync = std::forward<VulkanSwapchainFrameSync>(other.sync);
+        sync = std::forward<SwapchainFrameSync>(other.sync);
 
         other.Reset();
 
@@ -65,7 +65,7 @@ namespace GuelderEngine::Vulkan
 //Cleanups
 namespace GuelderEngine::Vulkan
 {
-    void VulkanSwapchainFrame::Reset() noexcept
+    void SwapchainFrame::Reset() noexcept
     {
         image = nullptr;
         imageView = nullptr;
@@ -73,33 +73,33 @@ namespace GuelderEngine::Vulkan
         commandBuffer = nullptr;
         sync.Reset();
     }
-    void VulkanSwapchainFrame::Cleanup(const vk::Device& device, const VulkanCommandPool& pool) const noexcept
+    void SwapchainFrame::Cleanup(const vk::Device& device, const CommandPool& pool) const noexcept
     {
         FreeCommandBuffer(pool, device);
         device.destroyImageView(imageView);
         CleanupFramebuffer(device);
         sync.Cleanup(device);
     }
-    void VulkanSwapchainFrame::CleanupImageView(const vk::Device& device) const noexcept
+    void SwapchainFrame::CleanupImageView(const vk::Device& device) const noexcept
     {
         device.destroyImageView(imageView);
     }
-    void VulkanSwapchainFrame::CleanupFramebuffer(const vk::Device& device) const noexcept
+    void SwapchainFrame::CleanupFramebuffer(const vk::Device& device) const noexcept
     {
         device.destroyFramebuffer(framebuffer);
     }
-    void VulkanSwapchainFrame::FreeCommandBuffer(const VulkanCommandPool& pool, const vk::Device& device) const noexcept
+    void SwapchainFrame::FreeCommandBuffer(const CommandPool& pool, const vk::Device& device) const noexcept
     {
         pool.FreeCommandBuffer(device, commandBuffer);
     }
 }
 namespace GuelderEngine::Vulkan
 {
-    void VulkanSwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::FramebufferCreateInfo& info)
+    void SwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::FramebufferCreateInfo& info)
     {
         framebuffer = device.createFramebuffer(info);
     }
-    void VulkanSwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent)
+    void SwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent)
     {
         const std::vector attachments{imageView};//idk
 
@@ -115,27 +115,27 @@ namespace GuelderEngine::Vulkan
         
         CreateFrameBuffer(device, framebufferInfo);
     }
-    void VulkanSwapchainFrame::CreateImage(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo)
+    void SwapchainFrame::CreateImage(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo)
     {
         this->image = viewInfo.image;
         imageView = device.createImageView(viewInfo);
     }
-    void VulkanSwapchainFrame::CreateCommandBuffer(const vk::Device& device, const VulkanCommandPool& pool)
+    void SwapchainFrame::CreateCommandBuffer(const vk::Device& device, const CommandPool& pool)
     {
         commandBuffer = pool.CreateCommandBuffer(device);
     }
 
-    void VulkanSwapchainFrame::WaitForImage(const vk::Device& device, const uint64_t& delay) const
+    void SwapchainFrame::WaitForImage(const vk::Device& device, const uint64_t& delay) const
     {
         GE_CORE_CLASS_ASSERT(device.waitForFences(1, &sync.m_InFlightFence, VK_TRUE, delay) == vk::Result::eSuccess, "cannot wait for fence");
     }
-    void VulkanSwapchainFrame::ResetFence(const vk::Device& device) const
+    void SwapchainFrame::ResetFence(const vk::Device& device) const
     {
         GE_CORE_CLASS_ASSERT(device.resetFences(1, &sync.m_InFlightFence) == vk::Result::eSuccess, "cannot reset fence");
     }
 
-    void VulkanSwapchainFrame::Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,
-        const vk::ImageViewCreateInfo& viewInfo, const VulkanCommandPool& pool)
+    void SwapchainFrame::Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,
+        const vk::ImageViewCreateInfo& viewInfo, const CommandPool& pool)
     {
         CleanupImageView(device);
         CleanupFramebuffer(device);

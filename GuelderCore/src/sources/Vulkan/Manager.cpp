@@ -4,11 +4,11 @@ module;
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 module GuelderEngine.Vulkan;
-import :VulkanManager;
+import :Manager;
 
-import :VulkanDebugManager;
-import :VulkanDeviceManager;
-import :VulkanShaderManager;
+import :DebugManager;
+import :DeviceManager;
+import :ShaderManager;
 //import :VulkanSurfaceManager;
 import GuelderEngine.Debug;
 import GuelderEngine.Core.Types;
@@ -22,7 +22,7 @@ using namespace GuelderEngine::Types;
 
 namespace GuelderEngine::Vulkan
 {
-    VulkanScene::VulkanScene()
+    Scene::Scene()
     {
         Types::uint reserve{};
 
@@ -36,17 +36,17 @@ namespace GuelderEngine::Vulkan
             for (float y = -1.0f; y < 1.0f; y += 0.2f)
                 m_TrianglePositions.push_back(glm::vec3(x, y, 0.0f));
     }
-    VulkanScene::VulkanScene(const VulkanScene& other)
+    Scene::Scene(const Scene& other)
     {
         m_TrianglePositions = other.m_TrianglePositions;
     }
-    VulkanScene::VulkanScene(VulkanScene&& other) noexcept
+    Scene::Scene(Scene&& other) noexcept
     {
         m_TrianglePositions = other.m_TrianglePositions;
 
         other.Reset();
     }
-    VulkanScene& VulkanScene::operator=(const VulkanScene& other)
+    Scene& Scene::operator=(const Scene& other)
     {
         if(this == &other)
             return *this;
@@ -55,7 +55,7 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    VulkanScene& VulkanScene::operator=(VulkanScene&& other) noexcept
+    Scene& Scene::operator=(Scene&& other) noexcept
     {
         m_TrianglePositions = other.m_TrianglePositions;
 
@@ -63,7 +63,7 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    void VulkanScene::Reset() noexcept
+    void Scene::Reset() noexcept
     {
         m_TrianglePositions.clear();
     }
@@ -74,10 +74,10 @@ namespace GuelderEngine::Vulkan
         const std::string_view& name)
     {
         m_Instance = CreateVkInstance(name.data());
-        m_DeviceManager = VulkanDeviceManager(m_Instance, glfwWindow, { width, height }, vertPath, fragPath);
+        m_DeviceManager = DeviceManager(m_Instance, glfwWindow, { width, height }, vertPath, fragPath);
 
 #ifdef GE_DEBUG_VULKAN
-        m_DebugManager = VulkanDebugManager(m_Instance);
+        m_DebugManager = DebugManager(m_Instance);
 #endif // GE_DEBUG_VULKAN
     }
     VulkanManager::VulkanManager(const VulkanManager& other)
@@ -92,10 +92,10 @@ namespace GuelderEngine::Vulkan
     VulkanManager::VulkanManager(VulkanManager&& other) noexcept
     {
         m_Instance = other.m_Instance;
-        m_DeviceManager = std::forward<VulkanDeviceManager>(other.m_DeviceManager);
-        m_Scene = std::forward<VulkanScene>(other.m_Scene);
+        m_DeviceManager = std::forward<DeviceManager>(other.m_DeviceManager);
+        m_Scene = std::forward<Scene>(other.m_Scene);
 #ifdef GE_DEBUG_VULKAN
-        m_DebugManager = std::forward<VulkanDebugManager>(other.m_DebugManager);
+        m_DebugManager = std::forward<DebugManager>(other.m_DebugManager);
 #endif //GE_DEBUG_VULKAN
 
         other.Reset();
@@ -120,10 +120,10 @@ namespace GuelderEngine::Vulkan
     VulkanManager& VulkanManager::operator=(VulkanManager&& other) noexcept
     {
         m_Instance = other.m_Instance;
-        m_DeviceManager = std::forward<VulkanDeviceManager>(other.m_DeviceManager);
-        m_Scene = std::forward<VulkanScene>(other.m_Scene);
+        m_DeviceManager = std::forward<DeviceManager>(other.m_DeviceManager);
+        m_Scene = std::forward<Scene>(other.m_Scene);
 #ifdef GE_DEBUG_VULKAN
-        m_DebugManager = std::forward<VulkanDebugManager>(other.m_DebugManager);
+        m_DebugManager = std::forward<DebugManager>(other.m_DebugManager);
 #endif //GE_DEBUG_VULKAN
 
         other.Reset();
@@ -148,8 +148,8 @@ namespace GuelderEngine::Vulkan
         GE_CORE_CLASS_ASSERT(vk::enumerateInstanceVersion(&version) == vk::Result::eSuccess, "cannot enumerateInstanceVersion");
 
 #ifdef GE_DEBUG_VULKAN
-        GE_LOG(VulkanCore, Info, "System can support Vulkan variant: ", VK_API_VERSION_VARIANT(version), ", ",
-            VK_API_VERSION_MAJOR(version), '.', VK_API_VERSION_MINOR(version), '.', VK_API_VERSION_PATCH(version));
+        GE_LOG(VulkanCore, Info, "System must support Vulkan version: ",
+            VK_API_VERSION_MAJOR(version), '.', VK_API_VERSION_MINOR(version), '.', VK_API_VERSION_PATCH(version), ", variant: ", VK_API_VERSION_VARIANT(version));
 #endif // GE_DEBUG_VULKAN
 
         vk::ApplicationInfo appInfo(name, VK_MAKE_VERSION(0, 0, 1),
@@ -176,7 +176,7 @@ namespace GuelderEngine::Vulkan
 
 #ifdef GE_DEBUG_VULKAN
 
-        const Vulkan::VulkanDebugLayersManager layers({ "VK_LAYER_KHRONOS_validation" });
+        const Vulkan::DebugLayersManager layers({ "VK_LAYER_KHRONOS_validation" });
 
         vk::InstanceCreateInfo createInfo(vk::InstanceCreateFlags(),
             &appInfo,

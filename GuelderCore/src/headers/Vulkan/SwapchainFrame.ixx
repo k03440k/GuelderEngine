@@ -1,29 +1,29 @@
 module;
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
-export module GuelderEngine.Vulkan:VulkanSwapchainFrame;
+export module GuelderEngine.Vulkan:SwapchainFrame;
 
 import :IVulkanObject;
-import :VulkanSync;
+import :SwapchainFrameSync;
 
 export namespace GuelderEngine::Vulkan
 {
-    class VulkanCommandPool;
+    class CommandPool;
 
-    struct VulkanSwapchainFrame : public IVulkanObject, INHERIT_GClass(VulkanSwapchainFrame)
+    struct SwapchainFrame : public IVulkanObject, INHERIT_GClass(SwapchainFrame)
     {
     public:
-        DECLARE_DCAD_AND_CAM(VulkanSwapchainFrame);
+        DECLARE_DCAD_AND_CAM(SwapchainFrame);
         
-        VulkanSwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const VulkanCommandPool& pool);
+        SwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const CommandPool& pool);
 
         virtual void Reset() noexcept override;
-        void Cleanup(const vk::Device& device, const VulkanCommandPool& pool) const noexcept;
+        void Cleanup(const vk::Device& device, const CommandPool& pool) const noexcept;
 
         void CreateFrameBuffer(const vk::Device& device, const vk::FramebufferCreateInfo& info);
 
         void Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,
-            const vk::ImageViewCreateInfo& viewInfo, const VulkanCommandPool& pool);
+            const vk::ImageViewCreateInfo& viewInfo, const CommandPool& pool);
 
         /*
          *@brief waits for fence
@@ -35,15 +35,15 @@ export namespace GuelderEngine::Vulkan
         vk::ImageView imageView;
         vk::Framebuffer framebuffer;
         vk::CommandBuffer commandBuffer;
-        VulkanSwapchainFrameSync sync;
+        SwapchainFrameSync sync;
 
     private:
         void CleanupImageView(const vk::Device& device) const noexcept;
         void CleanupFramebuffer(const vk::Device& device) const noexcept;
-        void FreeCommandBuffer(const VulkanCommandPool& pool, const vk::Device& device) const noexcept;
+        void FreeCommandBuffer(const CommandPool& pool, const vk::Device& device) const noexcept;
 
         void CreateFrameBuffer(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent);
         void CreateImage(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo);
-        void CreateCommandBuffer(const vk::Device& device, const VulkanCommandPool& pool);
+        void CreateCommandBuffer(const vk::Device& device, const CommandPool& pool);
     };
 }

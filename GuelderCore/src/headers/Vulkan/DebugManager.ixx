@@ -2,7 +2,7 @@ module;
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
-export module GuelderEngine.Vulkan:VulkanDebugManager;
+export module GuelderEngine.Vulkan:DebugManager;
 
 import :IVulkanObject;
 
@@ -10,13 +10,13 @@ import <vector>;
 
 export namespace GuelderEngine::Vulkan
 {
-    class VulkanDebugLayersManager final : INHERIT_GClass(VulkanDebugLayersManager)
+    class DebugLayersManager final : INHERIT_GClass(DebugLayersManager)
     {
     public:
         using ValidationLayer = const char*;
 
-        VulkanDebugLayersManager(const std::vector<ValidationLayer>& layers);
-        ~VulkanDebugLayersManager() = default;
+        DebugLayersManager(const std::vector<ValidationLayer>& layers);
+        ~DebugLayersManager() = default;
 
         const std::vector<ValidationLayer>& GetLayers() const { return m_Layers; }
     private:
@@ -24,11 +24,11 @@ export namespace GuelderEngine::Vulkan
 
         const std::vector<ValidationLayer> m_Layers;
     };
-    class VulkanDebugManager final : public IVulkanObject, INHERIT_GClass(VulkanDebugManager)
+    class DebugManager final : public IVulkanObject, INHERIT_GClass(DebugManager)
     {
     public:
-        DECLARE_DCAD_AND_CAM(VulkanDebugManager);
-        VulkanDebugManager(const vk::Instance& instance/*,
+        DECLARE_DCAD_AND_CAM(DebugManager);
+        DebugManager(const vk::Instance& instance/*,
                 const std::vector<const char* const> validationLayers*/);
 
         virtual void Reset() noexcept override;
@@ -37,7 +37,7 @@ export namespace GuelderEngine::Vulkan
         static void LogDeviceProperties(const vk::PhysicalDevice& device);
         static void LogPresentMode(const vk::PresentModeKHR& mode);
     private:
-        friend class VulkanManager;//
+        friend class VulkanManager;
 
         static vk::DebugUtilsMessengerEXT CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi);
 

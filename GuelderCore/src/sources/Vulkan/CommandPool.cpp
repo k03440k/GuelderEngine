@@ -1,39 +1,39 @@
 module;
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan;
-import :VulkanCommandPool;
+import :CommandPool;
 
-import :VulkanSwapchainFrame;
-import :VulkanQueueFamilyIndices;
+import :SwapchainFrame;
+import :QueueFamilyIndices;
 
 import <vector>;
 
 namespace GuelderEngine::Vulkan
 {
-    VulkanCommandPool::VulkanCommandPool(const vk::Device& device, const VulkanQueueFamilyIndices& queueFamilyIndices)
+    CommandPool::CommandPool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices)
     {
         m_CommandPool = MakePool(device, queueFamilyIndices);
     }
-    VulkanCommandPool::VulkanCommandPool(const vk::Device& device, const VulkanQueueFamilyIndices& queueFamilyIndices, std::vector<VulkanSwapchainFrame>& frames)
-        : VulkanCommandPool(device, queueFamilyIndices)
+    CommandPool::CommandPool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices, std::vector<SwapchainFrame>& frames)
+        : CommandPool(device, queueFamilyIndices)
     {
         //m_CommandPool = MakePool(device, queueFamilyIndices);
         //m_CommandPool = MakeBuffer(device, m_CommandPool);
         MakeCommandBuffersForFrames(device, m_CommandPool, frames);
     }
-    VulkanCommandPool::VulkanCommandPool(const VulkanCommandPool& other)
+    CommandPool::CommandPool(const CommandPool& other)
     {
         m_CommandPool = other.m_CommandPool;
         //m_CommandPool = other.m_CommandPool;
     }
-    VulkanCommandPool::VulkanCommandPool(VulkanCommandPool&& other) noexcept
+    CommandPool::CommandPool(CommandPool&& other) noexcept
     {
         m_CommandPool = other.m_CommandPool;
         //m_CommandPool = other.m_CommandPool;
 
         other.Reset();
     }
-    VulkanCommandPool& VulkanCommandPool::operator=(const VulkanCommandPool& other)
+    CommandPool& CommandPool::operator=(const CommandPool& other)
     {
         if(this == &other)
             return *this;
@@ -43,7 +43,7 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    VulkanCommandPool& VulkanCommandPool::operator=(VulkanCommandPool&& other) noexcept
+    CommandPool& CommandPool::operator=(CommandPool&& other) noexcept
     {
         m_CommandPool = other.m_CommandPool;
         //m_CommandPool = other.m_CommandPool;
@@ -52,16 +52,16 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    void VulkanCommandPool::Reset() noexcept
+    void CommandPool::Reset() noexcept
     {
         m_CommandPool = nullptr;
         //m_CommandPool = nullptr;
     }
-    void VulkanCommandPool::Cleanup(const vk::Device& device) const noexcept
+    void CommandPool::Cleanup(const vk::Device& device) const noexcept
     {
         device.destroyCommandPool(m_CommandPool);
     }
-    vk::CommandPool VulkanCommandPool::MakePool(const vk::Device& device, const VulkanQueueFamilyIndices& queueFamilyIndices)
+    vk::CommandPool CommandPool::MakePool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices)
     {
         const vk::CommandPoolCreateInfo poolInfo(
             vk::CommandPoolCreateFlags() | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
@@ -70,7 +70,7 @@ namespace GuelderEngine::Vulkan
 
         return device.createCommandPool(poolInfo);
     }
-    vk::CommandBuffer VulkanCommandPool::MakeBuffer(const vk::Device& device, const vk::CommandPool& pool)
+    vk::CommandBuffer CommandPool::MakeBuffer(const vk::Device& device, const vk::CommandPool& pool)
     {
         const vk::CommandBufferAllocateInfo bufferInfo(
             pool,
@@ -80,7 +80,7 @@ namespace GuelderEngine::Vulkan
 
         return device.allocateCommandBuffers(bufferInfo)[0];
     }
-    vk::CommandBuffer VulkanCommandPool::CreateCommandBuffer(const vk::Device& device) const
+    vk::CommandBuffer CommandPool::CreateCommandBuffer(const vk::Device& device) const
     {
         const vk::CommandBufferAllocateInfo bufferInfo(
             m_CommandPool,
@@ -90,7 +90,7 @@ namespace GuelderEngine::Vulkan
         
             return device.allocateCommandBuffers(bufferInfo)[0];
     }
-    void VulkanCommandPool::MakeCommandBuffersForFrames(const vk::Device& device, const vk::CommandPool& pool, std::vector<VulkanSwapchainFrame>& frames)
+    void CommandPool::MakeCommandBuffersForFrames(const vk::Device& device, const vk::CommandPool& pool, std::vector<SwapchainFrame>& frames)
     {
         const vk::CommandBufferAllocateInfo bufferInfo(
             pool,
@@ -101,11 +101,11 @@ namespace GuelderEngine::Vulkan
         for(auto&& frame : frames)
             frame.commandBuffer = device.allocateCommandBuffers(bufferInfo)[0];
     }
-    void VulkanCommandPool::MakeCommandBuffersForFrames(const vk::Device& device, std::vector<VulkanSwapchainFrame>& frames) const
+    void CommandPool::MakeCommandBuffersForFrames(const vk::Device& device, std::vector<SwapchainFrame>& frames) const
     {
         MakeCommandBuffersForFrames(device, m_CommandPool, frames);
     }
-    void VulkanCommandPool::FreeCommandBuffer(const vk::Device& device, const vk::CommandBuffer& commandBuffer) const noexcept
+    void CommandPool::FreeCommandBuffer(const vk::Device& device, const vk::CommandBuffer& commandBuffer) const noexcept
     {
         device.freeCommandBuffers(m_CommandPool, 1, &commandBuffer);
     }
