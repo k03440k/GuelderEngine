@@ -65,16 +65,18 @@ export namespace GuelderEngine
         Types::ushort GetHeight() const noexcept;
         WindowSize GetWindowSize() const noexcept;
         std::string GetTitle() const noexcept;
+        int GetFrameRate() const noexcept;
+        const WindowData& GetData() const noexcept;
+        GLFWwindow* GetGLFWWindow() const noexcept;
 
-        void SetCallback(const EventCallbackFunc& callback) noexcept { m_Data.callback = callback; }
+        void SetCallback(const EventCallbackFunc& callback) noexcept;
         void SetWindow(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480, const std::string& windowTitle = std::string("Guelder Engine Window"));
         void SetWindowSize(const Types::ushort& width = 640, const Types::ushort& height = 480);
         //void SetWindow(GLFWwindow* other, const std::string* otherTitle = nullptr);
         void ShowFrameRate();
-        int GetFrameRate() const noexcept { return m_Data.GetFrameRate(); }
 
     private:
-        friend class GEApplication;
+        //friend class GEApplication;//remove
 
         void Init();
         void Shutdown();

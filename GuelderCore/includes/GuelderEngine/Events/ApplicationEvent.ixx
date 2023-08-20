@@ -1,6 +1,6 @@
 module;
-#include "../src/headers/Events/Event.hpp"
-#include "../src/headers/Core/GObject/GClass.hpp"
+#include "../private/headers/Events/Event.hpp"
+#include "../private/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Events:ApplicationEvents;
 
 import :BaseEvent;

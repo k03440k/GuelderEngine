@@ -1,5 +1,5 @@
 module;
-#include "../src/headers/Events/Event.hpp"
+#include "../private/headers/Events/Event.hpp"
 export module GuelderEngine.Events:KeyEvent;
 
 import :BaseEvent;

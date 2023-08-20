@@ -9,6 +9,7 @@ export module GuelderEngine.Vulkan:Manager;
 import :IVulkanObject;
 import :DebugManager;
 import :DeviceManager;
+import :Mesh;
 import GuelderEngine.Core.Types;
 //import :VulkanSurfaceManager;
 
@@ -44,7 +45,7 @@ export namespace GuelderEngine::Vulkan
     {
     public:
         VulkanManager() = default;
-        VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const std::string_view& vertPath, const std::string_view& fragPath,
+        VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const std::string_view& vertPath, const std::string_view& fragPath, const Mesh_t& mesh = {},
             const std::string_view& name = "Guelder Engine Editor");
         virtual ~VulkanManager();
 
@@ -53,6 +54,8 @@ export namespace GuelderEngine::Vulkan
         virtual void Reset() noexcept override;
 
         static bool AreExtensionsSupported(const std::vector<const char*>& extensions);
+        //must be called before Render
+        void SetMesh(const Mesh_t& mesh);
         //void LoadVertexShader(const std::string_view& source);
         //void LoadFragmentShader(const std::string_view& source);
         /**
@@ -67,6 +70,7 @@ export namespace GuelderEngine::Vulkan
         vk::Instance m_Instance;
 
         DeviceManager m_DeviceManager;
+        Pipeline m_Pipeline;
         Scene m_Scene;
 #ifdef GE_DEBUG_VULKAN
         DebugManager m_DebugManager;

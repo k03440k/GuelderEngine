@@ -20,11 +20,11 @@ export namespace GuelderEngine::Vulkan
 
         static vk::Semaphore MakeSemaphore(const vk::Device& device);
         static vk::Fence MakeFence(const vk::Device& device);
-    private:
-        friend class Swapchain;
-        friend class Pipeline;
-        friend struct SwapchainFrame;
 
+        const vk::Fence& GetFlightFence() const noexcept;
+        const vk::Semaphore& GetImageAvailableSemaphore() const noexcept;
+        const vk::Semaphore& GetImageRenderFinishedSemaphore() const noexcept;
+    private:
         vk::Fence m_InFlightFence;
         vk::Semaphore m_ImageAvailable;
         vk::Semaphore m_RenderFinished;

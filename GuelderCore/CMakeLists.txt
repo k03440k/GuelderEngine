@@ -16,8 +16,8 @@ set(CXX_SCAN_FOR_MODULES ON)
 
 project (${ECN})
 
-set(CORE_PRIVATE_MODULES_PATH src/headers/)
-set(CORE_PRIVATE_SOURCES_PATH src/sources/)
+set(CORE_PRIVATE_MODULES_PATH private/headers/)
+set(CORE_PRIVATE_SOURCES_PATH private/sources/)
 set(CORE_PUBLIC_MODULES_PATH includes/GuelderEngine/)
 
 set(CORE_PRIVATE_HEADERS
@@ -27,6 +27,7 @@ set(CORE_PRIVATE_HEADERS
 set(CORE_PUBLIC_HEADERS
 	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.hpp
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.hpp
+	${CORE_PUBLIC_MODULES_PATH}Vulkan/Mesh.ixx
 )
 set(CORE_PRIVATE_SOURCES
 	#${CORE_PRIVATE_SOURCES_PATH}GObject/GClass.cpp
@@ -49,7 +50,8 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/CommandPool.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/FrameBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainFrame.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainFrame.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Mesh.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VertexBuffer.cpp
 )
 set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Core/Window.ixx
@@ -70,7 +72,7 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/CommandPool.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/FrameBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainFrame.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainFrame.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/VertexBuffer.ixx
 )
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx

@@ -1,5 +1,5 @@
 module;
-#include "../src/headers/Core/GObject/GClass.hpp"
+#include "../private/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Core:Application;
 
 import GuelderEngine.Vulkan;
@@ -48,7 +48,8 @@ export namespace GuelderEngine
         */
         GEApplication(
             const std::string_view& executablePath, 
-            const Window::WindowData& info = {}, 
+            const Window::WindowData& info = {},
+            const Vulkan::Mesh_t& mesh = {},
             const std::string_view& vertexShaderVarName = "vert",
             const std::string_view& fragmentShaderVarName = "frag"
         );
@@ -67,6 +68,8 @@ export namespace GuelderEngine
 
         void SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept;
         int GetFrameRate() const noexcept { return m_Window->GetFrameRate(); }
+
+        void SetMesh(const Vulkan::Mesh_t& mesh);
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;

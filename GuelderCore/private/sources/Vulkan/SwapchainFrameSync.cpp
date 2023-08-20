@@ -74,5 +74,7 @@ namespace GuelderEngine::Vulkan
 
         return device.createFence(fenceInfo);
     }
-
+	const vk::Fence& SwapchainFrameSync::GetFlightFence() const noexcept { return m_InFlightFence; }
+	const vk::Semaphore& SwapchainFrameSync::GetImageAvailableSemaphore() const noexcept { return m_ImageAvailable; }
+	const vk::Semaphore& SwapchainFrameSync::GetImageRenderFinishedSemaphore() const noexcept { return m_RenderFinished; }
 }

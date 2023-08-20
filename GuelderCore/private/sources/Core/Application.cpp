@@ -19,20 +19,23 @@ namespace GuelderEngine
 {
 #pragma region GEApplication
 #define BIND_EVENT_FUNC(x) std::bind(&x, this, std::placeholders::_1)
-    GEApplication::GEApplication(const std::string_view& executablePath, const Window::WindowData& info, const std::string_view& vertexShaderVarName,
+    GEApplication::GEApplication(const std::string_view& executablePath, const Window::WindowData& info, const Vulkan::Mesh_t& mesh, const std::string_view& vertexShaderVarName,
         const std::string_view& fragmentShaderVarName)
     : resourceManager(executablePath)
     {
         m_Window = std::make_unique<Window>(Window::WindowData(info.width, info.height, info.title.data()));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));
 
-        m_VulkanManager = std::make_unique<Vulkan::VulkanManager>(
-            m_Window->m_GLFWWindow,
+        m_VulkanManager = std::make_unique<Vulkan::VulkanManager>
+        (
+            m_Window->GetGLFWWindow(),
             m_Window->GetWidth(),
             m_Window->GetHeight(),
             resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName),
             resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName),
-            info.title);
+            mesh,
+            info.title
+        );
     }
     GEApplication::~GEApplication()
     {
@@ -101,6 +104,10 @@ namespace GuelderEngine
     {
         m_CloseWindow = true;
         return m_CloseWindow;
+    }
+    void GEApplication::SetMesh(const Vulkan::Mesh_t& mesh)
+    {
+        m_VulkanManager->SetMesh(mesh);
     }
 #pragma endregion
 }

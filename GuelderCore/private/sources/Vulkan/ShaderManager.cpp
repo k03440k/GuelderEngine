@@ -9,33 +9,37 @@ import GuelderEngine.Core;
 
 namespace GuelderEngine::Vulkan
 {
-    ShaderManager::ShaderManager(const std::string_view& vertexPath, const std::string_view& fragmentPath)
-        : vertexPath(vertexPath), fragmentPath(fragmentPath)
+    ShaderManager::ShaderManager(const std::string_view& vertexPath, const std::string_view& fragmentPath, const Types::uint& inPosLocation, const Types::uint& inColorLocation)
+        : m_VertexPath(vertexPath), m_FragmentPath(fragmentPath), m_InPosLocation(inPosLocation), m_InColorLocation(inColorLocation)
     {
 
     }
     void ShaderManager::Reset() noexcept
     {
-        vertexPath.clear();
-        fragmentPath.clear();
+        m_VertexPath.clear();
+        m_FragmentPath.clear();
     }
     std::string ShaderManager::GetVertexPath() const noexcept
     {
-        return vertexPath;
+        return m_VertexPath;
     }
     std::string ShaderManager::GetFragmentPath() const noexcept
     {
-        return fragmentPath;
+        return m_FragmentPath;
     }
     ShaderManager::ShaderManager(const ShaderManager& other)
     {
-        vertexPath = other.vertexPath;
-        fragmentPath = other.fragmentPath;
+        m_VertexPath = other.m_VertexPath;
+        m_FragmentPath = other.m_FragmentPath;
+        m_InPosLocation = other.m_InPosLocation;
+        m_InColorLocation = other.m_InColorLocation;
     }
     ShaderManager::ShaderManager(ShaderManager&& other) noexcept
     {
-        vertexPath = std::forward<std::string>(other.vertexPath);
-        fragmentPath = std::forward<std::string>(other.fragmentPath);
+        m_VertexPath = std::forward<std::string>(other.m_VertexPath);
+        m_FragmentPath = std::forward<std::string>(other.m_FragmentPath);
+        m_InPosLocation = other.m_InPosLocation;
+        m_InColorLocation = other.m_InColorLocation;
 
         other.Reset();
     }
@@ -44,15 +48,19 @@ namespace GuelderEngine::Vulkan
         if(this == &other)
             return *this;
 
-        vertexPath = other.vertexPath;
-        fragmentPath = other.fragmentPath;
+        m_VertexPath = other.m_VertexPath;
+        m_FragmentPath = other.m_FragmentPath;
+        m_InPosLocation = other.m_InPosLocation;
+        m_InColorLocation = other.m_InColorLocation;
 
         return *this;
     }
     ShaderManager& ShaderManager::operator=(ShaderManager&& other) noexcept
     {
-        vertexPath = std::forward<std::string>(other.vertexPath);
-        fragmentPath = std::forward<std::string>(other.fragmentPath);
+        m_VertexPath = std::forward<std::string>(other.m_VertexPath);
+        m_FragmentPath = std::forward<std::string>(other.m_FragmentPath);
+        m_InPosLocation = other.m_InPosLocation;
+        m_InColorLocation = other.m_InColorLocation;
 
         other.Reset();
 

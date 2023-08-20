@@ -16,9 +16,13 @@ export namespace GuelderEngine::Vulkan
     public:
         DECLARE_DCAD_AND_CAM(ShaderManager);
 
-        ShaderManager(const std::string_view& vertexPath, const std::string_view& fragmentPath);
+        /**
+         * @param vertexPath full path to the compiled(.spv) vertex shader
+         * @param fragmentPath full path to the compiled(.spv) fragment shader
+         */
+        ShaderManager(const std::string_view& vertexPath, const std::string_view& fragmentPath, const Types::uint& inPosLocation = 0, const Types::uint& inColorLocation = 1);
 
-        virtual void Reset() noexcept override;
+        void Reset() noexcept override;
 
         std::string GetVertexPath() const noexcept;
         std::string GetFragmentPath() const noexcept;
@@ -26,7 +30,10 @@ export namespace GuelderEngine::Vulkan
         static vk::ShaderModule CreateModule(const std::string_view& shaderSource, const vk::Device& device);
 
     private:
-        std::string vertexPath;
-        std::string fragmentPath;
+        std::string m_VertexPath;
+        std::string m_FragmentPath;
+
+        Types::uint m_InPosLocation;
+        Types::uint m_InColorLocation;
     };
 }

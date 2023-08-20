@@ -28,8 +28,8 @@ namespace GuelderEngine::Vulkan
         m_QueueIndices = QueueFamilyIndices(m_PhysicalDevice, m_Surface);
         m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices, extensions);
 
-        m_Pipeline = Pipeline(m_Device, m_PhysicalDevice, m_Surface, windowSize.width, windowSize.height, m_QueueIndices,
-             vertPath, fragPath);
+        /*m_Pipeline = Pipeline(m_Device, m_PhysicalDevice, m_Surface, {windowSize.width, windowSize.height}, m_QueueIndices,
+             vertPath, fragPath);*/
     }
     DeviceManager::DeviceManager(const DeviceManager& other)
     {
@@ -37,7 +37,7 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        m_Pipeline = other.m_Pipeline;
+        //m_Pipeline = other.m_Pipeline;
     }
     DeviceManager::DeviceManager(DeviceManager&& other) noexcept
     {
@@ -45,7 +45,7 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
+        //m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
 
         other.Reset();
     }
@@ -58,7 +58,7 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        m_Pipeline = other.m_Pipeline;
+        //m_Pipeline = other.m_Pipeline;
 
         return *this;
     }
@@ -68,7 +68,7 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
+        //m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
 
         other.Reset();
 
@@ -83,18 +83,50 @@ namespace GuelderEngine::Vulkan
         m_Device = nullptr;
         m_QueueIndices = {};
         m_Surface = nullptr;
-        m_Pipeline.Reset();
+        //m_Pipeline.Reset();
     }
     void DeviceManager::Cleanup(const vk::Instance& instance) const noexcept
     {
-        m_Device.waitIdle();
-        m_Pipeline.Cleanup(m_Device);
+        //m_Device.waitIdle();
+        //m_Pipeline.Cleanup(m_Device);
         m_Device.destroy();
         instance.destroySurfaceKHR(m_Surface);
     }
-    void DeviceManager::Render(Types::uint width, Types::uint height, const Scene& scene)
+    /*void DeviceManager::Render(Types::uint width, Types::uint height, const Scene& scene)
     {
         m_Pipeline.Render(m_Device, m_PhysicalDevice, m_Surface, {width, height}, m_QueueIndices, scene);
+    }*/
+    Types::uint DeviceManager::FindMemType(const vk::PhysicalDevice& physicalDevice, const Types::uint& typeFilter, const vk::MemoryPropertyFlags& properties)
+    {
+        const auto memProperties = physicalDevice.getMemoryProperties();
+
+        for (Types::uint i = 0; i < memProperties.memoryTypeCount; ++i)
+        {
+            if(typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+                return i;
+        }
+
+        GE_CORE_CLASS_THROW("Failed to find suitable memory type");
+    }
+    const vk::Device& DeviceManager::GetDevice() const noexcept
+    {
+        return m_Device;
+    }
+    const vk::PhysicalDevice& DeviceManager::GetPhysicalDevice() const noexcept
+    {
+        return m_PhysicalDevice;
+    }
+    const QueueFamilyIndices& DeviceManager::GetQueueIndices() const noexcept
+    {
+        return m_QueueIndices;
+    }
+    const vk::SurfaceKHR& DeviceManager::GetSurface() const noexcept
+    {
+        return m_Surface;
+    }
+    void DeviceManager::WaitIdle() const noexcept
+    {
+        m_Device.waitIdle();
     }
     bool DeviceManager::CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& requestedExtensions)
     {

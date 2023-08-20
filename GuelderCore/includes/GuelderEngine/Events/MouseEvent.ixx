@@ -1,6 +1,6 @@
 module;
 //#include "Event.hpp"
-#include "../src/headers/Events/Event.hpp"
+#include "../private/headers/Events/Event.hpp"
 #include "../Utils/Debug.hpp"
 export module GuelderEngine.Events:MouseEvents;
 

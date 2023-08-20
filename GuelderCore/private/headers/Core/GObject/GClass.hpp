@@ -16,7 +16,7 @@ import GuelderEngine.Core.Types;
     DELETE_COPY(className);\
     DELETE_MOVING(className)
 
-/*
+/**
  *@brief declares copy operator and ctor without "default" keyword
 */
 #define DECLARE_COPY(className)\
@@ -35,7 +35,7 @@ import GuelderEngine.Core.Types;
     className() = default;\
     ~className() = default
 
-/*
+/**
  *@brief declare default ctor and dtor and copying and moving
 */
 #define DECLARE_DCAD_AND_CAM(className)\

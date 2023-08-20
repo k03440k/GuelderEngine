@@ -37,8 +37,6 @@ export namespace GuelderEngine::Vulkan
         static void LogDeviceProperties(const vk::PhysicalDevice& device);
         static void LogPresentMode(const vk::PresentModeKHR& mode);
     private:
-        friend class VulkanManager;
-
         static vk::DebugUtilsMessengerEXT CreateDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi);
 
         static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(

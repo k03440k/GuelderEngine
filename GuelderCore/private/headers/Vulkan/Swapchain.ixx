@@ -40,6 +40,17 @@ export namespace GuelderEngine::Vulkan
         void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
             const QueueFamilyIndices& queueFamilyIndices);
 
+        const CommandPool& GetCommandPool() const noexcept;
+
+        Types::uint IncrementCurrentFrame() noexcept;
+
+        const std::vector<SwapchainFrame>& GetFrames() const noexcept;
+        const vk::SwapchainKHR& GetSwapchain() const noexcept;
+        const vk::Format& GetFormat() const noexcept;
+        const vk::Extent2D& GetExtent2D() const noexcept;
+        Types::uint GetCurrentFrameNumber() const noexcept;
+        Types::uint GetMaxFramesInFlight() const noexcept;
+
     private:
         static vk::SurfaceFormatKHR ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats);
         static vk::PresentModeKHR ChooseSwapchainPresentMode(const std::vector<vk::PresentModeKHR>& presentModes);
@@ -52,8 +63,6 @@ export namespace GuelderEngine::Vulkan
          *@brief For ctor
         */
         void CreateFrames(const vk::Device& device, const vk::Format& format, const std::vector<vk::Image>& images);
-
-        friend class Pipeline;
 
         ShaderManager m_ShaderManager;
         SwapchainSupportDetails m_Details;

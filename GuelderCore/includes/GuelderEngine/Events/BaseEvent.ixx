@@ -1,5 +1,5 @@
 module;
-#include "../src/headers/Core/GObject/GClass.hpp"
+#include "../private/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Events:BaseEvent;
 
 import GuelderEngine.Core.Types;

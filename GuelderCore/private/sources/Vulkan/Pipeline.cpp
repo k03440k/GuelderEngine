@@ -8,10 +8,12 @@ module;
 module GuelderEngine.Vulkan;
 import :Pipeline;
 
+import :Manager;
 import :ShaderManager;
 import :VulkanSwapchain;
 import :Model;
-import :Manager;
+import :Mesh;
+import :VertexBuffer;
 import GuelderEngine.Core;
 import GuelderEngine.Core.Types;
 
@@ -21,36 +23,41 @@ import <vector>;
 namespace GuelderEngine::Vulkan
 {
     Pipeline::Pipeline(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-        const Types::uint& width, const Types::uint& height, const QueueFamilyIndices& queueFamilyIndices, const std::string_view& vertexPath, const std::string_view& fragmentPath)
-        : m_Swapchain(device, physicalDevice, surface, {width, height}, queueFamilyIndices)
+        const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices, const std::string_view& vertexPath, const std::string_view& fragmentPath, const Mesh_t& mesh,
+        const Types::uint& inPosLocation, const Types::uint& inColorLocation)
+        : m_Swapchain(device, physicalDevice, surface, extent, queueFamilyIndices)
     {
-        m_Queues.graphicsQueue = GetGraphicsQueue(device, queueFamilyIndices);
-        m_Queues.presentQueue = GetPresentQueue(device, queueFamilyIndices);
+        m_Queues.graphics = GetGraphicsQueue(device, queueFamilyIndices);
+        m_Queues.present = Getpresent(device, queueFamilyIndices);
 
-        m_ShaderManager = ShaderManager(vertexPath, fragmentPath);
+        m_ShaderManager = ShaderManager(vertexPath, fragmentPath, inPosLocation, inColorLocation);
 
-        Create(device, { width, height }, vertexPath, fragmentPath);
+        Create(device, extent, vertexPath, fragmentPath);
         m_Swapchain.MakeFrames(device, m_RenderPass);
+
+        m_VBuffer = VertexBuffer(device, physicalDevice, mesh);
     }
     Pipeline::Pipeline(const Pipeline& other)
     {
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_Queues.graphics = other.m_Queues.graphics;
+        m_Queues.present = other.m_Queues.present;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
         m_Swapchain = other.m_Swapchain;
         m_ShaderManager = other.m_ShaderManager;
+        m_VBuffer = other.m_VBuffer;
     }
     Pipeline::Pipeline(Pipeline&& other) noexcept
     {
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_Queues.graphics = other.m_Queues.graphics;
+        m_Queues.present = other.m_Queues.present;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
         m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_ShaderManager = std::forward<ShaderManager>(other.m_ShaderManager);
+        m_VBuffer = std::forward<VertexBuffer>(other.m_VBuffer);
 
         other.Reset();
     }
@@ -59,25 +66,27 @@ namespace GuelderEngine::Vulkan
         if(this == &other)
             return *this;
 
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_Queues.graphics = other.m_Queues.graphics;
+        m_Queues.present = other.m_Queues.present;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
         m_Swapchain = other.m_Swapchain;
         m_ShaderManager = other.m_ShaderManager;
+        m_VBuffer = other.m_VBuffer;
 
         return *this;
     }
     Pipeline& Pipeline::operator=(Pipeline&& other) noexcept
     {
-        m_Queues.graphicsQueue = other.m_Queues.graphicsQueue;
-        m_Queues.presentQueue = other.m_Queues.presentQueue;
+        m_Queues.graphics = other.m_Queues.graphics;
+        m_Queues.present = other.m_Queues.present;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
         m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_ShaderManager = std::forward<ShaderManager>(other.m_ShaderManager);
+        m_VBuffer = std::forward<VertexBuffer>(other.m_VBuffer);
 
         other.Reset();
 
@@ -88,8 +97,16 @@ namespace GuelderEngine::Vulkan
 {
     void Pipeline::Create(const vk::Device& device, const vk::Extent2D& extent, const std::string_view& vertexPath, const std::string_view& fragmentPath)
     {
-        constexpr vk::PipelineVertexInputStateCreateInfo vertexInfo(vk::PipelineVertexInputStateCreateFlags(), 0, nullptr, 0);
-        constexpr vk::PipelineInputAssemblyStateCreateInfo assemblyInfo(vk::PipelineInputAssemblyStateCreateFlags(), vk::PrimitiveTopology::eTriangleList);
+        const auto bindingDescription = Vertex::GetBindingDescription();
+        const auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+
+        const vk::PipelineVertexInputStateCreateInfo vertexInfo{vk::PipelineVertexInputStateCreateFlags(),
+            1,
+            &bindingDescription,
+            attributeDescriptions.size(),
+            attributeDescriptions.data()
+        };
+        const vk::PipelineInputAssemblyStateCreateInfo assemblyInfo(vk::PipelineInputAssemblyStateCreateFlags(), vk::PrimitiveTopology::eTriangleList);
 
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
         shaderStages.reserve(2);
@@ -134,7 +151,7 @@ namespace GuelderEngine::Vulkan
             VK_FALSE
         );
 
-        //color blend
+        //color blending
         vk::PipelineColorBlendAttachmentState colorBlendAttachment;
         colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
         colorBlendAttachment.blendEnable = VK_TRUE;
@@ -154,7 +171,7 @@ namespace GuelderEngine::Vulkan
         );
 
         m_Layout = CreateLayout(device);
-        m_RenderPass = CreateRenderPass(device, m_Swapchain.m_Format);
+        m_RenderPass = CreateRenderPass(device, m_Swapchain.GetFormat());
 
         const vk::GraphicsPipelineCreateInfo createInfo(
             vk::PipelineCreateFlagBits(),
@@ -182,20 +199,27 @@ namespace GuelderEngine::Vulkan
     }
     void Pipeline::Reset() noexcept
     {
-        m_Queues.graphicsQueue = nullptr;
-        m_Queues.presentQueue = nullptr;
+        m_Queues.graphics = nullptr;
+        m_Queues.present = nullptr;
         m_GraphicsPipeline = nullptr;
         m_Layout = nullptr;
         m_RenderPass = nullptr;
         m_Swapchain.Reset();
         m_ShaderManager.Reset();
+        m_VBuffer.Reset();
     }
     void Pipeline::Cleanup(const vk::Device& device) const noexcept
     {
+        m_VBuffer.Cleanup(device);
         m_Swapchain.Cleanup(device);
         device.destroyPipelineLayout(m_Layout);
         device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
+    }
+
+    void Pipeline::SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const Mesh_t& mesh)
+    {
+        m_VBuffer = VertexBuffer(device, physicalDevice, mesh);
     }
 
     vk::PipelineLayout Pipeline::CreateLayout(const vk::Device& device)
@@ -248,7 +272,7 @@ namespace GuelderEngine::Vulkan
     {
         return device.getQueue(indices.graphicsFamily.value(), 0);
     }
-    vk::Queue Pipeline::GetPresentQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
+    vk::Queue Pipeline::Getpresent(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
     {
         return device.getQueue(indices.presentFamily.value(), 0);
     }
@@ -264,8 +288,8 @@ namespace GuelderEngine::Vulkan
         const vk::ClearValue clearValue{{ 1.0f, greenValue, 0.25f, 1.0f }};
         const vk::RenderPassBeginInfo renderPassBeginInfo(
             m_RenderPass,
-            m_Swapchain.m_Frames[imageIndex].framebuffer,
-            vk::Rect2D({ 0, 0 }, m_Swapchain.m_Extent),
+            m_Swapchain.GetFrames()[imageIndex].framebuffer,
+            vk::Rect2D({ 0, 0 }, m_Swapchain.GetExtent2D()),
             1,
             &clearValue
         );
@@ -273,13 +297,15 @@ namespace GuelderEngine::Vulkan
         commandBuffer.beginRenderPass(&renderPassBeginInfo, vk::SubpassContents::eInline);
         commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_GraphicsPipeline);
 
+        m_VBuffer.Bind(commandBuffer, { 0 });
+
         for(auto&& position : scene.GetTrianglesPositions())
         {
             const auto model = glm::translate(glm::mat4(1.0f), position);
             const auto vulkanModel = Model(model);
             commandBuffer.pushConstants(m_Layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(vulkanModel), &vulkanModel);
 
-            commandBuffer.draw(3, 1, 0, 0);//hardcode
+            commandBuffer.draw(m_VBuffer.GetVerticesCount(), 1, 0, 0);
         }
 
         commandBuffer.endRenderPass();
@@ -288,18 +314,18 @@ namespace GuelderEngine::Vulkan
     void Pipeline::Render(const vk::Device& device, const vk::PhysicalDevice& physicalDevice,  const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
         const QueueFamilyIndices& queueFamilyIndices, const Scene& scene)
     {
-        const auto& currentFrame = m_Swapchain.m_Frames[m_Swapchain.m_CurrentFrameNumber];
+        const auto& currentFrame = m_Swapchain.GetFrames()[m_Swapchain.GetCurrentFrameNumber()];
 
-        //GE_CORE_CLASS_ASSERT(info.device.waitForFences(1, &currentFrame.sync.m_InFlightFence, VK_TRUE, UINT64_MAX) == vk::Result::eSuccess, "cannot wait for fence");
+        //GE_CORE_CLASS_ASSERT(info.device.waitForFences(1, &currentFrame.sync.GetFlightFence(), VK_TRUE, UINT64_MAX) == vk::Result::eSuccess, "cannot wait for fence");
         currentFrame.WaitForImage(device);
 
         Types::uint imageIndex;
         try
         {
-            const auto result = device.acquireNextImageKHR(m_Swapchain.m_Swapchain, UINT64_MAX, currentFrame.sync.m_ImageAvailable, nullptr);
+            const auto result = device.acquireNextImageKHR(m_Swapchain.GetSwapchain(), UINT64_MAX, currentFrame.sync.GetImageAvailableSemaphore(), nullptr);
             imageIndex = result.value;
         }
-        catch(const vk::OutOfDateKHRError error)
+        catch(const vk::OutOfDateKHRError& error)
         {
             Recreate( device, physicalDevice, surface, extent, queueFamilyIndices);
             return;
@@ -312,9 +338,9 @@ namespace GuelderEngine::Vulkan
 
         RecordDrawCommands(commandBuffer, imageIndex, scene);
 
-        const vk::Semaphore waitSemaphores[] = { currentFrame.sync.m_ImageAvailable };
+        const vk::Semaphore waitSemaphores[] = { currentFrame.sync.GetImageAvailableSemaphore() };
         const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-        const vk::Semaphore signalSemaphores[] = { currentFrame.sync.m_RenderFinished };
+        const vk::Semaphore signalSemaphores[] = { currentFrame.sync.GetImageRenderFinishedSemaphore() };
 
         const vk::SubmitInfo submitInfo(
             1,
@@ -327,11 +353,11 @@ namespace GuelderEngine::Vulkan
         );
         currentFrame.ResetFence(device);
 
-        //GE_CORE_CLASS_ASSERT(info.device.resetFences(1, &currentFrame.sync.m_InFlightFence) == vk::Result::eSuccess, "cannot reset fence");
+        //GE_CORE_CLASS_ASSERT(info.device.resetFences(1, &currentFrame.sync.GetFlightFence()) == vk::Result::eSuccess, "cannot reset fence");
 
-        m_Queues.graphicsQueue.submit(submitInfo, currentFrame.sync.m_InFlightFence);
+        m_Queues.graphics.submit(submitInfo, currentFrame.sync.GetFlightFence());
 
-        const vk::SwapchainKHR swapchains[] = { m_Swapchain.m_Swapchain };
+        const vk::SwapchainKHR swapchains[] = { m_Swapchain.GetSwapchain() };
 
         const vk::PresentInfoKHR presentInfo(
             1,
@@ -341,12 +367,12 @@ namespace GuelderEngine::Vulkan
             &imageIndex
         );
 
-        //GE_CORE_CLASS_ASSERT(m_Queues.presentQueue.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
+        //GE_CORE_CLASS_ASSERT(m_Queues.present.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
 
         vk::Result presentResult;
         try
         {
-            presentResult = m_Queues.presentQueue.presentKHR(presentInfo);
+            presentResult = m_Queues.present.presentKHR(presentInfo);
         }
         catch(const vk::OutOfDateKHRError& error)
         {
@@ -359,7 +385,8 @@ namespace GuelderEngine::Vulkan
             return;
         }
 
-        m_Swapchain.m_CurrentFrameNumber = (m_Swapchain.m_CurrentFrameNumber + 1) % m_Swapchain.m_MaxFramesInFlight;
+        //m_Swapchain.m_CurrentFrameNumber = (m_Swapchain.GetCurrentFrameNumber() + 1) % m_Swapchain.m_MaxFramesInFlight;
+        m_Swapchain.IncrementCurrentFrame();
     }
 
     void Pipeline::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
@@ -371,8 +398,8 @@ namespace GuelderEngine::Vulkan
         m_Swapchain.Reset();
         m_Swapchain = Swapchain(device, physicalDevice, surface, extent, queueFamilyIndices);
 
-        m_Queues.graphicsQueue = GetGraphicsQueue(device, queueFamilyIndices);
-        m_Queues.presentQueue = GetPresentQueue(device, queueFamilyIndices);
+        m_Queues.graphics = GetGraphicsQueue(device, queueFamilyIndices);
+        m_Queues.present = Getpresent(device, queueFamilyIndices);
 
         Create(device, m_ShaderManager.GetVertexPath(), m_ShaderManager.GetFragmentPath());
         m_Swapchain.MakeFrames(device, m_RenderPass);*/

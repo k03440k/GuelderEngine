@@ -127,11 +127,11 @@ namespace GuelderEngine::Vulkan
 
     void SwapchainFrame::WaitForImage(const vk::Device& device, const uint64_t& delay) const
     {
-        GE_CORE_CLASS_ASSERT(device.waitForFences(1, &sync.m_InFlightFence, VK_TRUE, delay) == vk::Result::eSuccess, "cannot wait for fence");
+        GE_CORE_CLASS_ASSERT(device.waitForFences(1, &sync.GetFlightFence(), VK_TRUE, delay) == vk::Result::eSuccess, "cannot wait for fence");
     }
     void SwapchainFrame::ResetFence(const vk::Device& device) const
     {
-        GE_CORE_CLASS_ASSERT(device.resetFences(1, &sync.m_InFlightFence) == vk::Result::eSuccess, "cannot reset fence");
+        GE_CORE_CLASS_ASSERT(device.resetFences(1, &sync.GetFlightFence()) == vk::Result::eSuccess, "cannot reset fence");
     }
 
     void SwapchainFrame::Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,

@@ -186,29 +186,6 @@ namespace GuelderEngine
                 data.callback(event);
             });
     }
-    Types::ushort Window::GetWidth() const noexcept { return m_Data.width; }
-    Types::ushort Window::GetHeight() const noexcept { return m_Data.height; }
-    WindowSize Window::GetWindowSize() const noexcept
-    {
-        int width = 0, height = 0;
-        glfwGetFramebufferSize(m_GLFWWindow, &width, &height);
-        return { static_cast<Types::uint>(width), static_cast<Types::uint>(height) };
-    }
-    std::string Window::GetTitle() const noexcept { return m_Data.title; }
-    void Window::SetWindow(const Types::ushort& windowWidth, const Types::ushort& windowHeight, const std::string& windowTitle)
-    {
-        m_Data = Window::WindowData(windowWidth, windowHeight, windowTitle);
-
-        if (m_GLFWWindow) glfwDestroyWindow(m_GLFWWindow);
-
-        Init();
-    }
-    void Window::SetWindowSize(const Types::ushort& width, const Types::ushort& height)
-    {
-        m_Data.width = width;
-        m_Data.height = height;
-        glfwSetWindowSize(m_GLFWWindow, m_Data.width, m_Data.height);
-    }
     void Window::ShowFrameRate()
     {
         if(m_Data.showFrameRate)
@@ -252,6 +229,39 @@ namespace GuelderEngine
     bool Window::ShouldClose() const
     {
         return glfwWindowShouldClose(m_GLFWWindow);
+    }
+    Types::ushort Window::GetWidth() const noexcept { return m_Data.width; }
+    Types::ushort Window::GetHeight() const noexcept { return m_Data.height; }
+    WindowSize Window::GetWindowSize() const noexcept
+    {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(m_GLFWWindow, &width, &height);
+        return { static_cast<Types::uint>(width), static_cast<Types::uint>(height) };
+    }
+    std::string Window::GetTitle() const noexcept { return m_Data.title; }
+    int Window::GetFrameRate() const noexcept { return m_Data.GetFrameRate(); }
+    const Window::WindowData& Window::GetData() const noexcept
+    {
+        return m_Data;
+    }
+    GLFWwindow* Window::GetGLFWWindow() const noexcept
+    {
+        return m_GLFWWindow;
+    }
+    void Window::SetCallback(const EventCallbackFunc& callback) noexcept { m_Data.callback = callback; }
+    void Window::SetWindow(const Types::ushort& windowWidth, const Types::ushort& windowHeight, const std::string& windowTitle)
+    {
+        m_Data = Window::WindowData(windowWidth, windowHeight, windowTitle);
+
+        if(m_GLFWWindow) glfwDestroyWindow(m_GLFWWindow);
+
+        Init();
+    }
+    void Window::SetWindowSize(const Types::ushort& width, const Types::ushort& height)
+    {
+        m_Data.width = width;
+        m_Data.height = height;
+        glfwSetWindowSize(m_GLFWWindow, m_Data.width, m_Data.height);
     }
 #pragma endregion
 }

@@ -70,7 +70,7 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const std::string_view& vertPath, const std::string_view& fragPath,
+    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const std::string_view& vertPath, const std::string_view& fragPath, const Mesh_t& mesh,
         const std::string_view& name)
     {
         m_Instance = CreateVkInstance(name.data());
@@ -79,10 +79,21 @@ namespace GuelderEngine::Vulkan
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = DebugManager(m_Instance);
 #endif // GE_DEBUG_VULKAN
+        m_Pipeline = Pipeline(
+            m_DeviceManager.GetDevice(), 
+            m_DeviceManager.GetPhysicalDevice(), 
+            m_DeviceManager.GetSurface(),
+            {width, height}, 
+            m_DeviceManager.GetQueueIndices(),
+            vertPath, 
+            fragPath,
+            mesh
+        );
     }
     VulkanManager::VulkanManager(const VulkanManager& other)
     {
         m_Instance = other.m_Instance;
+        m_Pipeline = other.m_Pipeline;
         m_DeviceManager = other.m_DeviceManager;
         m_Scene = other.m_Scene;
 #ifdef GE_DEBUG_VULKAN
@@ -92,6 +103,7 @@ namespace GuelderEngine::Vulkan
     VulkanManager::VulkanManager(VulkanManager&& other) noexcept
     {
         m_Instance = other.m_Instance;
+        m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
         m_DeviceManager = std::forward<DeviceManager>(other.m_DeviceManager);
         m_Scene = std::forward<Scene>(other.m_Scene);
 #ifdef GE_DEBUG_VULKAN
@@ -109,6 +121,7 @@ namespace GuelderEngine::Vulkan
             return *this;
 
         m_Instance = other.m_Instance;
+        m_Pipeline = other.m_Pipeline;
         m_DeviceManager = other.m_DeviceManager;
         m_Scene = other.m_Scene;
 #ifdef GE_DEBUG_VULKAN
@@ -120,6 +133,7 @@ namespace GuelderEngine::Vulkan
     VulkanManager& VulkanManager::operator=(VulkanManager&& other) noexcept
     {
         m_Instance = other.m_Instance;
+        m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
         m_DeviceManager = std::forward<DeviceManager>(other.m_DeviceManager);
         m_Scene = std::forward<Scene>(other.m_Scene);
 #ifdef GE_DEBUG_VULKAN
@@ -139,7 +153,15 @@ namespace GuelderEngine::Vulkan
 
     void VulkanManager::Render(Types::uint width, Types::uint height)
     {
-        m_DeviceManager.Render(width, height, m_Scene);
+        //m_DeviceManager.Render(width, height, m_Scene);
+        m_Pipeline.Render(
+            m_DeviceManager.GetDevice(), 
+            m_DeviceManager.GetPhysicalDevice(),
+            m_DeviceManager.GetSurface(), 
+            {width, height},
+            m_DeviceManager.GetQueueIndices(),
+            m_Scene
+        );
     }
 
     vk::Instance VulkanManager::CreateVkInstance(const char* name)
@@ -227,6 +249,10 @@ namespace GuelderEngine::Vulkan
 
         return true;
     }
+    void VulkanManager::SetMesh(const Mesh_t& mesh)
+    {
+        m_Pipeline.SetMesh(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), mesh);
+    }
     /*void VulkanManager::LoadVertexShader(const std::string_view& name)
 {
 }
@@ -236,6 +262,7 @@ void VulkanManager::LoadFragmentShader(const std::string_view& name)
     void VulkanManager::Reset() noexcept
     {
         m_Instance = nullptr;
+        m_Pipeline.Reset();
         m_DeviceManager.Reset();
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager.Reset();
@@ -243,6 +270,8 @@ void VulkanManager::LoadFragmentShader(const std::string_view& name)
     }
     void VulkanManager::Cleanup() const noexcept
     {
+        m_DeviceManager.WaitIdle();
+        m_Pipeline.Cleanup(m_DeviceManager.GetDevice());
         m_DeviceManager.Cleanup(m_Instance);
 #ifdef GE_DEBUG_VULKAN
         //m_Instance.destroyDebugUtilsMessengerEXT(m_DebugManager.m_DebugMessenger, nullptr, m_DLDI);

@@ -197,7 +197,6 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.subresourceRange.layerCount = 1;
             imageViewInfo.format = format;
 
-
             m_Frames[i] = Vulkan::SwapchainFrame(device, imageViewInfo, m_CommandPool);
         }
     }
@@ -284,5 +283,38 @@ namespace GuelderEngine::Vulkan
             m_Frames[i].Recreate(device, renderPass,
                 extent, imageViewInfo, m_CommandPool);
         }
+    }
+    const CommandPool& Swapchain::GetCommandPool() const noexcept
+    {
+        return m_CommandPool;
+    }
+    Types::uint Swapchain::IncrementCurrentFrame() noexcept
+    {
+        m_CurrentFrameNumber = (m_CurrentFrameNumber + 1) % m_MaxFramesInFlight;
+        return m_CurrentFrameNumber;
+    }
+    const std::vector<SwapchainFrame>& Swapchain::GetFrames() const noexcept
+    {
+        return m_Frames;
+    }
+    const vk::SwapchainKHR& Swapchain::GetSwapchain() const noexcept
+    {
+        return m_Swapchain;
+    }
+    const vk::Format& Swapchain::GetFormat() const noexcept
+    {
+        return m_Format;
+    }
+    const vk::Extent2D& Swapchain::GetExtent2D() const noexcept
+    {
+        return m_Extent;
+    }
+    Types::uint Swapchain::GetCurrentFrameNumber() const noexcept
+    {
+        return m_CurrentFrameNumber;
+    }
+    Types::uint Swapchain::GetMaxFramesInFlight() const noexcept
+    {
+        return m_MaxFramesInFlight;
     }
 }
