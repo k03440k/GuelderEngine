@@ -51,7 +51,10 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/FrameBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainFrame.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Mesh.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/VertexBuffer.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/IBuffer.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/VertexBuffer.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/StagingBuffer.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/IndexBuffer.cpp
 )
 set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Core/Window.ixx
@@ -72,7 +75,11 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/CommandPool.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/FrameBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainFrame.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/VertexBuffer.ixx
+	#${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/Buffers.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/IBuffer.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/VertexBuffer.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/StagingBuffer.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/IndexBuffer.ixx
 )
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx

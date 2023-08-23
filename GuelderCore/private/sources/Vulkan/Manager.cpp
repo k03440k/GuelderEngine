@@ -9,7 +9,6 @@ import :Manager;
 import :DebugManager;
 import :DeviceManager;
 import :ShaderManager;
-//import :VulkanSurfaceManager;
 import GuelderEngine.Debug;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Core;
@@ -26,8 +25,8 @@ namespace GuelderEngine::Vulkan
     {
         Types::uint reserve{};
 
-        for(float x = -1.0f; x < 1.0f; x += 0.2f)
-            for(float y = -1.0f; y < 1.0f; y += 0.2f)
+        for(float x = -1.0f; x < 1.0f; x += 0.5f)
+            for(float y = -1.0f; y < 1.0f; y += 0.5f)
                 reserve++;
 
         m_TrianglePositions.reserve(reserve);
@@ -251,7 +250,7 @@ namespace GuelderEngine::Vulkan
     }
     void VulkanManager::SetMesh(const Mesh_t& mesh)
     {
-        m_Pipeline.SetMesh(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), mesh);
+        m_Pipeline.SetMesh(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), mesh);
     }
     /*void VulkanManager::LoadVertexShader(const std::string_view& name)
 {

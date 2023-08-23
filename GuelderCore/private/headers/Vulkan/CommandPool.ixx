@@ -1,4 +1,5 @@
 module;
+#include "../../../includes/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:CommandPool;
@@ -12,12 +13,12 @@ export namespace GuelderEngine::Vulkan
     struct SwapchainFrame;
     struct QueueFamilyIndices;
 
-    class CommandPool : public IVulkanObject
+    class CommandPool : public IVulkanObject, INHERIT_GClass(CommandPool)
     {
     public:
         DECLARE_DCAD_AND_CAM(CommandPool);
         
-        CommandPool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices);
+        CommandPool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices, const vk::QueueFlagBits& queueType = vk::QueueFlagBits::eGraphics);
         /**
          * @brief Allocates command buffers for frames
         */
@@ -32,8 +33,9 @@ export namespace GuelderEngine::Vulkan
 
         void FreeCommandBuffer(const vk::Device& device, const vk::CommandBuffer& commandBuffer) const noexcept;
 
+        const vk::CommandPool& GetCommandPool() const noexcept;
+
     private:
-        static vk::CommandPool MakePool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices);
         static vk::CommandBuffer MakeBuffer(const vk::Device& device, const vk::CommandPool& pool);
 
         vk::CommandPool m_CommandPool;

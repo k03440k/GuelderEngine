@@ -1,0 +1,34 @@
+module;
+#include <vulkan/vulkan.hpp>
+#include "../../Core/GObject/GClass.hpp"
+#include "GuelderEngine/Utils/Debug.hpp"
+export module GuelderEngine.Vulkan:IBuffer;
+
+import :QueueFamilyIndices;
+import :CommandPool;
+import :Mesh;
+
+export namespace GuelderEngine::Vulkan::Buffers
+{
+    class IBuffer;
+
+    void CopyBuffer(const IBuffer& srcBuffer, const IBuffer& dstBuffer, const vk::Device& device, const vk::CommandPool& transferPool, const vk::Queue& transferQueue);
+
+    class IBuffer : public IVulkanObject, INHERIT_GClass(IBuffer)
+    {
+    public:
+        DEFINE_INTERFACE(IBuffer);
+
+        void Reset() noexcept override;
+        void Cleanup(const vk::Device& device) const noexcept;
+
+        const vk::Buffer& GetBuffer() const noexcept;
+        const vk::DeviceMemory& GetBufferMemory() const noexcept;
+        vk::DeviceSize GetSize() const noexcept;
+
+    protected:
+        vk::Buffer m_Buffer;
+        vk::DeviceMemory m_BufferMemory;
+        vk::DeviceSize m_Size;
+    };
+}

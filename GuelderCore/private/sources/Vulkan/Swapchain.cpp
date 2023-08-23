@@ -2,7 +2,7 @@ module;
 #include <vulkan/vulkan.hpp>
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
 export module GuelderEngine.Vulkan;
-import :VulkanSwapchain;
+import :Swapchain;
 
 //import :SwapchainFrameSync;//removed because of lnk1227
 import :QueueFamilyIndices;
@@ -23,7 +23,8 @@ namespace GuelderEngine::Vulkan
         m_IsSwapchain = false;
         Create(device, physicalDevice, surface, extent, queueFamilyIndices);
 
-        m_CommandPool = CommandPool(device, queueFamilyIndices);
+        m_CommandPool = CommandPool(device, queueFamilyIndices, vk::QueueFlagBits::eGraphics);
+        m_CommandPoolTransfer = CommandPool(device, queueFamilyIndices, vk::QueueFlagBits::eTransfer);
 
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
 
@@ -40,6 +41,7 @@ namespace GuelderEngine::Vulkan
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
         m_CommandPool = other.m_CommandPool;
+        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
@@ -52,6 +54,7 @@ namespace GuelderEngine::Vulkan
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
         m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
+        m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
@@ -69,6 +72,7 @@ namespace GuelderEngine::Vulkan
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
         m_CommandPool = other.m_CommandPool;
+        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
@@ -83,6 +87,7 @@ namespace GuelderEngine::Vulkan
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
         m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
+        m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
@@ -123,16 +128,29 @@ namespace GuelderEngine::Vulkan
         else
             createInfo.oldSwapchain = m_Swapchain;
 
-        if(queueFamilyIndices.graphicsFamily.value() != queueFamilyIndices.presentFamily.value())
-        {
-            const Types::uint queueIndices[] = { queueFamilyIndices.graphicsFamily.value(), queueFamilyIndices.presentFamily.value() };
+        std::vector<Types::uint> queueIndices(2);
 
+        if(queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetPresentFamily())
+        {
+            //const Types::uint queueIndices[] = { queueFamilyIndices.graphicsFamily.value(), queueFamilyIndices.presentFamily.value(), queueFamilyIndices.transferFamily.value() };
+            queueIndices[0] = queueFamilyIndices.GetGraphicsFamily();
+            queueIndices[1] = queueFamilyIndices.GetPresentFamily();
             createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
-            createInfo.queueFamilyIndexCount = 2;
-            createInfo.pQueueFamilyIndices = queueIndices;
         }
         else
+        {
             createInfo.imageSharingMode = vk::SharingMode::eExclusive;
+            queueIndices.push_back(queueFamilyIndices.GetGraphicsFamily());
+        }
+
+        if(queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetTransferFamily())
+            queueIndices.push_back(queueFamilyIndices.GetTransferFamily());
+
+        if(queueIndices.size())
+        {
+            createInfo.queueFamilyIndexCount = queueIndices.size();
+            createInfo.pQueueFamilyIndices = queueIndices.data();
+        }
 
         const auto newSwapchain = device.createSwapchainKHR(createInfo);
 
@@ -163,6 +181,7 @@ namespace GuelderEngine::Vulkan
 
         m_Frames.clear();
         m_CommandPool.Reset();
+        m_CommandPoolTransfer.Reset();
         m_MaxFramesInFlight = 0;
         m_CurrentFrameNumber = 0;
     }
@@ -172,6 +191,7 @@ namespace GuelderEngine::Vulkan
             frame.Cleanup(device, m_CommandPool);
 
         m_CommandPool.Cleanup(device);
+        m_CommandPoolTransfer.Cleanup(device);
         device.destroySwapchainKHR(m_Swapchain);
     }
     void Swapchain::CreateFrames(const vk::Device& device, const vk::Format& format, const std::vector<vk::Image>& images)
@@ -287,6 +307,10 @@ namespace GuelderEngine::Vulkan
     const CommandPool& Swapchain::GetCommandPool() const noexcept
     {
         return m_CommandPool;
+    }
+    const CommandPool& Swapchain::GetCommandPoolTransfer() const noexcept
+    {
+        return m_CommandPoolTransfer;
     }
     Types::uint Swapchain::IncrementCurrentFrame() noexcept
     {

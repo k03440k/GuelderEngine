@@ -1,19 +1,21 @@
 module;
-#include "../../headers/Core/GObject/GClass.hpp"
-#include "GuelderEngine/Utils/Debug.hpp"
 #include <glfw/glfw3.h>
 #include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "../../headers/Core/GObject/GClass.hpp"
 module GuelderEngine.Vulkan;
 import :Pipeline;
 
 import :Manager;
 import :ShaderManager;
-import :VulkanSwapchain;
+import :Swapchain;
 import :Model;
 import :Mesh;
+
 import :VertexBuffer;
+import :StagingBuffer;
+
 import GuelderEngine.Core;
 import GuelderEngine.Core.Types;
 
@@ -28,19 +30,21 @@ namespace GuelderEngine::Vulkan
         : m_Swapchain(device, physicalDevice, surface, extent, queueFamilyIndices)
     {
         m_Queues.graphics = GetGraphicsQueue(device, queueFamilyIndices);
-        m_Queues.present = Getpresent(device, queueFamilyIndices);
+        m_Queues.present = GetPresentQueue(device, queueFamilyIndices);
+        m_Queues.transfer = GetTransferQueue(device, queueFamilyIndices);
 
         m_ShaderManager = ShaderManager(vertexPath, fragmentPath, inPosLocation, inColorLocation);
 
         Create(device, extent, vertexPath, fragmentPath);
         m_Swapchain.MakeFrames(device, m_RenderPass);
 
-        m_VBuffer = VertexBuffer(device, physicalDevice, mesh);
+        SetMesh(device, physicalDevice, queueFamilyIndices, mesh);
     }
     Pipeline::Pipeline(const Pipeline& other)
     {
         m_Queues.graphics = other.m_Queues.graphics;
         m_Queues.present = other.m_Queues.present;
+        m_Queues.transfer = other.m_Queues.transfer;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
@@ -52,12 +56,13 @@ namespace GuelderEngine::Vulkan
     {
         m_Queues.graphics = other.m_Queues.graphics;
         m_Queues.present = other.m_Queues.present;
+        m_Queues.transfer = other.m_Queues.transfer;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
         m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_ShaderManager = std::forward<ShaderManager>(other.m_ShaderManager);
-        m_VBuffer = std::forward<VertexBuffer>(other.m_VBuffer);
+        m_VBuffer = std::forward<Buffers::VertexBuffer>(other.m_VBuffer);
 
         other.Reset();
     }
@@ -68,6 +73,7 @@ namespace GuelderEngine::Vulkan
 
         m_Queues.graphics = other.m_Queues.graphics;
         m_Queues.present = other.m_Queues.present;
+        m_Queues.transfer = other.m_Queues.transfer;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
@@ -81,12 +87,13 @@ namespace GuelderEngine::Vulkan
     {
         m_Queues.graphics = other.m_Queues.graphics;
         m_Queues.present = other.m_Queues.present;
+        m_Queues.transfer = other.m_Queues.transfer;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
         m_RenderPass = other.m_RenderPass;
         m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_ShaderManager = std::forward<ShaderManager>(other.m_ShaderManager);
-        m_VBuffer = std::forward<VertexBuffer>(other.m_VBuffer);
+        m_VBuffer = std::forward<Buffers::VertexBuffer>(other.m_VBuffer);
 
         other.Reset();
 
@@ -201,6 +208,7 @@ namespace GuelderEngine::Vulkan
     {
         m_Queues.graphics = nullptr;
         m_Queues.present = nullptr;
+        m_Queues.transfer = nullptr;
         m_GraphicsPipeline = nullptr;
         m_Layout = nullptr;
         m_RenderPass = nullptr;
@@ -217,9 +225,18 @@ namespace GuelderEngine::Vulkan
         device.destroyPipeline(m_GraphicsPipeline);
     }
 
-    void Pipeline::SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const Mesh_t& mesh)
+    void Pipeline::SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh_t& mesh)
     {
-        m_VBuffer = VertexBuffer(device, physicalDevice, mesh);
+        if(mesh.size())
+        {
+            auto stagingBuffer = Buffers::StagingBuffer(device, physicalDevice, queueFamilyIndices, mesh);
+
+            m_VBuffer = Buffers::VertexBuffer(device, physicalDevice, queueFamilyIndices, mesh);
+
+            Buffers::CopyBuffer(stagingBuffer, m_VBuffer, device, m_Swapchain.GetCommandPoolTransfer().GetCommandPool(), m_Queues.transfer);
+
+            stagingBuffer.Cleanup(device);
+        }
     }
 
     vk::PipelineLayout Pipeline::CreateLayout(const vk::Device& device)
@@ -270,11 +287,15 @@ namespace GuelderEngine::Vulkan
 
     vk::Queue Pipeline::GetGraphicsQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
     {
-        return device.getQueue(indices.graphicsFamily.value(), 0);
+        return device.getQueue(indices.GetGraphicsFamily(), 0);
     }
-    vk::Queue Pipeline::Getpresent(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
+    vk::Queue Pipeline::GetPresentQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
     {
-        return device.getQueue(indices.presentFamily.value(), 0);
+        return device.getQueue(indices.GetPresentFamily(), 0);
+    }
+    vk::Queue Pipeline::GetTransferQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
+    {
+        return device.getQueue(indices.GetTransferFamily(), 0);
     }
 
     void Pipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const Scene& scene) const

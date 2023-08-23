@@ -1,23 +1,42 @@
 module;
 #include <vulkan/vulkan.hpp>
+#include "../../../headers/Core/GObject/GClass.hpp"
 module GuelderEngine.Vulkan;
 import :VertexBuffer;
 
+import :IBuffer;
+import :QueueFamilyIndices;
+import :Mesh;
 import :DeviceManager;
 import GuelderEngine.Core.Types;
 
-namespace GuelderEngine::Vulkan
+namespace GuelderEngine::Vulkan::Buffers
 {
-    VertexBuffer::VertexBuffer(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const Mesh_t& mesh)
+    VertexBuffer::VertexBuffer(
+        const vk::Device& device,
+        const vk::PhysicalDevice& physicalDevice,
+        const QueueFamilyIndices& indices, 
+        const Mesh_t& mesh
+    )
         : m_VerticesCount(mesh.size())
     {
+        m_Size = sizeof(mesh[0]) * mesh.size();
         if(m_VerticesCount)
         {
-            const vk::BufferCreateInfo info{vk::BufferCreateFlagBits(),
+            vk::BufferCreateInfo info{vk::BufferCreateFlagBits(),
                 sizeof(mesh[0])* mesh.size(),
-                vk::BufferUsageFlagBits::eVertexBuffer,
-                vk::SharingMode::eExclusive
+                vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst
             };
+
+            if(indices.GetGraphicsFamily() != indices.GetTransferFamily())
+            {
+                const Types::uint uniqueIndices[] = { indices.GetGraphicsFamily(), indices.GetTransferFamily() };
+                info.queueFamilyIndexCount = 2;
+                info.pQueueFamilyIndices = uniqueIndices;
+                info.sharingMode = vk::SharingMode::eConcurrent;
+            }
+            else
+                info.sharingMode = vk::SharingMode::eExclusive;
 
             m_Buffer = device.createBuffer(info);
 
@@ -28,16 +47,16 @@ namespace GuelderEngine::Vulkan
                     DeviceManager::FindMemType(
                         physicalDevice,
                         memRequirements.memoryTypeBits,
-                        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+                        vk::MemoryPropertyFlagBits::eDeviceLocal
                     )
             };
 
             m_BufferMemory = device.allocateMemory(allocInfo);
             device.bindBufferMemory(m_Buffer, m_BufferMemory, 0);
 
-            void* data = device.mapMemory(m_BufferMemory, 0, info.size);
-            memcpy(data, mesh.data(), info.size);
-            device.unmapMemory(m_BufferMemory);
+            //void* data = device.mapMemory(m_BufferMemory, 0, info.size);
+            //memcpy(data, mesh.data(), info.size);
+            //device.unmapMemory(m_BufferMemory);
         }
     }
     VertexBuffer::VertexBuffer(const VertexBuffer& other)
@@ -45,6 +64,7 @@ namespace GuelderEngine::Vulkan
         m_Buffer = other.m_Buffer;
         m_BufferMemory = other.m_BufferMemory;
         m_VerticesCount = other.m_VerticesCount;
+        m_Size = other.m_Size;
     }
     VertexBuffer& VertexBuffer::operator=(const VertexBuffer& other)
     {
@@ -54,6 +74,7 @@ namespace GuelderEngine::Vulkan
         m_Buffer = other.m_Buffer;
         m_BufferMemory = other.m_BufferMemory;
         m_VerticesCount = other.m_VerticesCount;
+        m_Size = other.m_Size;
 
         return *this;
     }
@@ -62,6 +83,7 @@ namespace GuelderEngine::Vulkan
         m_Buffer = other.m_Buffer;
         m_BufferMemory = other.m_BufferMemory;
         m_VerticesCount = other.m_VerticesCount;
+        m_Size = other.m_Size;
 
         other.Reset();
     }
@@ -70,6 +92,7 @@ namespace GuelderEngine::Vulkan
         m_Buffer = other.m_Buffer;
         m_BufferMemory = other.m_BufferMemory;
         m_VerticesCount = other.m_VerticesCount;
+        m_Size = other.m_Size;
 
         other.Reset();
 
@@ -79,11 +102,8 @@ namespace GuelderEngine::Vulkan
     {
         m_Buffer = nullptr;
         m_BufferMemory = nullptr;
-    }
-    void VertexBuffer::Cleanup(const vk::Device& device) const noexcept
-    {
-        device.freeMemory(m_BufferMemory);
-        device.destroyBuffer(m_Buffer);
+        m_VerticesCount = 0;
+        m_Size = 0;
     }
     void VertexBuffer::Bind(const vk::CommandBuffer& cmdBuffer, const vk::DeviceSize& offset) const
     {

@@ -1,31 +1,34 @@
 module;
 #include <vulkan/vulkan.hpp>
-#include "../Core/GObject/GClass.hpp"
+#include "../../Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan:VertexBuffer;
 
-import :IVulkanObject;
+import :IBuffer;
+import :QueueFamilyIndices;
 import :Mesh;
 import GuelderEngine.Core.Types;
 
-export namespace GuelderEngine::Vulkan
+export namespace GuelderEngine::Vulkan::Buffers
 {
-    class VertexBuffer : public IVulkanObject
+    class VertexBuffer : public IBuffer
     {
     public:
         DECLARE_DCAD_AND_CAM(VertexBuffer);
 
-        VertexBuffer(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const Mesh_t& mesh);
+        VertexBuffer(
+            const vk::Device& device, 
+            const vk::PhysicalDevice& physicalDevice,
+            const QueueFamilyIndices& indices,
+            const Mesh_t& mesh
+        );
 
         void Reset() noexcept override;
-        void Cleanup(const vk::Device& device) const noexcept;
 
         void Bind(const vk::CommandBuffer& cmdBuffer, const vk::DeviceSize& offset) const;
 
         Types::uint GetVerticesCount() const noexcept;
-    private:
-        vk::Buffer m_Buffer;
-        vk::DeviceMemory m_BufferMemory;
 
+    private:
         Types::uint m_VerticesCount;
     };
 }

@@ -13,21 +13,28 @@ namespace GuelderEngine::Vulkan
     QueueFamilyIndices::QueueFamilyIndices(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface)
     {
         const std::vector queueFamilies = device.getQueueFamilyProperties();
-
-#ifdef GE_DEBUG_VULKAN
+        
         GE_LOG(VulkanCore, Info, "Device can support ", queueFamilies.size(), " Queue Families");
-#endif
 
         for(size_t i = 0; i < queueFamilies.size(); i++)
         {
-            if(queueFamilies[i].queueFlags & vk::QueueFlagBits::eGraphics && device.getSurfaceSupportKHR(i, surface))
+            if(queueFamilies[i].queueFlags & vk::QueueFlagBits::eTransfer)
+            {
+                transferFamily = i;
+
+                GE_LOG(VulkanCore, Info, "Queue Family at index ", i, " is suitable for transfering memory");
+            }
+            if(queueFamilies[i].queueFlags & vk::QueueFlagBits::eGraphics)
             {
                 graphicsFamily = i;
+                
+                GE_LOG(VulkanCore, Info, "Queue Family at index ", i, " is suitable for graphics");
+            }
+            if(device.getSurfaceSupportKHR(i, surface))
+            {
                 presentFamily = i;
-
-#ifdef GE_DEBUG_VULKAN
-                GE_LOG(VulkanCore, Info, "Queue Family at index ", i, " is suitable for graphics and presenting");
-#endif
+                
+                GE_LOG(VulkanCore, Info, "Queue Family at index ", i, " is suitable for presenting");
             }
             if(IsComplete())
                 break;
@@ -39,6 +46,7 @@ namespace GuelderEngine::Vulkan
     {
         graphicsFamily = other.graphicsFamily;
         presentFamily = other.presentFamily;
+        transferFamily = other.transferFamily;
     }
     QueueFamilyIndices& QueueFamilyIndices::operator=(const QueueFamilyIndices& other)
     {
@@ -47,11 +55,24 @@ namespace GuelderEngine::Vulkan
 
         graphicsFamily = other.graphicsFamily;
         presentFamily = other.presentFamily;
+        transferFamily = other.transferFamily;
 
         return *this;
     }
     bool QueueFamilyIndices::IsComplete() const noexcept
     {
-        return graphicsFamily.has_value() && presentFamily.has_value();
+        return graphicsFamily.has_value() && presentFamily.has_value() && transferFamily.has_value();
+    }
+    Types::uint QueueFamilyIndices::GetGraphicsFamily() const noexcept
+    {
+        return graphicsFamily.value();
+    }
+    Types::uint QueueFamilyIndices::GetPresentFamily() const noexcept
+    {
+        return presentFamily.value();
+    }
+    Types::uint QueueFamilyIndices::GetTransferFamily() const noexcept
+    {
+        return transferFamily.value();
     }
 }

@@ -8,7 +8,7 @@ export module GuelderEngine.Vulkan:DeviceManager;
 import :IVulkanObject;
 import :DebugManager;
 import :QueueFamilyIndices;
-import :VulkanSwapchain;
+import :Swapchain;
 import :Pipeline;
 import GuelderEngine.Core.Types;
 

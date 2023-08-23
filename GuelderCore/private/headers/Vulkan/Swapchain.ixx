@@ -2,7 +2,7 @@ module;
 #include "../includes/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
-export module GuelderEngine.Vulkan:VulkanSwapchain;
+export module GuelderEngine.Vulkan:Swapchain;
 
 import :IVulkanObject;
 import :QueueFamilyIndices;
@@ -41,6 +41,7 @@ export namespace GuelderEngine::Vulkan
             const QueueFamilyIndices& queueFamilyIndices);
 
         const CommandPool& GetCommandPool() const noexcept;
+        const CommandPool& GetCommandPoolTransfer() const noexcept;
 
         Types::uint IncrementCurrentFrame() noexcept;
 
@@ -67,6 +68,7 @@ export namespace GuelderEngine::Vulkan
         ShaderManager m_ShaderManager;
         SwapchainSupportDetails m_Details;
         CommandPool m_CommandPool;
+        CommandPool m_CommandPoolTransfer;
 
         //if the swapchain was created
         bool m_IsSwapchain : 1;

@@ -56,12 +56,12 @@ export namespace GuelderEngine
     }
 }
 
-template<typename... Attributes>
-concept ConsoleColorAttributes = ((std::is_same_v<Attributes, ::GuelderEngine::Debug::ConsoleForegroundColor> || ...)
-    || (std::is_same_v<Attributes, ::GuelderEngine::Debug::ConsoleBackgroundColor> || ...));
-
 export namespace GuelderEngine::Debug
 {
+    template<typename... Attributes>
+    concept ConsoleColorAttributes = ((std::is_same_v<Attributes, ::GuelderEngine::Debug::ConsoleForegroundColor> || ...)
+        || (std::is_same_v<Attributes, ::GuelderEngine::Debug::ConsoleBackgroundColor> || ...));
+
     enum class LogLevel : Types::ubyte
     {
         Info,
@@ -104,7 +104,10 @@ export namespace GuelderEngine::Debug
     //    using VulkanError = _VulkanError;
     //};
 
-    template<LogLevel LoggingLevels>
+    /*template<typename _LoggingCategory>
+    concept LoggingCattegoryTrait = std::is*/
+
+    template<LogLevel LoggingLevels, bool _enable>
     struct LoggingCategory//TODO: add colors support to this struct
     {
         LoggingCategory(const std::string_view& name)
@@ -119,8 +122,9 @@ export namespace GuelderEngine::Debug
                 static_cast<std::underlying_type_t<LogLevel>>(supportedLoggingLevels);
         }
 
-        const LogLevel supportedLoggingLevels = LoggingLevels;
+        static constexpr LogLevel supportedLoggingLevels = LoggingLevels;
         const std::string name;
+        static constexpr bool enable = _enable;
     };
     
     /*
@@ -132,17 +136,19 @@ export namespace GuelderEngine::Debug
         Logger() = default;
         ~Logger() = default;
 
-        template<LogLevel LoggingLevels, typename... Args>
-        constexpr static void Log(const LoggingCategory<LoggingLevels>& category,
-            const LogLevel& level, const Args&... args)
+        template<LogLevel LoggingLevels, bool _enable, typename... Args>
+        constexpr static void Log(const LoggingCategory<LoggingLevels, _enable>& category,
+            const LogLevel& level, Args&&... args)
         {
-            std::ostringstream oss;
-            Format(oss, args...);
-            const std::string message = oss.str();
-            WriteLog(category, level, message);
+            if(_enable)
+            {
+                std::ostringstream oss;
+                Format(oss, args...);
+                const std::string message = oss.str();
+                WriteLog<LoggingLevels, _enable >(category, level, message);
+            }
         }
-
-        //throws an error
+        
         [[noreturn]]
         static void Throw(const std::string_view& message, const char* fileName, const Types::uint& line);
 
@@ -188,8 +194,8 @@ export namespace GuelderEngine::Debug
             Format(oss, args...);
         }
 
-        template<LogLevel LoggingLevels>
-        static void WriteLog(const LoggingCategory<LoggingLevels>& category, const LogLevel& level,
+        template<LogLevel LoggingLevels, bool _enable>
+        static void WriteLog(const LoggingCategory<LoggingLevels, _enable>& category, const LogLevel& level,
             const std::string_view& message)
         {
             //const auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -197,6 +203,8 @@ export namespace GuelderEngine::Debug
             //localtime_s(&localTime, &t);
 
             //std::cout << std::put_time(&localTime, "%H:%M:%S") << ' '; // print timestamp
+            if(!_enable)
+                return;
 
             std::cout << category.name << ": ";
 
@@ -246,7 +254,7 @@ export namespace GuelderEngine::Debug
 
 namespace GuelderEngine::Debug
 {
-    struct CoreLoggingCategory final : LoggingCategory<LogLevel::All>
+    struct CoreLoggingCategory final : LoggingCategory<LogLevel::All, true>
     {
         CoreLoggingCategory() : LoggingCategory("Core") {}
     };
@@ -258,46 +266,46 @@ export namespace GuelderEngine
 {
     namespace Debug
     {
-        /*
+        /**
         * Prints into cout as custom type.
         * Another form of Logger::Log(color, categoryName, ...)
         */
-        template<LogLevel LoggingLevels, typename... Args>
-        constexpr void Log(const LoggingCategory<LoggingLevels>& category, const LogLevel& level, Args&&... info)
+        template<LogLevel LoggingLevels, bool _enable, typename... Args>
+        constexpr void Log(const LoggingCategory<LoggingLevels, _enable>& category, const LogLevel& level, Args&&... info)
         {
-            Logger::Log(category, level, info...);//TODO: remade custom log with making macro which will declare new struct which will be inherited from IConsoleCategory with method GetName() (see in the screenshot)
+            Logger::Log<LoggingLevels, _enable>(category, level, info...);//TODO: remade custom log with making macro which will declare new struct which will be inherited from IConsoleCategory with method GetName() (see in the screenshot)
         }
-        /*
+        /**
         * Prints into cout as info.
         * Another form of Logger::Log(LogLevel::Info, ...)
         */
         template<typename... Args>
         constexpr void LogInfo(Args&&... info)
         {
-            Logger::Log(coreLoggingCategory, LogLevel::Info, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::Info, info...);
         }
 
-        /*
+        /**
         * Prints into cout as the warning.
         * Another form of Logger::Log(LogLevel::Warning, ...)
         */
         template<typename ...Args>
         constexpr void LogWarning(Args&&... info)
         {
-            Logger::Log(coreLoggingCategory, LogLevel::Warning, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::Warning, info...);
         }
 
-        /*
+        /**
         * Prints into cout as the error.
         * Another form of Logger::Log(LogLevel::Error, ...)
         */
         template<typename ...Args>
         constexpr void LogError(Args&&... info)
         {
-            Logger::Log(coreLoggingCategory, LogLevel::Error, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::Error, info...);
         }
 
-        /*
+        /**
         * Prints into cout as the renderer error.
         * Another form of Logger::Log(LogLevel::RendererError, ...)
         */
@@ -305,17 +313,17 @@ export namespace GuelderEngine
         template<typename ...Args>
         constexpr void LogRendererError(Args&&... info)
         {
-            Logger::Log(coreLoggingCategory, LogLevel::RendererError, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::RendererError, info...);
         }
 
-        /*
+        /**
         * Prints into cout as the vulkan error.
         * Another form of Logger::Log(LogLevel::VulkanError, ...)
         */
         template<typename ...Args>
         constexpr void LogVulkanError(Args&&... info)
         {
-            Logger::Log(coreLoggingCategory, LogLevel::VulkanError, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::VulkanError, info...);
         }
     }
 }

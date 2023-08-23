@@ -12,15 +12,20 @@ export namespace GuelderEngine::Vulkan
 {
     struct QueueFamilyIndices : INHERIT_GClass(QueueFamilyIndices)
     {
+    public:
         DECLARE_DEFAULT_CTOR_AND_DTOR(QueueFamilyIndices);
         DECLARE_COPY(QueueFamilyIndices);
 
         QueueFamilyIndices(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
 
-        //location of graphics Queue Family
+        bool IsComplete() const noexcept;
+
+        Types::uint GetGraphicsFamily() const noexcept;
+        Types::uint GetPresentFamily() const noexcept;
+        Types::uint GetTransferFamily() const noexcept;
+    private:
         std::optional<Types::uint> graphicsFamily;
         std::optional<Types::uint> presentFamily;
-
-        bool IsComplete() const noexcept;
+        std::optional<Types::uint> transferFamily;
     };
 }

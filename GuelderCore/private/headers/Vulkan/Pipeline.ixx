@@ -4,7 +4,7 @@ module;
 export module GuelderEngine.Vulkan:Pipeline;
 
 import :IVulkanObject;
-import :VulkanSwapchain;
+import :Swapchain;
 import :ShaderManager;
 import :Mesh;
 import :VertexBuffer;
@@ -38,12 +38,14 @@ export namespace GuelderEngine::Vulkan
         /**
          * @brief Must be called before Render method
          */
-        void SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const Mesh_t& mesh);
+        void SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh_t& mesh);
     private:
         static vk::PipelineLayout CreateLayout(const vk::Device& device);
         static vk::RenderPass CreateRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat);
+
         static vk::Queue GetGraphicsQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept;
-        static vk::Queue Getpresent(const vk::Device& device, const QueueFamilyIndices& indices) noexcept;
+        static vk::Queue GetPresentQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept;
+        static vk::Queue GetTransferQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept;
 
         void Create(const vk::Device& device, const vk::Extent2D& extent, const std::string_view& vertexPath, const std::string_view& fragmentPath);
 
@@ -55,7 +57,7 @@ export namespace GuelderEngine::Vulkan
         ShaderManager m_ShaderManager;
         Swapchain m_Swapchain;
 
-        VertexBuffer m_VBuffer;
+        Buffers::VertexBuffer m_VBuffer;
 
         vk::RenderPass m_RenderPass;
         vk::PipelineLayout m_Layout;
@@ -65,6 +67,7 @@ export namespace GuelderEngine::Vulkan
         {
             vk::Queue graphics;
             vk::Queue present;
+            vk::Queue transfer;
         } m_Queues;
     };
 }

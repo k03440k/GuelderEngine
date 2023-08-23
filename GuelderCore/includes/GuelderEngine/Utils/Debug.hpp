@@ -47,22 +47,27 @@ import GuelderEngine.Debug;
 */
 #define GE_ASSERT(condition, ...) ::GuelderEngine::Debug::Logger::Assert(condition, ::GuelderEngine::Debug::Logger::Format(__VA_ARGS__), __FILE__, __LINE__)
 
+#define GE_ASSERT_FN(condition, ...) GE_ASSERT(condition, FUNC_NAME, ": ", __VA_ARGS__)
+
 #define GE_TO_STRING(arg) #arg
 #define CONCATENATE(lhs, rhs) GE_TO_STRING(lhs ## rhs)
 
+#define LOG_CATEGORY_VARIABLE(name) name##LoggingCategoryVar
+#define LOG_CATEGORY(name) name##LoggingCategory
 
-#define DECLARE_LOG_CATEGORY_EXTERN(name, loggingLevels)\
-    struct name##LoggingCategory final : ::GuelderEngine::Debug::LoggingCategory<::GuelderEngine::Debug::LogLevel::##loggingLevels>\
+#define DECLARE_LOG_CATEGORY_EXTERN(name, loggingLevels, enable)\
+    struct LOG_CATEGORY(name) final : ::GuelderEngine::Debug::LoggingCategory<::GuelderEngine::Debug::LogLevel::##loggingLevels, enable>\
     {\
-    name##LoggingCategory() : ::GuelderEngine::Debug::LoggingCategory<::GuelderEngine::Debug::LogLevel::##loggingLevels>(#name) {}\
+    LOG_CATEGORY(name)() : ::GuelderEngine::Debug::LoggingCategory<::GuelderEngine::Debug::LogLevel::##loggingLevels, enable>(GE_TO_STRING(name)) {}\
     };\
-    extern name##LoggingCategory name##LoggingCategoryVar
+    extern LOG_CATEGORY(name) LOG_CATEGORY_VARIABLE(name)
+
 
 #ifdef GE_DEBUG
 
-#define DEFINE_LOG_CATEGORY(name) name##LoggingCategory name##LoggingCategoryVar
+#define DEFINE_LOG_CATEGORY(name) LOG_CATEGORY(name) LOG_CATEGORY_VARIABLE(name)
 
-#define GE_LOG(categoryName, level, ...) ::GuelderEngine::Debug::Log(categoryName##LoggingCategoryVar, ::GuelderEngine::Debug::LogLevel::##level, __VA_ARGS__)
+#define GE_LOG(categoryName, level, ...) ::GuelderEngine::Debug::Log<LOG_CATEGORY(categoryName)::supportedLoggingLevels, LOG_CATEGORY(categoryName)::enable>(LOG_CATEGORY_VARIABLE(categoryName), ::GuelderEngine::Debug::LogLevel::##level, __VA_ARGS__)
 
 #else
 #define DEFINE_LOG_CATEGORY(...)

@@ -19,7 +19,7 @@
 
 import <memory>;
 
-DECLARE_LOG_CATEGORY_EXTERN(Editor, All);
+DECLARE_LOG_CATEGORY_EXTERN(Editor, All, true);
 DEFINE_LOG_CATEGORY(Editor);
 
 int main(int argc, char** argv)
@@ -28,10 +28,10 @@ int main(int argc, char** argv)
     {
         const auto app = std::make_unique<GEApplication>(argv[0]);
 
-        const Vulkan::Mesh_t vertices = {
-        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+        Vulkan::Mesh_t vertices = {
+        {{0.0f, -0.2f}, {1.0f, 0.0f, 0.0f}},
+        {{0.2f, 0.2f}, {0.0f, 1.0f, 0.0f}},
+        {{-0.2f, 0.2f}, {0.0f, 0.0f, 1.0f}}
         };
 
         app->SetMesh(vertices);

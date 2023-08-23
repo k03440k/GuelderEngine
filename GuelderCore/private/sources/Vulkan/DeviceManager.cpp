@@ -7,7 +7,7 @@ module GuelderEngine.Vulkan;
 import :DeviceManager;
 
 import :DebugManager;
-import :VulkanSwapchain;
+import :Swapchain;
 import :Pipeline;
 import GuelderEngine.Core.Types;
 
@@ -208,9 +208,11 @@ namespace GuelderEngine::Vulkan
     {
         constexpr float queuePriority = 1.0f;
 
-        std::vector uniqueIndices{indices.graphicsFamily.value()};
-        if (indices.graphicsFamily.value() != indices.presentFamily.value())
-            uniqueIndices.push_back(indices.presentFamily.value());
+        std::vector uniqueIndices{indices.GetGraphicsFamily()};
+        if (indices.GetGraphicsFamily() != indices.GetPresentFamily())
+            uniqueIndices.push_back(indices.GetPresentFamily());
+        if(indices.GetGraphicsFamily() != indices.GetTransferFamily())
+            uniqueIndices.push_back(indices.GetTransferFamily());
 
         std::vector<vk::DeviceQueueCreateInfo> queueDeviceInfo;
         for (auto&& queueFamilyIndex : uniqueIndices)
