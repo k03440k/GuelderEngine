@@ -9,6 +9,7 @@ import :Manager;
 import :DebugManager;
 import :DeviceManager;
 import :ShaderManager;
+import :Pipeline;
 import GuelderEngine.Debug;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Core;
@@ -110,9 +111,6 @@ namespace GuelderEngine::Vulkan
 #endif //GE_DEBUG_VULKAN
 
         other.Reset();
-//#ifdef GE_DEBUG_VULKAN
-        //other.m_DebugManager.Cleanup(m_Instance, m_DLDI);//idk
-//#endif
     }
     VulkanManager& VulkanManager::operator=(const VulkanManager& other)
     {
@@ -140,9 +138,6 @@ namespace GuelderEngine::Vulkan
 #endif //GE_DEBUG_VULKAN
 
         other.Reset();
-//#ifdef GE_DEBUG_VULKAN
-        //other.m_DebugManager.Cleanup(m_Instance, m_DLDI);//idk
-//#endif
         return *this;
     }
     VulkanManager::~VulkanManager()
@@ -152,7 +147,6 @@ namespace GuelderEngine::Vulkan
 
     void VulkanManager::Render(Types::uint width, Types::uint height)
     {
-        //m_DeviceManager.Render(width, height, m_Scene);
         m_Pipeline.Render(
             m_DeviceManager.GetDevice(), 
             m_DeviceManager.GetPhysicalDevice(),
@@ -248,7 +242,7 @@ namespace GuelderEngine::Vulkan
 
         return true;
     }
-    void VulkanManager::SetMesh(const Mesh_t& mesh)
+    void VulkanManager::SetMesh(const Mesh& mesh)
     {
         m_Pipeline.SetMesh(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), mesh);
     }

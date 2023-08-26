@@ -6,7 +6,7 @@ import GuelderEngine.Debug;
 
 #ifdef GE_DEBUG
 
-#define GE_DEBUG_VULKAN
+#define GE_DEBUG_VULKAN//high fps when disable because vulkan debug manager doesn't work, boost ~1000 fps (*__*)
 
 #endif
 

@@ -18,8 +18,10 @@ export namespace GuelderEngine::Vulkan::Buffers
         VertexBuffer(
             const vk::Device& device, 
             const vk::PhysicalDevice& physicalDevice,
-            const QueueFamilyIndices& indices,
-            const Mesh_t& mesh
+            const QueueFamilyIndices& queueFamilyIndices,
+            const vk::CommandPool& transferPool,
+            const vk::Queue& transferQueue,
+            const Vertices& mesh
         );
 
         void Reset() noexcept override;

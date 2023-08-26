@@ -23,7 +23,7 @@ namespace GuelderEngine::Vulkan
         m_IsSwapchain = false;
         Create(device, physicalDevice, surface, extent, queueFamilyIndices);
 
-        m_CommandPool = CommandPool(device, queueFamilyIndices, vk::QueueFlagBits::eGraphics);
+        m_CommandPool = CommandPool(device, queueFamilyIndices, vk::QueueFlagBits::eGraphics);//TODO: move command pools to pipeline and finish buffers remaking
         m_CommandPoolTransfer = CommandPool(device, queueFamilyIndices, vk::QueueFlagBits::eTransfer);
 
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
@@ -188,7 +188,7 @@ namespace GuelderEngine::Vulkan
     void Swapchain::Cleanup(const vk::Device& device) const noexcept
     {
         for(auto&& frame : m_Frames)
-            frame.Cleanup(device, m_CommandPool);
+            frame.Cleanup(device, m_CommandPool.GetCommandPool());
 
         m_CommandPool.Cleanup(device);
         m_CommandPoolTransfer.Cleanup(device);
@@ -217,7 +217,7 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.subresourceRange.layerCount = 1;
             imageViewInfo.format = format;
 
-            m_Frames[i] = Vulkan::SwapchainFrame(device, imageViewInfo, m_CommandPool);
+            m_Frames[i] = Vulkan::SwapchainFrame(device, imageViewInfo, m_CommandPool.GetCommandPool());
         }
     }
     void Swapchain::MakeFrames(const vk::Device& device, const vk::RenderPass& renderPass)
@@ -301,7 +301,7 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.format = m_Format;
 
             m_Frames[i].Recreate(device, renderPass,
-                extent, imageViewInfo, m_CommandPool);
+                extent, imageViewInfo, m_CommandPool.GetCommandPool());
         }
     }
     const CommandPool& Swapchain::GetCommandPool() const noexcept

@@ -105,7 +105,7 @@ namespace GuelderEngine
         m_CloseWindow = true;
         return m_CloseWindow;
     }
-    void GEApplication::SetMesh(const Vulkan::Mesh_t& mesh)
+    void GEApplication::SetMesh(const Vulkan::Mesh& mesh)
     {
         m_VulkanManager->SetMesh(mesh);
     }

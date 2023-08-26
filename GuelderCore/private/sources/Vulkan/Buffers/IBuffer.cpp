@@ -8,9 +8,15 @@ import :CommandPool;
 
 namespace GuelderEngine::Vulkan::Buffers
 {
-    void CopyBuffer(const IBuffer& srcBuffer, const IBuffer& dstBuffer, const vk::Device& device, const vk::CommandPool& transferPool, const vk::Queue& transferQueue)
+    void CopyBuffer(
+        const vk::Buffer& srcBuffer,
+        const vk::Buffer& dstBuffer,
+        const vk::DeviceSize& size,
+        const vk::Device& device,
+        const vk::CommandPool& transferPool,
+        const vk::Queue& transferQueue
+    )
     {
-        GE_ASSERT_FN(srcBuffer.GetSize() == dstBuffer.GetSize(), "different buffers sizes");
         //TODO: maybe make class CommandBuffer
         const vk::CommandBufferAllocateInfo allocInfo(
             transferPool,
@@ -23,8 +29,8 @@ namespace GuelderEngine::Vulkan::Buffers
         const vk::CommandBufferBeginInfo beginInfo{vk::CommandBufferUsageFlagBits::eOneTimeSubmit};
         GE_ASSERT_FN(cBuffer.begin(&beginInfo) == vk::Result::eSuccess, "cannot begin command buffer when copying buffer");
 
-        const vk::BufferCopy copy{0, 0, dstBuffer.GetSize()};
-        cBuffer.copyBuffer(srcBuffer.GetBuffer(), dstBuffer.GetBuffer(), 1, &copy);
+        const vk::BufferCopy copy{0, 0, size};
+        cBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &copy);
         cBuffer.end();
 
         vk::SubmitInfo submitInfo{};

@@ -55,7 +55,7 @@ export namespace GuelderEngine::Vulkan
 
         static bool AreExtensionsSupported(const std::vector<const char*>& extensions);
         //must be called before Render
-        void SetMesh(const Mesh_t& mesh);
+        void SetMesh(const Mesh& mesh);
         //void LoadVertexShader(const std::string_view& source);
         //void LoadFragmentShader(const std::string_view& source);
         /**

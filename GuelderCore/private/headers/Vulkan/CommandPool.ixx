@@ -36,7 +36,7 @@ export namespace GuelderEngine::Vulkan
         const vk::CommandPool& GetCommandPool() const noexcept;
 
     private:
-        static vk::CommandBuffer MakeBuffer(const vk::Device& device, const vk::CommandPool& pool);
+        static vk::CommandBuffer MakeCommandBuffer(const vk::Device& device, const vk::CommandPool& pool);
 
         vk::CommandPool m_CommandPool;
     };

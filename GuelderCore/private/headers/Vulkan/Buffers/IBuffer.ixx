@@ -12,7 +12,14 @@ export namespace GuelderEngine::Vulkan::Buffers
 {
     class IBuffer;
 
-    void CopyBuffer(const IBuffer& srcBuffer, const IBuffer& dstBuffer, const vk::Device& device, const vk::CommandPool& transferPool, const vk::Queue& transferQueue);
+    void CopyBuffer(
+        const vk::Buffer& srcBuffer,
+        const vk::Buffer& dstBuffer,
+        const vk::DeviceSize& size,
+        const vk::Device& device,
+        const vk::CommandPool& transferPool,
+        const vk::Queue& transferQueue
+    );
 
     class IBuffer : public IVulkanObject, INHERIT_GClass(IBuffer)
     {

@@ -28,13 +28,20 @@ int main(int argc, char** argv)
     {
         const auto app = std::make_unique<GEApplication>(argv[0]);
 
-        Vulkan::Mesh_t vertices = {
-        {{0.0f, -0.2f}, {1.0f, 0.0f, 0.0f}},
-        {{0.2f, 0.2f}, {0.0f, 1.0f, 0.0f}},
-        {{-0.2f, 0.2f}, {0.0f, 0.0f, 1.0f}}
+        const Vulkan::Mesh_t vertices = 
+        {
+            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+            {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
         };
 
-        app->SetMesh(vertices);
+        const Vulkan::Indices indices =
+        {
+            0, 1, 2, 2, 3, 0
+        };
+
+        app->SetMesh({vertices, indices});
 
         app->Run([&]
         {

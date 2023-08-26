@@ -79,7 +79,7 @@ namespace GuelderEngine::Vulkan
     {
         device.destroyCommandPool(m_CommandPool);
     }
-    vk::CommandBuffer CommandPool::MakeBuffer(const vk::Device& device, const vk::CommandPool& pool)
+    vk::CommandBuffer CommandPool::MakeCommandBuffer(const vk::Device& device, const vk::CommandPool& pool)
     {
         const vk::CommandBufferAllocateInfo bufferInfo(
             pool,

@@ -8,6 +8,7 @@ import :Swapchain;
 import :ShaderManager;
 import :Mesh;
 import :VertexBuffer;
+import :IndexBuffer;
 import GuelderEngine.Core.Types;
 
 import <vector>;
@@ -26,7 +27,7 @@ export namespace GuelderEngine::Vulkan
          *@param fragmentPath - path to the fragment shader file
         */
         Pipeline(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-            const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices, const std::string_view& vertexPath, const std::string_view& fragmentPath, const Mesh_t& mesh = {},
+            const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices, const std::string_view& vertexPath, const std::string_view& fragmentPath, const Mesh& mesh = {},
             const Types::uint& inPosLocation = 0, const Types::uint& inColorLocation = 1);
 
         virtual void Reset() noexcept override;
@@ -38,7 +39,7 @@ export namespace GuelderEngine::Vulkan
         /**
          * @brief Must be called before Render method
          */
-        void SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh_t& mesh);
+        void SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh& mesh);
     private:
         static vk::PipelineLayout CreateLayout(const vk::Device& device);
         static vk::RenderPass CreateRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat);
@@ -58,6 +59,7 @@ export namespace GuelderEngine::Vulkan
         Swapchain m_Swapchain;
 
         Buffers::VertexBuffer m_VBuffer;
+        Buffers::IndexBuffer m_IBuffer;
 
         vk::RenderPass m_RenderPass;
         vk::PipelineLayout m_Layout;

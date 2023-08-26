@@ -85,3 +85,55 @@ namespace GuelderEngine::Vulkan
         return descriptions;
     }
 }
+
+namespace GuelderEngine::Vulkan
+{
+    Mesh::Mesh(const Vertices& vertices, const Indices& indices)
+        : m_Vertices(vertices), m_Indices(indices)
+    {
+    }
+    void Mesh::Reset() noexcept
+    {
+        m_Vertices.clear();
+        m_Indices.clear();
+    }
+    Mesh::Mesh(const Mesh& other)
+    {
+        m_Vertices = other.m_Vertices;
+        m_Indices = other.m_Indices;
+    }
+    Mesh& Mesh::operator=(const Mesh& other)
+    {
+        if(this == &other)
+            return *this;
+
+        m_Vertices = other.m_Vertices;
+        m_Indices = other.m_Indices;
+
+        return *this;
+    }
+    Mesh::Mesh(Mesh&& other) noexcept
+    {
+        m_Vertices = std::forward<Vertices>(other.m_Vertices);
+        m_Indices = std::forward<Indices>(other.m_Indices);
+
+        other.Reset();
+    }
+    Mesh& Mesh::operator=(Mesh&& other) noexcept
+    {
+        m_Vertices = std::forward<Vertices>(other.m_Vertices);
+        m_Indices = std::forward<Indices>(other.m_Indices);
+
+        other.Reset();
+
+        return *this;
+    }
+    const Vertices& Mesh::GetVertices() const noexcept
+    {
+        return m_Vertices;
+    }
+    const Indices& Mesh::GetIndices() const noexcept
+    {
+        return m_Indices;
+    }
+}

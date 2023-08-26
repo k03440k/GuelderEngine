@@ -14,6 +14,7 @@ import :Model;
 import :Mesh;
 
 import :VertexBuffer;
+import :IndexBuffer;
 import :StagingBuffer;
 
 import GuelderEngine.Core;
@@ -25,7 +26,7 @@ import <vector>;
 namespace GuelderEngine::Vulkan
 {
     Pipeline::Pipeline(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-        const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices, const std::string_view& vertexPath, const std::string_view& fragmentPath, const Mesh_t& mesh,
+        const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices, const std::string_view& vertexPath, const std::string_view& fragmentPath, const Mesh& mesh,
         const Types::uint& inPosLocation, const Types::uint& inColorLocation)
         : m_Swapchain(device, physicalDevice, surface, extent, queueFamilyIndices)
     {
@@ -51,6 +52,7 @@ namespace GuelderEngine::Vulkan
         m_Swapchain = other.m_Swapchain;
         m_ShaderManager = other.m_ShaderManager;
         m_VBuffer = other.m_VBuffer;
+        m_IBuffer = other.m_IBuffer;
     }
     Pipeline::Pipeline(Pipeline&& other) noexcept
     {
@@ -63,6 +65,7 @@ namespace GuelderEngine::Vulkan
         m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_ShaderManager = std::forward<ShaderManager>(other.m_ShaderManager);
         m_VBuffer = std::forward<Buffers::VertexBuffer>(other.m_VBuffer);
+        m_IBuffer = other.m_IBuffer;
 
         other.Reset();
     }
@@ -80,6 +83,7 @@ namespace GuelderEngine::Vulkan
         m_Swapchain = other.m_Swapchain;
         m_ShaderManager = other.m_ShaderManager;
         m_VBuffer = other.m_VBuffer;
+        m_IBuffer = other.m_IBuffer;
 
         return *this;
     }
@@ -94,6 +98,7 @@ namespace GuelderEngine::Vulkan
         m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_ShaderManager = std::forward<ShaderManager>(other.m_ShaderManager);
         m_VBuffer = std::forward<Buffers::VertexBuffer>(other.m_VBuffer);
+        m_IBuffer = other.m_IBuffer;
 
         other.Reset();
 
@@ -215,27 +220,30 @@ namespace GuelderEngine::Vulkan
         m_Swapchain.Reset();
         m_ShaderManager.Reset();
         m_VBuffer.Reset();
+        m_IBuffer.Reset();
     }
     void Pipeline::Cleanup(const vk::Device& device) const noexcept
     {
         m_VBuffer.Cleanup(device);
+        m_IBuffer.Cleanup(device);
         m_Swapchain.Cleanup(device);
         device.destroyPipelineLayout(m_Layout);
         device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
     }
 
-    void Pipeline::SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh_t& mesh)
+    void Pipeline::SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh& mesh)
     {
-        if(mesh.size())
+        if(mesh.GetVertices().size())
         {
-            auto stagingBuffer = Buffers::StagingBuffer(device, physicalDevice, queueFamilyIndices, mesh);
+            //auto stagingBuffer = Buffers::StagingBuffer(device, physicalDevice, queueFamilyIndices, mesh);
 
-            m_VBuffer = Buffers::VertexBuffer(device, physicalDevice, queueFamilyIndices, mesh);
+            m_VBuffer = Buffers::VertexBuffer(device, physicalDevice, queueFamilyIndices, m_Swapchain.GetCommandPoolTransfer().GetCommandPool(), m_Queues.transfer, mesh.GetVertices());
+            m_IBuffer = Buffers::IndexBuffer(device, physicalDevice, queueFamilyIndices, m_Swapchain.GetCommandPoolTransfer().GetCommandPool(), m_Queues.transfer, mesh.GetIndices());
 
-            Buffers::CopyBuffer(stagingBuffer, m_VBuffer, device, m_Swapchain.GetCommandPoolTransfer().GetCommandPool(), m_Queues.transfer);
+            /*Buffers::CopyBuffer(stagingBuffer, m_VBuffer, device, m_Swapchain.GetCommandPoolTransfer().GetCommandPool(), m_Queues.transfer);
 
-            stagingBuffer.Cleanup(device);
+            stagingBuffer.Cleanup(device);*/
         }
     }
 
@@ -319,6 +327,7 @@ namespace GuelderEngine::Vulkan
         commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_GraphicsPipeline);
 
         m_VBuffer.Bind(commandBuffer, { 0 });
+        m_IBuffer.Bind(commandBuffer, { 0 });
 
         for(auto&& position : scene.GetTrianglesPositions())
         {
@@ -326,7 +335,8 @@ namespace GuelderEngine::Vulkan
             const auto vulkanModel = Model(model);
             commandBuffer.pushConstants(m_Layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(vulkanModel), &vulkanModel);
 
-            commandBuffer.draw(m_VBuffer.GetVerticesCount(), 1, 0, 0);
+            //commandBuffer.draw(m_VBuffer.GetVerticesCount(), 1, 0, 0);
+            commandBuffer.drawIndexed(m_IBuffer.GetIndicesCount(), 1, 0, 0, 0);
         }
 
         commandBuffer.endRenderPass();

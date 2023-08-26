@@ -12,6 +12,6 @@ layout(location = 0) out vec3 color;
 
 void main()
 {
-	gl_Position = ObjectData.model * vec4(inPosition, 0.0f, 1.0f);
+	gl_Position = /*ObjectData.model **/ vec4(inPosition, 0.0f, 1.0f);
 	color = inColor;
 }

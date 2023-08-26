@@ -69,7 +69,7 @@ export namespace GuelderEngine
         void SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept;
         int GetFrameRate() const noexcept { return m_Window->GetFrameRate(); }
 
-        void SetMesh(const Vulkan::Mesh_t& mesh);
+        void SetMesh(const Vulkan::Mesh& mesh);
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;

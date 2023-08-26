@@ -12,7 +12,7 @@ import GuelderEngine.Core.Types;
 //Ctors
 namespace GuelderEngine::Vulkan
 {
-    SwapchainFrame::SwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const CommandPool& pool)
+    SwapchainFrame::SwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const vk::CommandPool& pool)
     {
         CreateImage(device, viewInfo);
         CreateCommandBuffer(device, pool);
@@ -73,7 +73,7 @@ namespace GuelderEngine::Vulkan
         commandBuffer = nullptr;
         sync.Reset();
     }
-    void SwapchainFrame::Cleanup(const vk::Device& device, const CommandPool& pool) const noexcept
+    void SwapchainFrame::Cleanup(const vk::Device& device, const vk::CommandPool& pool) const noexcept
     {
         FreeCommandBuffer(pool, device);
         device.destroyImageView(imageView);
@@ -88,9 +88,9 @@ namespace GuelderEngine::Vulkan
     {
         device.destroyFramebuffer(framebuffer);
     }
-    void SwapchainFrame::FreeCommandBuffer(const CommandPool& pool, const vk::Device& device) const noexcept
+    void SwapchainFrame::FreeCommandBuffer(const vk::CommandPool& pool, const vk::Device& device) const noexcept
     {
-        pool.FreeCommandBuffer(device, commandBuffer);
+        device.freeCommandBuffers(pool, 1, &commandBuffer);
     }
 }
 namespace GuelderEngine::Vulkan
@@ -120,9 +120,15 @@ namespace GuelderEngine::Vulkan
         this->image = viewInfo.image;
         imageView = device.createImageView(viewInfo);
     }
-    void SwapchainFrame::CreateCommandBuffer(const vk::Device& device, const CommandPool& pool)
+    void SwapchainFrame::CreateCommandBuffer(const vk::Device& device, const vk::CommandPool& pool)
     {
-        commandBuffer = pool.CreateCommandBuffer(device);
+        const vk::CommandBufferAllocateInfo bufferInfo(
+            pool,
+            vk::CommandBufferLevel::ePrimary,
+            1
+        );
+
+        commandBuffer = device.allocateCommandBuffers(bufferInfo)[0];
     }
 
     void SwapchainFrame::WaitForImage(const vk::Device& device, const uint64_t& delay) const
@@ -135,7 +141,7 @@ namespace GuelderEngine::Vulkan
     }
 
     void SwapchainFrame::Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,
-        const vk::ImageViewCreateInfo& viewInfo, const CommandPool& pool)
+        const vk::ImageViewCreateInfo& viewInfo, const vk::CommandPool& pool)
     {
         CleanupImageView(device);
         CleanupFramebuffer(device);

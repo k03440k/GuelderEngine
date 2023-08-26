@@ -15,6 +15,8 @@ export namespace GuelderEngine::Vulkan
     struct Vertex;
     //temp
     using Mesh_t = std::vector<Vertex>;
+    using Vertices = std::vector<Vertex>;
+    using Indices = std::vector<Types::uint>;
 
     struct Vertex : public IVulkanObject
     {
@@ -34,6 +36,16 @@ export namespace GuelderEngine::Vulkan
     class Mesh : public IVulkanObject
     {
     public:
+        DECLARE_DCAD_AND_CAM(Mesh);
+
+        Mesh(const Vertices& vertices, const Indices& indices = {});
+
+        void Reset() noexcept override;
+
+        const Vertices& GetVertices() const noexcept;
+        const Indices& GetIndices() const noexcept;
     private:
+        Vertices m_Vertices;
+        Indices m_Indices;
     };
 }

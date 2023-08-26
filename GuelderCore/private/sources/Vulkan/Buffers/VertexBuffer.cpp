@@ -5,6 +5,7 @@ module GuelderEngine.Vulkan;
 import :VertexBuffer;
 
 import :IBuffer;
+import :StagingBuffer;
 import :QueueFamilyIndices;
 import :Mesh;
 import :DeviceManager;
@@ -15,8 +16,10 @@ namespace GuelderEngine::Vulkan::Buffers
     VertexBuffer::VertexBuffer(
         const vk::Device& device,
         const vk::PhysicalDevice& physicalDevice,
-        const QueueFamilyIndices& indices, 
-        const Mesh_t& mesh
+        const QueueFamilyIndices& queueFamilyIndices,
+        const vk::CommandPool& transferPool,
+        const vk::Queue& transferQueue,
+        const Vertices& mesh
     )
         : m_VerticesCount(mesh.size())
     {
@@ -28,9 +31,9 @@ namespace GuelderEngine::Vulkan::Buffers
                 vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst
             };
 
-            if(indices.GetGraphicsFamily() != indices.GetTransferFamily())
+            if(queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetTransferFamily())
             {
-                const Types::uint uniqueIndices[] = { indices.GetGraphicsFamily(), indices.GetTransferFamily() };
+                const Types::uint uniqueIndices[] = { queueFamilyIndices.GetGraphicsFamily(), queueFamilyIndices.GetTransferFamily() };
                 info.queueFamilyIndexCount = 2;
                 info.pQueueFamilyIndices = uniqueIndices;
                 info.sharingMode = vk::SharingMode::eConcurrent;
@@ -53,6 +56,10 @@ namespace GuelderEngine::Vulkan::Buffers
 
             m_BufferMemory = device.allocateMemory(allocInfo);
             device.bindBufferMemory(m_Buffer, m_BufferMemory, 0);
+
+            const auto stagingBuffer = Buffers::StagingBuffer<Vertex>(device, physicalDevice, queueFamilyIndices, mesh);
+            CopyBuffer(stagingBuffer.GetBuffer(), m_Buffer, m_Size, device, transferPool, transferQueue);
+            stagingBuffer.Cleanup(device);
 
             //void* data = device.mapMemory(m_BufferMemory, 0, info.size);
             //memcpy(data, mesh.data(), info.size);

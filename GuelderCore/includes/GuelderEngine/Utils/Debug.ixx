@@ -108,7 +108,17 @@ export namespace GuelderEngine::Debug
     concept LoggingCattegoryTrait = std::is*/
 
     template<LogLevel LoggingLevels, bool _enable>
-    struct LoggingCategory//TODO: add colors support to this struct
+    struct LoggingCategory {};//TODO: add colors support to this struct
+    template<LogLevel LoggingLevels>
+    struct LoggingCategory<LoggingLevels, false>
+    {
+        LoggingCategory(const std::string_view& name) {}
+
+        static constexpr LogLevel supportedLoggingLevels = LoggingLevels;
+        static constexpr bool enable = false;
+    };
+    template<LogLevel LoggingLevels>
+    struct LoggingCategory<LoggingLevels, true>
     {
         LoggingCategory(const std::string_view& name)
             : name(name) {}
@@ -116,7 +126,7 @@ export namespace GuelderEngine::Debug
 
         constexpr bool CanSupportLogLevel(const LogLevel& level) const
         {
-            if (supportedLoggingLevels == LogLevel::All)
+            if(supportedLoggingLevels == LogLevel::All)
                 return true;
             return static_cast<std::underlying_type_t<LogLevel>>(level) &
                 static_cast<std::underlying_type_t<LogLevel>>(supportedLoggingLevels);
@@ -124,9 +134,8 @@ export namespace GuelderEngine::Debug
 
         static constexpr LogLevel supportedLoggingLevels = LoggingLevels;
         const std::string name;
-        static constexpr bool enable = _enable;
+        static constexpr bool enable = true;
     };
-    
     /*
     * @note I use HANDE but i don't do CloseHandle in dtor
     */
@@ -136,19 +145,19 @@ export namespace GuelderEngine::Debug
         Logger() = default;
         ~Logger() = default;
 
-        template<LogLevel LoggingLevels, bool _enable, typename... Args>
-        constexpr static void Log(const LoggingCategory<LoggingLevels, _enable>& category,
+        template<LogLevel LoggingLevels, typename... Args>
+        constexpr static void Log(const LoggingCategory<LoggingLevels, true>& category,
             const LogLevel& level, Args&&... args)
         {
-            if(_enable)
-            {
-                std::ostringstream oss;
-                Format(oss, args...);
-                const std::string message = oss.str();
-                WriteLog<LoggingLevels, _enable >(category, level, message);
-            }
+            std::ostringstream oss;
+            Format(oss, args...);
+            const std::string message = oss.str();
+            WriteLog<LoggingLevels>(category, level, message);
         }
-        
+        //disable if enable == false
+        template<LogLevel LoggingLevels, typename... Args>
+        constexpr static void Log(const LoggingCategory<LoggingLevels, false>& category, const LogLevel& level, Args&&... args){}
+
         [[noreturn]]
         static void Throw(const std::string_view& message, const char* fileName, const Types::uint& line);
 
@@ -194,8 +203,8 @@ export namespace GuelderEngine::Debug
             Format(oss, args...);
         }
 
-        template<LogLevel LoggingLevels, bool _enable>
-        static void WriteLog(const LoggingCategory<LoggingLevels, _enable>& category, const LogLevel& level,
+        template<LogLevel LoggingLevels>
+        static void WriteLog(const LoggingCategory<LoggingLevels, true>& category, const LogLevel& level,
             const std::string_view& message)
         {
             //const auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -203,38 +212,36 @@ export namespace GuelderEngine::Debug
             //localtime_s(&localTime, &t);
 
             //std::cout << std::put_time(&localTime, "%H:%M:%S") << ' '; // print timestamp
-            if(!_enable)
-                return;
 
             std::cout << category.name << ": ";
 
             using Background = ConsoleBackgroundColor;
             using Text = ConsoleForegroundColor;
-            if (level == LogLevel::Info && category.CanSupportLogLevel(LogLevel::Info))
+            if(level == LogLevel::Info && category.CanSupportLogLevel(LogLevel::Info))
             {
                 SetConsoleColorAttributes(Background::Cyan, Text::White);
                 std::cout << "[INFO]";
                 SetConsoleColorAttributes(Text::Cyan, Background::Black);
             }
-            else if (level == LogLevel::Warning && category.CanSupportLogLevel(LogLevel::Warning))
+            else if(level == LogLevel::Warning && category.CanSupportLogLevel(LogLevel::Warning))
             {
                 SetConsoleColorAttributes(Background::Yellow, Text::White);
                 std::cout << "[WARNING]";
                 SetConsoleColorAttributes(Text::Yellow, Background::Black);
             }
-            else if (level == LogLevel::Error && category.CanSupportLogLevel(LogLevel::Error))
+            else if(level == LogLevel::Error && category.CanSupportLogLevel(LogLevel::Error))
             {
                 SetConsoleColorAttributes(Background::Red, Text::White);
                 std::cerr << "[ERROR]";
                 SetConsoleColorAttributes(Text::Red, Background::Black);
             }
-            else if (level == LogLevel::RendererError && category.CanSupportLogLevel(LogLevel::RendererError))
+            else if(level == LogLevel::RendererError && category.CanSupportLogLevel(LogLevel::RendererError))
             {
                 SetConsoleColorAttributes(Background::Red, Text::White);
                 std::cout << "[RENDERER ERROR]";
                 SetConsoleColorAttributes(Text::Magenta, Background::Black);
             }
-            else if (level == LogLevel::VulkanError && category.CanSupportLogLevel(LogLevel::VulkanError))
+            else if(level == LogLevel::VulkanError && category.CanSupportLogLevel(LogLevel::VulkanError))
             {
                 SetConsoleColorAttributes(Background::Red, Text::White);
                 std::cout << "[VULKAN ERROR]";
@@ -273,7 +280,7 @@ export namespace GuelderEngine
         template<LogLevel LoggingLevels, bool _enable, typename... Args>
         constexpr void Log(const LoggingCategory<LoggingLevels, _enable>& category, const LogLevel& level, Args&&... info)
         {
-            Logger::Log<LoggingLevels, _enable>(category, level, info...);//TODO: remade custom log with making macro which will declare new struct which will be inherited from IConsoleCategory with method GetName() (see in the screenshot)
+            Logger::Log<LoggingLevels>(category, level, info...);//TODO: remade custom log with making macro which will declare new struct which will be inherited from IConsoleCategory with method GetName() (see in the screenshot)
         }
         /**
         * Prints into cout as info.
