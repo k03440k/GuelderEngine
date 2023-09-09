@@ -7,6 +7,7 @@ import :IVulkanObject;
 import :Swapchain;
 import :ShaderManager;
 import :Mesh;
+import :ShaderManager;
 import :VertexBuffer;
 import :IndexBuffer;
 import GuelderEngine.Core.Types;
@@ -22,24 +23,32 @@ export namespace GuelderEngine::Vulkan
     {
     public:
         DECLARE_DCAD_AND_CAM(Pipeline);
-        /**
-         *@param vertexPath - path to the vertex shader file
-         *@param fragmentPath - path to the fragment shader file
-        */
-        Pipeline(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-            const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices, const std::string_view& vertexPath, const std::string_view& fragmentPath, const Mesh& mesh = {},
-            const Types::uint& inPosLocation = 0, const Types::uint& inColorLocation = 1);
+        Pipeline(
+            const vk::Device& device, 
+            const vk::PhysicalDevice& physicalDevice, 
+            const vk::SurfaceKHR& surface,
+            const vk::Extent2D& extent,
+            const QueueFamilyIndices& queueFamilyIndices, 
+            const ShaderInfo& shaderInfo
+        );
 
         virtual void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
 
-        void Render(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
-            const QueueFamilyIndices& queueFamilyIndices, const Scene& scene);
+        void Render(
+            const vk::Device& device, 
+            const vk::PhysicalDevice& physicalDevice,
+            const vk::SurfaceKHR& surface,
+            const vk::Extent2D& extent,
+            bool& wasWindowResized,
+            const QueueFamilyIndices& queueFamilyIndices
+        );
 
         /**
          * @brief Must be called before Render method
          */
         void SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh& mesh);
+        void SetShaderInfo(const vk::Device& device, const ShaderInfo& shaderInfo);
     private:
         static vk::PipelineLayout CreateLayout(const vk::Device& device);
         static vk::RenderPass CreateRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat);
@@ -48,12 +57,12 @@ export namespace GuelderEngine::Vulkan
         static vk::Queue GetPresentQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept;
         static vk::Queue GetTransferQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept;
 
-        void Create(const vk::Device& device, const vk::Extent2D& extent, const std::string_view& vertexPath, const std::string_view& fragmentPath);
+        void Create(const vk::Device& device, const ShaderInfo& shaderInfo);
 
         void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
             const QueueFamilyIndices& queueFamilyIndices);
 
-        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const Scene& scene) const;
+        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex) const;
 
         ShaderManager m_ShaderManager;
         Swapchain m_Swapchain;

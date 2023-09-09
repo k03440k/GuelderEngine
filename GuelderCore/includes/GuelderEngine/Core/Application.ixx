@@ -40,20 +40,23 @@ export namespace GuelderEngine
     {
     public:
         using UpdateFunc = std::function<void()>;
-        /*
+        /**
          *@param executablePath - path where .exe file stores, can be found in main
          *@param info - info about size of window, its name, etc
-         *@param vertexShaderVarName - name of custom vertex shader
-         *@param fragmentShaderVarName - name of custom fragment shader
+         *@param shaderInfo - info about shader-related settings
         */
         GEApplication(
-            const std::string_view& executablePath, 
+            const std::string_view& executablePath,
             const Window::WindowData& info = {},
-            const Vulkan::Mesh_t& mesh = {},
             const std::string_view& vertexShaderVarName = "vert",
-            const std::string_view& fragmentShaderVarName = "frag"
+            const std::string_view& fragmentShaderVarName = "frag",
+            const Vulkan::VertexAttributeDescriptionsInfo& shaderInfo =
+            {
+                {Vulkan::VertexFormat::Vec2Float, 0},
+                { Vulkan::VertexFormat::Vec3Float, 1 }
+            }
         );
-        virtual ~GEApplication();
+        virtual ~GEApplication() = default;
 
         DELETE_COPY_AND_MOVING(GEApplication);
 
@@ -64,12 +67,11 @@ export namespace GuelderEngine
         void PushLayer(Layers::Layer* layer);
         void PushOverlay(Layers::Layer* overlay);
 
-        //Window& GetWindow() { return *window; }
-
         void SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept;
-        int GetFrameRate() const noexcept { return m_Window->GetFrameRate(); }
+        int GetFrameRate() const noexcept { return m_Window->GetData().GetFrameRate(); }
 
         void SetMesh(const Vulkan::Mesh& mesh);
+        void SetShaderInfo(const Vulkan::ShaderInfo& shaderInfo);
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;
@@ -77,10 +79,7 @@ export namespace GuelderEngine
         std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;
 
         bool OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept;
-
-        //std::function<void()> m_CallOnUpdate;
-
-        //std::unique_ptr<class Window> m_Window;
+        
         UpdateFunc m_OnUpdate;
 
         Layers::LayerStack m_LayerStack;

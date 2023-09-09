@@ -7,6 +7,10 @@ import :Mesh;
 #pragma region Vertex
 namespace GuelderEngine::Vulkan
 {
+    vk::Format ConvertVkFormat(const VertexFormat& format)
+    {
+        return static_cast<vk::Format>(static_cast<Types::uint>(format));
+    }
     Vertex::Vertex(const Vertex& other)
     {
         pos = other.pos;
@@ -66,20 +70,20 @@ namespace GuelderEngine::Vulkan
 
         return description;
     }
-    std::array<vk::VertexInputAttributeDescription, 2> Vertex::GetAttributeDescriptions(const Types::uint& inPosLocation, const Types::uint& inColorLocation)
+    std::array<vk::VertexInputAttributeDescription, 2> Vertex::GetAttributeDescriptions(const VertexAttributeDescriptionsInfo& info)
     {
         std::array<vk::VertexInputAttributeDescription, 2> descriptions;
 
         //pos
         descriptions[0].binding = 0;
-        descriptions[0].location = inPosLocation;
-        descriptions[0].format = vk::Format::eR32G32Sfloat;
+        descriptions[0].location = info.position.location;
+        descriptions[0].format = ConvertVkFormat(info.position.format);
         descriptions[0].offset = offsetof(Vertex, pos);
 
         //color
         descriptions[1].binding = 0;
-        descriptions[1].location = inColorLocation;
-        descriptions[1].format = vk::Format::eR32G32B32Sfloat;
+        descriptions[1].location = info.color.location;
+        descriptions[1].format = ConvertVkFormat(info.color.format);
         descriptions[1].offset = offsetof(Vertex, color);
 
         return descriptions;

@@ -10,7 +10,6 @@ import :Pipeline;
 import :Manager;
 import :ShaderManager;
 import :Swapchain;
-import :Model;
 import :Mesh;
 
 import :VertexBuffer;
@@ -25,21 +24,26 @@ import <vector>;
 //ctors
 namespace GuelderEngine::Vulkan
 {
-    Pipeline::Pipeline(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-        const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices, const std::string_view& vertexPath, const std::string_view& fragmentPath, const Mesh& mesh,
-        const Types::uint& inPosLocation, const Types::uint& inColorLocation)
+    Pipeline::Pipeline(
+        const vk::Device& device, 
+        const vk::PhysicalDevice& physicalDevice,
+        const vk::SurfaceKHR& surface,
+        const vk::Extent2D& extent,
+        const QueueFamilyIndices& queueFamilyIndices,
+        const ShaderInfo& shaderInfo
+    )
         : m_Swapchain(device, physicalDevice, surface, extent, queueFamilyIndices)
     {
         m_Queues.graphics = GetGraphicsQueue(device, queueFamilyIndices);
         m_Queues.present = GetPresentQueue(device, queueFamilyIndices);
         m_Queues.transfer = GetTransferQueue(device, queueFamilyIndices);
 
-        m_ShaderManager = ShaderManager(vertexPath, fragmentPath, inPosLocation, inColorLocation);
+        m_ShaderManager = ShaderManager(shaderInfo);
 
-        Create(device, extent, vertexPath, fragmentPath);
+        Create(device, shaderInfo);
         m_Swapchain.MakeFrames(device, m_RenderPass);
 
-        SetMesh(device, physicalDevice, queueFamilyIndices, mesh);
+        SetMesh(device, physicalDevice, queueFamilyIndices, {});
     }
     Pipeline::Pipeline(const Pipeline& other)
     {
@@ -107,10 +111,10 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    void Pipeline::Create(const vk::Device& device, const vk::Extent2D& extent, const std::string_view& vertexPath, const std::string_view& fragmentPath)
+    void Pipeline::Create(const vk::Device& device, const ShaderInfo& shaderInfo)
     {
         const auto bindingDescription = Vertex::GetBindingDescription();
-        const auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+        const auto attributeDescriptions = Vertex::GetAttributeDescriptions(shaderInfo.info);
 
         const vk::PipelineVertexInputStateCreateInfo vertexInfo{vk::PipelineVertexInputStateCreateFlags(),
             1,
@@ -124,24 +128,20 @@ namespace GuelderEngine::Vulkan
         shaderStages.reserve(2);
 
         //vertex shader
-        const vk::ShaderModule vertex = ShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(vertexPath), device);
+        const vk::ShaderModule vertex = ShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(shaderInfo.vertexPath), device);
         const vk::PipelineShaderStageCreateInfo vertexShaderInfo(vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertex, "main");
         shaderStages.push_back(vertexShaderInfo);
         //fragment shader
-        const vk::ShaderModule fragment = ShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(fragmentPath), device);
+        const vk::ShaderModule fragment = ShaderManager::CreateModule(Utils::ResourceManager::GetFileSource(shaderInfo.fragmentPath), device);
         const vk::PipelineShaderStageCreateInfo fragmentShaderInfo(vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragment, "main");
         shaderStages.push_back(fragmentShaderInfo);
-
-        //viewport
-        const vk::Viewport viewport(0.0f, 0.0f, extent.width, extent.height, 0.0f, 1.0f);
-        const vk::Rect2D scissor({ 0, 0 }, extent);
 
         vk::PipelineViewportStateCreateInfo viewportInfo(
             vk::PipelineViewportStateCreateFlags(),
             1,          //viewports
-            &viewport,  //viewports
+            nullptr,  //viewports
             1,          //scissors
-            &scissor    //scissors
+            nullptr    //scissors
         );
 
         //rasterizer
@@ -185,6 +185,11 @@ namespace GuelderEngine::Vulkan
         m_Layout = CreateLayout(device);
         m_RenderPass = CreateRenderPass(device, m_Swapchain.GetFormat());
 
+        const std::vector<vk::DynamicState> dynamicStateEnables{vk::DynamicState::eViewport, vk::DynamicState::eScissor};
+        vk::PipelineDynamicStateCreateInfo dynamicStateInfo{};
+        dynamicStateInfo.pDynamicStates = dynamicStateEnables.data();
+        dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+
         const vk::GraphicsPipelineCreateInfo createInfo(
             vk::PipelineCreateFlagBits(),
             shaderStages.size(),
@@ -197,7 +202,7 @@ namespace GuelderEngine::Vulkan
             &multisampleInfo,
             nullptr,
             &colorBlendInfo,
-            nullptr,
+            &dynamicStateInfo,
             m_Layout,
             m_RenderPass,
             0,
@@ -218,7 +223,6 @@ namespace GuelderEngine::Vulkan
         m_Layout = nullptr;
         m_RenderPass = nullptr;
         m_Swapchain.Reset();
-        m_ShaderManager.Reset();
         m_VBuffer.Reset();
         m_IBuffer.Reset();
     }
@@ -236,25 +240,25 @@ namespace GuelderEngine::Vulkan
     {
         if(mesh.GetVertices().size())
         {
-            //auto stagingBuffer = Buffers::StagingBuffer(device, physicalDevice, queueFamilyIndices, mesh);
-
             m_VBuffer = Buffers::VertexBuffer(device, physicalDevice, queueFamilyIndices, m_Swapchain.GetCommandPoolTransfer().GetCommandPool(), m_Queues.transfer, mesh.GetVertices());
             m_IBuffer = Buffers::IndexBuffer(device, physicalDevice, queueFamilyIndices, m_Swapchain.GetCommandPoolTransfer().GetCommandPool(), m_Queues.transfer, mesh.GetIndices());
-
-            /*Buffers::CopyBuffer(stagingBuffer, m_VBuffer, device, m_Swapchain.GetCommandPoolTransfer().GetCommandPool(), m_Queues.transfer);
-
-            stagingBuffer.Cleanup(device);*/
         }
+    }
+    void Pipeline::SetShaderInfo(const vk::Device& device, const ShaderInfo& shaderInfo)
+    {
+        m_ShaderManager = ShaderManager(shaderInfo);
+
+        Create(device, shaderInfo);
     }
 
     vk::PipelineLayout Pipeline::CreateLayout(const vk::Device& device)
     {
-        constexpr vk::PushConstantRange constantInfo(vk::ShaderStageFlagBits::eVertex, 0, sizeof(Model));
+        constexpr vk::PushConstantRange constantInfo(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(Vertex));
         constexpr vk::PipelineLayoutCreateInfo layoutInfo(
             vk::PipelineLayoutCreateFlags(),
             0,
             nullptr,
-            1,//add in ctor this value?
+            1,
             &constantInfo
         );
         return device.createPipelineLayout(layoutInfo);
@@ -306,7 +310,7 @@ namespace GuelderEngine::Vulkan
         return device.getQueue(indices.GetTransferFamily(), 0);
     }
 
-    void Pipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex, const Scene& scene) const
+    void Pipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex) const
     {
         const vk::CommandBufferBeginInfo commandBufferBeginInfo{};
 
@@ -326,24 +330,50 @@ namespace GuelderEngine::Vulkan
         commandBuffer.beginRenderPass(&renderPassBeginInfo, vk::SubpassContents::eInline);
         commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_GraphicsPipeline);
 
+        const vk::Viewport viewport{
+            0.0f,
+            0.0f,
+            static_cast<float>(m_Swapchain.GetExtent2D().width),
+            static_cast<float>(m_Swapchain.GetExtent2D().height),
+            0.f,
+            1.0f
+        };
+        const vk::Rect2D scissors{{0, 0}, m_Swapchain.GetExtent2D()};
+
+        commandBuffer.setViewport(0, 1, &viewport);
+        commandBuffer.setScissor(0, 1, &scissors);
+
         m_VBuffer.Bind(commandBuffer, { 0 });
-        m_IBuffer.Bind(commandBuffer, { 0 });
+        if(m_IBuffer.GetIndicesCount())
+            m_IBuffer.Bind(commandBuffer, { 0 });
 
-        for(auto&& position : scene.GetTrianglesPositions())
+        //TODO: add possibility to push custom constant data
+        struct SimplePushConstantData
         {
-            const auto model = glm::translate(glm::mat4(1.0f), position);
-            const auto vulkanModel = Model(model);
-            commandBuffer.pushConstants(m_Layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(vulkanModel), &vulkanModel);
+            glm::vec2 pos;
+            alignas(16) glm::vec3 color;
+        };
+        std::vector v{ SimplePushConstantData(
+            { sin(glfwGetTime()) / 5.0f * cos(glfwGetTime()) , sin(glfwGetTime()) / 8.0f * tan(glfwGetTime())},//idk how does it work
+            { (sin(glfwGetTime()) / 5.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f }) };
 
-            //commandBuffer.draw(m_VBuffer.GetVerticesCount(), 1, 0, 0);
-            commandBuffer.drawIndexed(m_IBuffer.GetIndicesCount(), 1, 0, 0, 0);
+        for(auto&& ve : v)
+        {
+            //const auto model = glm::translate(glm::mat4(1.0f), position);
+            const auto vulkanModel = ve;
+            commandBuffer.pushConstants(m_Layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(vulkanModel), &vulkanModel);
+            
+            if(m_IBuffer.GetIndicesCount())
+                commandBuffer.drawIndexed(m_IBuffer.GetIndicesCount(), 1, 0, 0, 0);
+            else
+                commandBuffer.draw(m_VBuffer.GetVerticesCount(), 1, 0, 0);
         }
 
         commandBuffer.endRenderPass();
         commandBuffer.end();
     }
-    void Pipeline::Render(const vk::Device& device, const vk::PhysicalDevice& physicalDevice,  const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
-        const QueueFamilyIndices& queueFamilyIndices, const Scene& scene)
+    void Pipeline::Render(const vk::Device& device, const vk::PhysicalDevice& physicalDevice,  const vk::SurfaceKHR& surface, const vk::Extent2D& extent, bool& wasWindowResized,
+        const QueueFamilyIndices& queueFamilyIndices)
     {
         const auto& currentFrame = m_Swapchain.GetFrames()[m_Swapchain.GetCurrentFrameNumber()];
 
@@ -367,7 +397,7 @@ namespace GuelderEngine::Vulkan
         const auto& commandBuffer = currentFrame.commandBuffer;
         commandBuffer.reset();
 
-        RecordDrawCommands(commandBuffer, imageIndex, scene);
+        RecordDrawCommands(commandBuffer, imageIndex);
 
         const vk::Semaphore waitSemaphores[] = { currentFrame.sync.GetImageAvailableSemaphore() };
         const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
@@ -410,9 +440,10 @@ namespace GuelderEngine::Vulkan
             presentResult = vk::Result::eErrorOutOfDateKHR;
         }
 
-        if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR)
+        if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR || wasWindowResized)
         {
-            Recreate( device, physicalDevice, surface,  extent, queueFamilyIndices );
+            Recreate(device, physicalDevice, surface,  extent, queueFamilyIndices);
+            wasWindowResized = false;
             return;
         }
 
@@ -424,22 +455,12 @@ namespace GuelderEngine::Vulkan
         const QueueFamilyIndices& queueFamilyIndices)
     {
         device.waitIdle();
-
-        /*Cleanup(device);
-        m_Swapchain.Reset();
-        m_Swapchain = Swapchain(device, physicalDevice, surface, extent, queueFamilyIndices);
-
-        m_Queues.graphics = GetGraphicsQueue(device, queueFamilyIndices);
-        m_Queues.present = Getpresent(device, queueFamilyIndices);
-
-        Create(device, m_ShaderManager.GetVertexPath(), m_ShaderManager.GetFragmentPath());
-        m_Swapchain.MakeFrames(device, m_RenderPass);*/
-        //TODO: find out why lower recreation didn't work(maybe sync objects)
+        
         device.destroyPipelineLayout(m_Layout);
         device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
 
-        Create(device, extent, m_ShaderManager.GetVertexPath(), m_ShaderManager.GetFragmentPath());//possible problem in extent
+        Create(device, m_ShaderManager.GetShaderInfo());
 
         m_Swapchain.Recreate( device, physicalDevice, surface, m_RenderPass, extent, queueFamilyIndices );
     }

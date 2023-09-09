@@ -289,7 +289,7 @@ export namespace GuelderEngine
         template<typename... Args>
         constexpr void LogInfo(Args&&... info)
         {
-            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::Info, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels>(coreLoggingCategory, LogLevel::Info, info...);
         }
 
         /**
@@ -299,7 +299,7 @@ export namespace GuelderEngine
         template<typename ...Args>
         constexpr void LogWarning(Args&&... info)
         {
-            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::Warning, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels>(coreLoggingCategory, LogLevel::Warning, info...);
         }
 
         /**
@@ -309,7 +309,7 @@ export namespace GuelderEngine
         template<typename ...Args>
         constexpr void LogError(Args&&... info)
         {
-            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::Error, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels>(coreLoggingCategory, LogLevel::Error, info...);
         }
 
         /**
@@ -320,7 +320,7 @@ export namespace GuelderEngine
         template<typename ...Args>
         constexpr void LogRendererError(Args&&... info)
         {
-            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::RendererError, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels>(coreLoggingCategory, LogLevel::RendererError, info...);
         }
 
         /**
@@ -330,7 +330,7 @@ export namespace GuelderEngine
         template<typename ...Args>
         constexpr void LogVulkanError(Args&&... info)
         {
-            Logger::Log<CoreLoggingCategory::supportedLoggingLevels, CoreLoggingCategory::enable>(coreLoggingCategory, LogLevel::VulkanError, info...);
+            Logger::Log<CoreLoggingCategory::supportedLoggingLevels>(coreLoggingCategory, LogLevel::VulkanError, info...);
         }
     }
 }

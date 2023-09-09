@@ -194,6 +194,7 @@ namespace GuelderEngine::Vulkan
         m_CommandPoolTransfer.Cleanup(device);
         device.destroySwapchainKHR(m_Swapchain);
     }
+
     void Swapchain::CreateFrames(const vk::Device& device, const vk::Format& format, const std::vector<vk::Image>& images)
     {
         m_Frames.resize(images.size());
@@ -304,6 +305,9 @@ namespace GuelderEngine::Vulkan
                 extent, imageViewInfo, m_CommandPool.GetCommandPool());
         }
     }
+}
+namespace GuelderEngine::Vulkan
+{
     const CommandPool& Swapchain::GetCommandPool() const noexcept
     {
         return m_CommandPool;

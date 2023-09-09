@@ -22,72 +22,22 @@ using namespace GuelderEngine::Types;
 
 namespace GuelderEngine::Vulkan
 {
-    Scene::Scene()
-    {
-        Types::uint reserve{};
-
-        for(float x = -1.0f; x < 1.0f; x += 0.5f)
-            for(float y = -1.0f; y < 1.0f; y += 0.5f)
-                reserve++;
-
-        m_TrianglePositions.reserve(reserve);
-
-        for (float x =  -1.0f; x < 1.0f; x += 0.2f)
-            for (float y = -1.0f; y < 1.0f; y += 0.2f)
-                m_TrianglePositions.push_back(glm::vec3(x, y, 0.0f));
-    }
-    Scene::Scene(const Scene& other)
-    {
-        m_TrianglePositions = other.m_TrianglePositions;
-    }
-    Scene::Scene(Scene&& other) noexcept
-    {
-        m_TrianglePositions = other.m_TrianglePositions;
-
-        other.Reset();
-    }
-    Scene& Scene::operator=(const Scene& other)
-    {
-        if(this == &other)
-            return *this;
-
-        m_TrianglePositions = other.m_TrianglePositions;
-
-        return *this;
-    }
-    Scene& Scene::operator=(Scene&& other) noexcept
-    {
-        m_TrianglePositions = other.m_TrianglePositions;
-
-        other.Reset();
-
-        return *this;
-    }
-    void Scene::Reset() noexcept
-    {
-        m_TrianglePositions.clear();
-    }
-}
-namespace GuelderEngine::Vulkan
-{
-    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const std::string_view& vertPath, const std::string_view& fragPath, const Mesh_t& mesh,
-        const std::string_view& name)
+    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const ShaderInfo& shaderInfo, const std::string_view& name)
     {
         m_Instance = CreateVkInstance(name.data());
-        m_DeviceManager = DeviceManager(m_Instance, glfwWindow, { width, height }, vertPath, fragPath);
+        m_DeviceManager = DeviceManager(m_Instance, glfwWindow, { width, height }, shaderInfo.vertexPath, shaderInfo.fragmentPath);
 
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = DebugManager(m_Instance);
 #endif // GE_DEBUG_VULKAN
+
         m_Pipeline = Pipeline(
             m_DeviceManager.GetDevice(), 
             m_DeviceManager.GetPhysicalDevice(), 
             m_DeviceManager.GetSurface(),
             {width, height}, 
             m_DeviceManager.GetQueueIndices(),
-            vertPath, 
-            fragPath,
-            mesh
+            shaderInfo
         );
     }
     VulkanManager::VulkanManager(const VulkanManager& other)
@@ -95,7 +45,6 @@ namespace GuelderEngine::Vulkan
         m_Instance = other.m_Instance;
         m_Pipeline = other.m_Pipeline;
         m_DeviceManager = other.m_DeviceManager;
-        m_Scene = other.m_Scene;
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = other.m_DebugManager;
 #endif //GE_DEBUG_VULKAN
@@ -105,7 +54,6 @@ namespace GuelderEngine::Vulkan
         m_Instance = other.m_Instance;
         m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
         m_DeviceManager = std::forward<DeviceManager>(other.m_DeviceManager);
-        m_Scene = std::forward<Scene>(other.m_Scene);
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = std::forward<DebugManager>(other.m_DebugManager);
 #endif //GE_DEBUG_VULKAN
@@ -120,7 +68,6 @@ namespace GuelderEngine::Vulkan
         m_Instance = other.m_Instance;
         m_Pipeline = other.m_Pipeline;
         m_DeviceManager = other.m_DeviceManager;
-        m_Scene = other.m_Scene;
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = other.m_DebugManager;
 #endif //GE_DEBUG_VULKAN
@@ -132,7 +79,6 @@ namespace GuelderEngine::Vulkan
         m_Instance = other.m_Instance;
         m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
         m_DeviceManager = std::forward<DeviceManager>(other.m_DeviceManager);
-        m_Scene = std::forward<Scene>(other.m_Scene);
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = std::forward<DebugManager>(other.m_DebugManager);
 #endif //GE_DEBUG_VULKAN
@@ -145,15 +91,15 @@ namespace GuelderEngine::Vulkan
         Cleanup();
     }
 
-    void VulkanManager::Render(Types::uint width, Types::uint height)
+    void VulkanManager::Render(Types::uint width, Types::uint height, bool& wasWindowResized)
     {
         m_Pipeline.Render(
             m_DeviceManager.GetDevice(), 
             m_DeviceManager.GetPhysicalDevice(),
             m_DeviceManager.GetSurface(), 
             {width, height},
-            m_DeviceManager.GetQueueIndices(),
-            m_Scene
+            wasWindowResized,
+            m_DeviceManager.GetQueueIndices()
         );
     }
 
@@ -246,6 +192,10 @@ namespace GuelderEngine::Vulkan
     {
         m_Pipeline.SetMesh(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), mesh);
     }
+    void VulkanManager::SetShaderInfo(const ShaderInfo& shaderInfo)
+    {
+        m_Pipeline.SetShaderInfo(m_DeviceManager.GetDevice(), shaderInfo);
+    }
     /*void VulkanManager::LoadVertexShader(const std::string_view& name)
 {
 }
@@ -267,7 +217,6 @@ void VulkanManager::LoadFragmentShader(const std::string_view& name)
         m_Pipeline.Cleanup(m_DeviceManager.GetDevice());
         m_DeviceManager.Cleanup(m_Instance);
 #ifdef GE_DEBUG_VULKAN
-        //m_Instance.destroyDebugUtilsMessengerEXT(m_DebugManager.m_DebugMessenger, nullptr, m_DLDI);
         m_DebugManager.Cleanup(m_Instance);
 #endif // GE_DEBUG_VULKAN
         m_Instance.destroy();

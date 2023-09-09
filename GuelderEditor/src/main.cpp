@@ -28,25 +28,32 @@ int main(int argc, char** argv)
     {
         const auto app = std::make_unique<GEApplication>(argv[0]);
 
-        const Vulkan::Mesh_t vertices = 
+        const Vulkan::Mesh cube = 
         {
-            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-            {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+            {
+               {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+               {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+               {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+               {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+            },
+
+            {0, 1, 2, 2, 3, 0}
         };
 
-        const Vulkan::Indices indices =
+        const Vulkan::Mesh triangle =
         {
-            0, 1, 2, 2, 3, 0
+            {
+               {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+               {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+               {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+            },
+
+            {0, 1, 2}
         };
 
-        app->SetMesh({vertices, indices});
+        app->SetMesh(cube);
 
-        app->Run([&]
-        {
-
-        });
+        app->Run();
     }
     catch (const std::exception& e)
     {

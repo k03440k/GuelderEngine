@@ -14,14 +14,20 @@ import <string_view>;
 import <vector>;
 import <memory>;
 import <functional>;
+import <thread>;
 
 namespace GuelderEngine
 {
 #pragma region GEApplication
 #define BIND_EVENT_FUNC(x) std::bind(&x, this, std::placeholders::_1)
-    GEApplication::GEApplication(const std::string_view& executablePath, const Window::WindowData& info, const Vulkan::Mesh_t& mesh, const std::string_view& vertexShaderVarName,
-        const std::string_view& fragmentShaderVarName)
-    : resourceManager(executablePath)
+    GEApplication::GEApplication(
+        const std::string_view& executablePath, 
+        const Window::WindowData& info,
+        const std::string_view& vertexShaderVarName,
+        const std::string_view& fragmentShaderVarName,
+        const Vulkan::VertexAttributeDescriptionsInfo& shaderInfo
+    )
+    : resourceManager(executablePath), m_OnUpdate([]{})
     {
         m_Window = std::make_unique<Window>(Window::WindowData(info.width, info.height, info.title.data()));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));
@@ -29,16 +35,15 @@ namespace GuelderEngine
         m_VulkanManager = std::make_unique<Vulkan::VulkanManager>
         (
             m_Window->GetGLFWWindow(),
-            m_Window->GetWidth(),
-            m_Window->GetHeight(),
-            resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName),
-            resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName),
-            mesh,
+            m_Window->GetData().width,
+            m_Window->GetData().height,
+            Vulkan::ShaderInfo{
+                resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName),
+                resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName),
+                shaderInfo
+            },
             info.title
         );
-    }
-    GEApplication::~GEApplication()
-    {
     }
     void GEApplication::Run()
     {
@@ -46,8 +51,8 @@ namespace GuelderEngine
         {
             m_Window->OnUpdate();
 
-            if(m_Window->GetWidth() != 0 && m_Window->GetHeight() != 0)
-                m_VulkanManager->Render(m_Window->GetWidth(), m_Window->GetHeight());
+            if(m_Window->GetData().width != 0 && m_Window->GetData().height != 0)
+               m_VulkanManager->Render(m_Window->GetData().width, m_Window->GetData().height, m_Window->WasWindowResized());
 
             m_OnUpdate();
 
@@ -60,21 +65,8 @@ namespace GuelderEngine
     }
     void GEApplication::Run(const std::function<void()>& callOnUpdate)
     {
-        while (!m_CloseWindow)
-        {
-            m_Window->OnUpdate();
-
-            if(m_Window->GetWidth() != 0 && m_Window->GetHeight() != 0)
-                m_VulkanManager->Render(m_Window->GetWidth(), m_Window->GetHeight());
-
-            callOnUpdate();
-
-            if (!m_LayerStack.IsEmpty())
-            {
-                for (Layers::Layer* layer : m_LayerStack)
-                    layer->OnUpdate();
-            }
-        }
+        SetOnUpdateFunc(callOnUpdate);
+        Run();
     }
     void GEApplication::OnEvent(Events::BaseEvent& event)
     {
@@ -108,6 +100,10 @@ namespace GuelderEngine
     void GEApplication::SetMesh(const Vulkan::Mesh& mesh)
     {
         m_VulkanManager->SetMesh(mesh);
+    }
+    void GEApplication::SetShaderInfo(const Vulkan::ShaderInfo& shaderInfo)
+    {
+        m_VulkanManager->SetShaderInfo(shaderInfo);
     }
 #pragma endregion
 }

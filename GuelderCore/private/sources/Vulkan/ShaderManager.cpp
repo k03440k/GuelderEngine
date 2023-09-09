@@ -9,63 +9,33 @@ import GuelderEngine.Core;
 
 namespace GuelderEngine::Vulkan
 {
-    ShaderManager::ShaderManager(const std::string_view& vertexPath, const std::string_view& fragmentPath, const Types::uint& inPosLocation, const Types::uint& inColorLocation)
-        : m_VertexPath(vertexPath), m_FragmentPath(fragmentPath), m_InPosLocation(inPosLocation), m_InColorLocation(inColorLocation)
+    ShaderInfo::ShaderInfo(const std::string& vertexPath, const std::string& fragmentPath, const VertexAttributeDescriptionsInfo& info)
+        : info(info), vertexPath(vertexPath), fragmentPath(fragmentPath){}
+    ShaderManager::ShaderManager(const ShaderInfo& info)
+        : m_Info(info)
     {
 
     }
-    void ShaderManager::Reset() noexcept
+    const ShaderInfo& ShaderManager::GetShaderInfo() const noexcept
     {
-        m_VertexPath.clear();
-        m_FragmentPath.clear();
+        return m_Info;
     }
-    std::string ShaderManager::GetVertexPath() const noexcept
-    {
-        return m_VertexPath;
-    }
-    std::string ShaderManager::GetFragmentPath() const noexcept
-    {
-        return m_FragmentPath;
-    }
-    ShaderManager::ShaderManager(const ShaderManager& other)
-    {
-        m_VertexPath = other.m_VertexPath;
-        m_FragmentPath = other.m_FragmentPath;
-        m_InPosLocation = other.m_InPosLocation;
-        m_InColorLocation = other.m_InColorLocation;
-    }
-    ShaderManager::ShaderManager(ShaderManager&& other) noexcept
-    {
-        m_VertexPath = std::forward<std::string>(other.m_VertexPath);
-        m_FragmentPath = std::forward<std::string>(other.m_FragmentPath);
-        m_InPosLocation = other.m_InPosLocation;
-        m_InColorLocation = other.m_InColorLocation;
-
-        other.Reset();
-    }
-    ShaderManager& ShaderManager::operator=(const ShaderManager& other)
-    {
-        if(this == &other)
-            return *this;
-
-        m_VertexPath = other.m_VertexPath;
-        m_FragmentPath = other.m_FragmentPath;
-        m_InPosLocation = other.m_InPosLocation;
-        m_InColorLocation = other.m_InColorLocation;
-
-        return *this;
-    }
-    ShaderManager& ShaderManager::operator=(ShaderManager&& other) noexcept
-    {
-        m_VertexPath = std::forward<std::string>(other.m_VertexPath);
-        m_FragmentPath = std::forward<std::string>(other.m_FragmentPath);
-        m_InPosLocation = other.m_InPosLocation;
-        m_InColorLocation = other.m_InColorLocation;
-
-        other.Reset();
-
-        return *this;
-    }
+    //ShaderManager::ShaderManager(const ShaderManager& other)
+    //{
+    //    m_Info = other.m_Info;
+    //}
+    //ShaderManager::ShaderManager(ShaderManager&& other) noexcept
+    //{
+    //    m_Info = other.m_Info;
+    //}
+    //ShaderManager& ShaderManager::operator=(const ShaderManager& other)
+    //{
+    //    m_Info = other.m_Info;
+    //}
+    //ShaderManager& ShaderManager::operator=(ShaderManager&& other) noexcept
+    //{
+    //    m_Info = other.m_Info;
+    //}
 }
 namespace GuelderEngine::Vulkan
 {

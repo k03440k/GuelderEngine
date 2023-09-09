@@ -29,6 +29,8 @@ export namespace GuelderEngine
             ~WindowData() = default;
             WindowData& operator=(const WindowData& other);
 
+            void Reset() noexcept;
+
             Types::ushort width = 0;
             Types::ushort height = 0;
             std::string title;
@@ -49,39 +51,33 @@ export namespace GuelderEngine
             int m_FrameRate;
         };
 
-        DELETE_COPY_AND_MOVING(Window);
-
-        //Window() = default;
+        DECLARE_COPY_AND_MOVING(Window);
+        
         Window(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480, const std::string& windowTitle = "Guelder Engine Window");
         Window(const WindowData& data);
         virtual ~Window();
 
+        void Reset() noexcept;
+
         virtual void OnUpdate();
-        //void OnUpdate(const UpdateFunc& update);
 
         bool ShouldClose() const;
 
-        Types::ushort GetWidth() const noexcept;
-        Types::ushort GetHeight() const noexcept;
-        WindowSize GetWindowSize() const noexcept;
-        std::string GetTitle() const noexcept;
-        int GetFrameRate() const noexcept;
         const WindowData& GetData() const noexcept;
         GLFWwindow* GetGLFWWindow() const noexcept;
 
         void SetCallback(const EventCallbackFunc& callback) noexcept;
         void SetWindow(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480, const std::string& windowTitle = std::string("Guelder Engine Window"));
         void SetWindowSize(const Types::ushort& width = 640, const Types::ushort& height = 480);
-        //void SetWindow(GLFWwindow* other, const std::string* otherTitle = nullptr);
         void ShowFrameRate();
 
-    private:
-        //friend class GEApplication;//remove
+        bool& WasWindowResized() noexcept;
 
+    private:
         void Init();
         void Shutdown();
 
-        void UpdateSize();
+        bool m_WasResized;
 
         WindowData m_Data;
         GLFWwindow* m_GLFWWindow;

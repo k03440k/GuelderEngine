@@ -70,12 +70,10 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/ShaderManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Pipeline.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainFrameSync.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Model.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/QueueFamilyIndices.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/CommandPool.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/FrameBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainFrame.ixx
-	#${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/Buffers.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/IBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/VertexBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/StagingBuffer.ixx

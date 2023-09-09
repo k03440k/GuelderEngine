@@ -10,26 +10,8 @@ import GuelderEngine.Events;
 import GuelderEngine.Debug;
 
 import <stdexcept>;
+import <thread>;
 
-//ctors
-namespace GuelderEngine
-{
-    Window::Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
-        const std::string& windowTitle) :
-        m_Data(windowWidth, windowHeight, windowTitle)
-    {
-        Init();
-    }
-    Window::Window(const WindowData& data)
-    {
-        this->m_Data = data;
-        Init();
-    }
-    Window::~Window()
-    {
-        Shutdown();
-    }
-}
 namespace GuelderEngine
 {
     Window::WindowData::WindowData(const Types::ushort& width,
@@ -44,6 +26,19 @@ namespace GuelderEngine
         callback = other.callback;
 
         return *this;
+    }
+    void Window::WindowData::Reset() noexcept
+    {
+        width = 0;
+        height = 0;
+        title.clear();
+        callback = {};
+        showFrameRate = true;
+        m_LastTime = 0;
+        m_CurrentTime = 0;
+        m_NumFrames = 0;
+        m_FrameTime = 0.f;
+        m_FrameRate = 0;
     }
     float Window::WindowData::UpdateFrameRate()
     {
@@ -72,20 +67,83 @@ namespace GuelderEngine
         this->height = height;
     }
 }
+//ctors
 namespace GuelderEngine
 {
     bool is_GLFW_init = false;
-#pragma region Window
+
     namespace Events
     {
-        [[noreturn]] void GLFWErrorCallback(int errorCode, const char* description)
+        [[noreturn]]
+        void GLFWErrorCallback(int errorCode, const char* description)
         {
             GE_THROW("GLFW error(", errorCode, "), description: ", description);
         }
     }
+    Window::Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
+        const std::string& windowTitle) :
+        m_Data(windowWidth, windowHeight, windowTitle)
+    {
+        Init();
+    }
+    Window::Window(const WindowData& data)
+    {
+        this->m_Data = data;
+        Init();
+    }
+    Window::Window(const Window& other)
+    {
+        m_Data = other.m_Data;
+        m_GLFWWindow = other.m_GLFWWindow;
+        m_WasResized = other.m_WasResized;
+    }
+    Window::Window(Window&& other) noexcept
+    {
+        m_Data = other.m_Data;
+        m_GLFWWindow = other.m_GLFWWindow;
+        m_WasResized = other.m_WasResized;
 
+        other.Reset();
+    }
+    Window& Window::operator=(const Window& other)
+    {
+        m_Data = other.m_Data;
+        m_WasResized = other.m_WasResized;
+
+        if(m_GLFWWindow != other.m_GLFWWindow && m_GLFWWindow)
+            glfwDestroyWindow(m_GLFWWindow);
+
+        m_GLFWWindow = other.m_GLFWWindow;
+
+        return *this;
+    }
+    Window& Window::operator=(Window&& other) noexcept
+    {
+        m_Data = other.m_Data;
+        m_WasResized = other.m_WasResized;
+
+        if(m_GLFWWindow != other.m_GLFWWindow && m_GLFWWindow)
+            glfwDestroyWindow(m_GLFWWindow);
+
+        m_GLFWWindow = other.m_GLFWWindow;
+
+        other.Reset();
+
+        return *this;
+    }
+    Window::~Window()
+    {
+        Shutdown();
+    }
+    void Window::Reset() noexcept
+    {
+        m_Data.Reset();
+        m_GLFWWindow = nullptr;
+    }
     void Window::Init()
     {
+        m_WasResized = false;
+
         if(!is_GLFW_init)
         {
             if(!glfwInit())
@@ -110,82 +168,94 @@ namespace GuelderEngine
         }
 
         glfwMakeContextCurrent(m_GLFWWindow);
-        glfwSetWindowUserPointer(m_GLFWWindow, &m_Data);
+        glfwSetWindowUserPointer(m_GLFWWindow, this);
 
         //set glfw callbacks
-        glfwSetWindowSizeCallback(m_GLFWWindow, [](GLFWwindow* window, int width, int height)
+        glfwSetFramebufferSizeCallback(m_GLFWWindow, [](GLFWwindow* window, int width, int height)
             {
-                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-                data.width = width;
-                data.height = height;
+                auto& _window = *static_cast<Window*>(glfwGetWindowUserPointer(window));
+                _window.m_WasResized = true;
+                _window.m_Data.width = width;
+                _window.m_Data.height = height;
 
                 Events::WindowResizeEvent event(width, height);
-                data.callback(event);
+                _window.m_Data.callback(event);
             });
         glfwSetWindowCloseCallback(m_GLFWWindow, [](GLFWwindow* window)
             {
-                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+                Window& _window = *static_cast<Window*>(glfwGetWindowUserPointer(window));
                 Events::WindowCloseEvent event;
-                data.callback(event);
+                _window.m_Data.callback(event);
             });
         glfwSetKeyCallback(m_GLFWWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
             {
-                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+                Window& _window = *static_cast<Window*>(glfwGetWindowUserPointer(window));
                 switch(action)
                 {
                 case GLFW_PRESS:
                 {
                     Events::KeyPressedEvent event(key, 0);
-                    data.callback(event);
+                    _window.m_Data.callback(event);
                     break;
                 }
                 case GLFW_RELEASE:
                 {
                     Events::KeyReleasedEvent event(key, 0);
-                    data.callback(event);
+                    _window.m_Data.callback(event);
                     break;
                 }
                 case GLFW_REPEAT:
                 {
                     Events::KeyPressedEvent event(key, 1);
-                    data.callback(event);
+                    _window.m_Data.callback(event);
                     break;
                 }
                 }
             });
         glfwSetMouseButtonCallback(m_GLFWWindow, [](GLFWwindow* window, int button, int action, int mods)
             {
-                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+                Window& _window = *static_cast<Window*>(glfwGetWindowUserPointer(window));
                 switch(action)
                 {
                 case GLFW_PRESS:
                 {
                     Events::MouseButtonPressedEvent event(button);
-                    data.callback(event);
+                    _window.m_Data.callback(event);
                     break;
                 }
                 case GLFW_RELEASE:
                 {
                     Events::MouseButtonReleasedEvent event(button);
-                    data.callback(event);
+                    _window.m_Data.callback(event);
                     break;
                 }
                 }
             });
         glfwSetScrollCallback(m_GLFWWindow, [](GLFWwindow* window, double xOffset, double yOffset)
             {
-                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+                Window& data = *static_cast<Window*>(glfwGetWindowUserPointer(window));
                 Events::MouseScrolledEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
-                data.callback(event);
+                data.m_Data.callback(event);
             });
         glfwSetCursorPosCallback(m_GLFWWindow, [](GLFWwindow* window, double x, double y)
             {
-                WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+                Window& data = *static_cast<Window*>(glfwGetWindowUserPointer(window));
 
                 Events::MouseMovedEvent event(static_cast<float>(x), static_cast<float>(y));
-                data.callback(event);
+                data.m_Data.callback(event);
             });
     }
+    void Window::Shutdown()
+    {
+        m_Data.~WindowData();
+        glfwDestroyWindow(m_GLFWWindow);
+        glfwTerminate();
+    }
+}
+namespace GuelderEngine
+{
+#pragma region Window
+
     void Window::ShowFrameRate()
     {
         if(m_Data.showFrameRate)
@@ -197,49 +267,23 @@ namespace GuelderEngine
         {
             glfwSetWindowTitle(m_GLFWWindow, m_Data.title.c_str());
         }
-    }void Window::Shutdown()
-    {
-        m_Data.~WindowData();
-        glfwDestroyWindow(m_GLFWWindow);
-        glfwTerminate();
     }
-    void Window::UpdateSize()
+    bool& Window::WasWindowResized() noexcept
     {
-        int width, height;
-        glfwGetFramebufferSize(m_GLFWWindow, &width, &height);
-
-        m_Data.SetSize(width, height);
-
-        while(m_Data.width == 0 || m_Data.height == 0)
-        {
-            glfwGetFramebufferSize(m_GLFWWindow, &width, &height);
-            m_Data.SetSize(width, height);
-            glfwWaitEvents();
-        }
+        return m_WasResized;
     }
     void Window::OnUpdate()
     {
-        ShowFrameRate();
+        if(m_Data.width != 0 && m_Data.height != 0)
+            ShowFrameRate();
 
-        UpdateSize();
-
-        glfwSwapBuffers(m_GLFWWindow);
-        glfwPollEvents();
+        //glfwSwapBuffers(m_GLFWWindow);
+        glfwPollEvents();//TODO: smooth window resizing
     }
     bool Window::ShouldClose() const
     {
         return glfwWindowShouldClose(m_GLFWWindow);
     }
-    Types::ushort Window::GetWidth() const noexcept { return m_Data.width; }
-    Types::ushort Window::GetHeight() const noexcept { return m_Data.height; }
-    WindowSize Window::GetWindowSize() const noexcept
-    {
-        int width = 0, height = 0;
-        glfwGetFramebufferSize(m_GLFWWindow, &width, &height);
-        return { static_cast<Types::uint>(width), static_cast<Types::uint>(height) };
-    }
-    std::string Window::GetTitle() const noexcept { return m_Data.title; }
-    int Window::GetFrameRate() const noexcept { return m_Data.GetFrameRate(); }
     const Window::WindowData& Window::GetData() const noexcept
     {
         return m_Data;

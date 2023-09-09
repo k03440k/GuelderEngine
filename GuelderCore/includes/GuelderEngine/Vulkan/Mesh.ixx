@@ -14,10 +14,26 @@ export namespace GuelderEngine::Vulkan
 {
     struct Vertex;
     //temp
-    using Mesh_t = std::vector<Vertex>;
     using Vertices = std::vector<Vertex>;
     using Indices = std::vector<Types::uint>;
 
+    enum class VertexFormat
+    {
+        Vec3Float = vk::Format::eR32G32B32Sfloat,
+        Vec2Float = vk::Format::eR32G32Sfloat
+    };
+
+    struct VertexBindingInfo
+    {
+        VertexFormat format;
+        Types::uint location;//layout(location = 1)
+    };
+    struct VertexAttributeDescriptionsInfo
+    {
+        VertexBindingInfo position;
+        VertexBindingInfo color;
+    };
+    vk::Format ConvertVkFormat(const VertexFormat& format);
     struct Vertex : public IVulkanObject
     {
     public:
@@ -28,7 +44,10 @@ export namespace GuelderEngine::Vulkan
         void Reset() noexcept override;
 
         static vk::VertexInputBindingDescription GetBindingDescription();//idk about param
-        static std::array<vk::VertexInputAttributeDescription, 2> GetAttributeDescriptions(const Types::uint& inPosLocation = 0, const Types::uint& inColorLocation = 1);
+        static std::array<vk::VertexInputAttributeDescription, 2> GetAttributeDescriptions(const VertexAttributeDescriptionsInfo& info = {
+            {VertexFormat::Vec2Float, 0},
+            {VertexFormat::Vec3Float, 1}
+        });
 
         glm::vec2 pos;
         glm::vec3 color;
