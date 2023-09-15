@@ -1,6 +1,6 @@
 module;
 #include <vulkan/vulkan.hpp>
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 export module GuelderEngine.Vulkan;
 import :Swapchain;
 

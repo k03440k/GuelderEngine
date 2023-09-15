@@ -37,7 +37,7 @@ export namespace GuelderEngine
 
             EventsCount
         };
-        struct BaseEvent : INHERIT_GClass(BaseEvent)
+        struct BaseEvent
         {
             virtual ~BaseEvent() = default;
             virtual const EventType GetType() const = 0;
@@ -47,7 +47,7 @@ export namespace GuelderEngine
 
             bool isHandled : 1 = false;
         };
-        class EventDispatcher : INHERIT_GClass(EventDispatcher)
+        class EventDispatcher// : INHERIT_GClass(EventDispatcher)
         {
         public:
             /*

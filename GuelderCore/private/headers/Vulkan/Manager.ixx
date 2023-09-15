@@ -1,5 +1,5 @@
 module;
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 #include <glfw/glfw3.h>
@@ -24,7 +24,7 @@ export namespace GuelderEngine::Vulkan
     /*
     * Manager which responsible for all about initialization of Vulkan API
     */
-    class VulkanManager : public IVulkanObject, INHERIT_GClass(VulkanManager)
+    class VulkanManager : public IVulkanObject//, INHERIT_GClass(VulkanManager)
     {
     public:
         VulkanManager() = default;

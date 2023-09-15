@@ -1,5 +1,5 @@
 module;
-#include <../includes/GuelderEngine/Utils/Debug.hpp>
+#include <../public/GuelderEngine/Utils/Debug.hpp>
 #define GLFW_INCLUDE_VULKAN
 #include <glfw/glfw3.h>
 #include <vulkan/vulkan.hpp>
@@ -20,7 +20,7 @@ namespace GuelderEngine::Vulkan
     DeviceManager::DeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const vk::Extent2D& windowSize, const std::string_view& vertPath, const std::string_view& fragPath, const std::vector<const char*>& extensions)
     {
         VkSurfaceKHR cStyle;
-        GE_CORE_CLASS_ASSERT(glfwCreateWindowSurface(instance, glfwWindow, nullptr, &cStyle) == VK_SUCCESS,
+        GE_CLASS_ASSERT(glfwCreateWindowSurface(instance, glfwWindow, nullptr, &cStyle) == VK_SUCCESS,
             "cannot abstract GLFWwindow for vulkan surface");
         m_Surface = cStyle;
 
@@ -106,7 +106,7 @@ namespace GuelderEngine::Vulkan
                 return i;
         }
 
-        GE_CORE_CLASS_THROW("Failed to find suitable memory type");
+        GE_CLASS_THROW("Failed to find suitable memory type");
     }
     const vk::Device& DeviceManager::GetDevice() const noexcept
     {
@@ -163,7 +163,7 @@ namespace GuelderEngine::Vulkan
     {
         const std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 
-        GE_CORE_CLASS_ASSERT(physicalDevices.size() > 0, "there are no physical devices");
+        GE_CLASS_ASSERT(physicalDevices.size() > 0, "there are no physical devices");
 
 #ifdef GE_DEBUG_VULKAN
         GE_LOG(VulkanCore, Info, "There are ", physicalDevices.size(), " detected physical devices:");
@@ -200,7 +200,7 @@ namespace GuelderEngine::Vulkan
             }
         }
 
-        GE_CORE_CLASS_ASSERT(theBiggestDeviceMemorySize > 0, "cannot choose device");
+        GE_CLASS_ASSERT(theBiggestDeviceMemorySize > 0, "cannot choose device");
 
         return physicalDevices[idxToDeviceOftheBiggestMemory];
     }

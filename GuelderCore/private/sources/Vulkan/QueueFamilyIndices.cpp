@@ -1,5 +1,5 @@
 module;
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 #include <vulkan/vulkan.hpp>
 module GuelderEngine.Vulkan;
 import :QueueFamilyIndices;
@@ -40,7 +40,7 @@ namespace GuelderEngine::Vulkan
                 break;
         }
 
-        GE_CORE_CLASS_ASSERT(IsComplete(), "Cannot complete Queue Family(device doesn't support requirements)");
+        GE_CLASS_ASSERT(IsComplete(), "Cannot complete Queue Family(device doesn't support requirements)");
     }
     QueueFamilyIndices::QueueFamilyIndices(const QueueFamilyIndices& other)
     {

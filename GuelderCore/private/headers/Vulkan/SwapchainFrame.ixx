@@ -10,7 +10,7 @@ export namespace GuelderEngine::Vulkan
 {
     class CommandPool;
 
-    struct SwapchainFrame : public IVulkanObject, INHERIT_GClass(SwapchainFrame)
+    struct SwapchainFrame : public IVulkanObject//, INHERIT_GClass(SwapchainFrame)
     {
     public:
         DECLARE_DCAD_AND_CAM(SwapchainFrame);

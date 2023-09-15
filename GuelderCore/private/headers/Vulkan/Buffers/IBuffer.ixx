@@ -21,7 +21,7 @@ export namespace GuelderEngine::Vulkan::Buffers
         const vk::Queue& transferQueue
     );
 
-    class IBuffer : public IVulkanObject, INHERIT_GClass(IBuffer)
+    class IBuffer : public IVulkanObject//, INHERIT_GClass(IBuffer)
     {
     public:
         DEFINE_INTERFACE(IBuffer);

@@ -1,5 +1,5 @@
 module;
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan:IVulkanObject;
 

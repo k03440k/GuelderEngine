@@ -10,7 +10,7 @@ import GuelderEngine.Core.Types;
 
 export namespace GuelderEngine::Vulkan::Buffers
 {
-    class VertexBuffer : public IBuffer
+    class VertexBuffer final : public IBuffer
     {
     public:
         DECLARE_DCAD_AND_CAM(VertexBuffer);

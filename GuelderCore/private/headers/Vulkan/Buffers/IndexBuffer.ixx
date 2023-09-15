@@ -8,7 +8,7 @@ import :Mesh;
 
 export namespace GuelderEngine::Vulkan::Buffers
 {
-    class IndexBuffer : public IBuffer
+    class IndexBuffer final : public IBuffer
     {
     public:
         DECLARE_DEFAULT_CTOR_AND_DTOR(IndexBuffer);

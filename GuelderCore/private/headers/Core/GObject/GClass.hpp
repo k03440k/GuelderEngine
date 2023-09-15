@@ -2,7 +2,11 @@
 
 import GuelderEngine.Core.Types;
 
-#define INHERIT_GClass(className) public virtual ::GuelderEngine::Core::GClass<className>
+#define INHERIT_GClass(className) /*public virtual ::GuelderEngine::GClass<className>*/
+
+#define GENERATE_DEBUG(className)\
+    const char* GGetClassName() override { return typeid(*this).name(); }\
+    const char* GGetClassRawName() override { return typeid(*this).raw_name(); }
 
 #define DELETE_COPY(className)\
     className(const className&) = delete;\
@@ -49,3 +53,19 @@ import GuelderEngine.Core.Types;
 
 #define DEFINE_INTERFACE(interfaceName)\
     virtual ~interfaceName() = default
+
+#define DECLARE_DEFAULT_COPY(className)\
+    className(const className&) = default;\
+    className& operator=(const className&) = default
+
+#define DECLARE_DEFAULT_MOVING(className)\
+    className(className&&) noexcept = default;\
+    className& operator=(className&&) noexcept = default
+
+/**
+ *@brief declares ctor, dtor, assignment operators as default
+*/
+#define DECLARE_DEFAULT(className)\
+    DECLARE_DEFAULT_CTOR_AND_DTOR(className);\
+    DECLARE_DEFAULT_COPY(className);\
+    DECLARE_DEFAULT_MOVING(className)

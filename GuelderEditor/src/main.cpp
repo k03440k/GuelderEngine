@@ -25,7 +25,7 @@ DEFINE_LOG_CATEGORY(Editor);
 int main(int argc, char** argv)
 {
     try
-    {
+    {//TODO: clean all GClass
         const auto app = std::make_unique<GEApplication>(argv[0]);
 
         const Vulkan::Mesh cube = 
@@ -68,6 +68,7 @@ int main(int argc, char** argv)
     _CrtDumpMemoryLeaks();
 
 #endif // ENABLE_MEMORY_LEAKS_CHECKING
+
 #ifndef GE_DEBUG
     system("pause");
 #endif // GE_DEBUG

@@ -1,5 +1,5 @@
 module;
-#include "../../../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../../../public/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:CommandPool;
@@ -13,7 +13,7 @@ export namespace GuelderEngine::Vulkan
     struct SwapchainFrame;
     struct QueueFamilyIndices;
 
-    class CommandPool : public IVulkanObject, INHERIT_GClass(CommandPool)
+    class CommandPool : public IVulkanObject//, INHERIT_GClass(CommandPool)
     {
     public:
         DECLARE_DCAD_AND_CAM(CommandPool);

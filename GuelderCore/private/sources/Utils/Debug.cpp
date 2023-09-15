@@ -1,7 +1,7 @@
 module;
 #include <ctime>
 #include <Windows.h>
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 module GuelderEngine;
 import GuelderEngine.Debug;
 import GuelderEngine.Core.Types;

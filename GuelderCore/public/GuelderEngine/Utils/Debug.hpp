@@ -2,7 +2,7 @@
 
 import GuelderEngine.Debug;
 
-#define GE_DEBUG
+//#define GE_DEBUG
 
 #ifdef GE_DEBUG
 
@@ -12,15 +12,18 @@ import GuelderEngine.Debug;
 
 #define FUNC_NAME __func__
 
+#ifdef _MSC_VER
 /**
 * @brief Use this macro only in classes which inherited from GuelderEngine::Core::GClass
 */
-#define METHOD_NAME ::GuelderEngine::Debug::Logger::Format(GGetClassName(), "::", FUNC_NAME)
+#define METHOD_NAME __FUNCSIG__
+#elif __GNUC__ || __clang__
+#define METHOD_NAME __PRETTY_FUNCTION__
+#else
+#define METHOD_NAME FUNC_NAME
+#endif
 
-/**
-* @brief Use this macro only for GE_CORE_CLASS_ASSERT
-*/
-#define MSG_METHOD_LOGGING(...) ::GuelderEngine::Debug::Logger::Format(GGetClassName(), "::", FUNC_NAME, ": ", __VA_ARGS__)
+#define MSG_METHOD_LOGGING(...) ::GuelderEngine::Debug::Logger::Format(METHOD_NAME, ": ", __VA_ARGS__)
 
 /**
 * @brief guelder engine error log
@@ -35,9 +38,9 @@ import GuelderEngine.Debug;
 * @param condition - bool
 * @param ... - message, any type that supports "<<" operator
 */
-#define GE_CORE_CLASS_ASSERT(condition, ...) ::GuelderEngine::Debug::Logger::Assert(condition, MSG_METHOD_LOGGING(__VA_ARGS__), __FILE__, __LINE__)
+#define GE_CLASS_ASSERT(condition, ...) ::GuelderEngine::Debug::Logger::Assert(condition, MSG_METHOD_LOGGING(__VA_ARGS__), __FILE__, __LINE__)
 
-#define GE_CORE_CLASS_THROW(...) ::GuelderEngine::Debug::Logger::Throw(MSG_METHOD_LOGGING(__VA_ARGS__), __FILE__, __LINE__)
+#define GE_CLASS_THROW(...) ::GuelderEngine::Debug::Logger::Throw(MSG_METHOD_LOGGING(__VA_ARGS__), __FILE__, __LINE__)
 
 /**
 * @brief If condition(param) is false then it will throw exception. Prints the path of the file and message(msg).

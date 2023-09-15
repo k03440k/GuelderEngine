@@ -9,7 +9,7 @@ endif()
 
 set(ECN "GuelderEngineCore")#ENGINE_CORE_NAME
 
-set(CMAKE_CXX_STANDARD 20)#TODO: GO TO FUCKING MODULES!!!!!!!!!!!!!
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP ON)
 set(CXX_SCAN_FOR_MODULES ON)
@@ -18,7 +18,7 @@ project (${ECN})
 
 set(CORE_PRIVATE_MODULES_PATH private/headers/)
 set(CORE_PRIVATE_SOURCES_PATH private/sources/)
-set(CORE_PUBLIC_MODULES_PATH includes/GuelderEngine/)
+set(CORE_PUBLIC_MODULES_PATH public/GuelderEngine/)
 
 set(CORE_PRIVATE_HEADERS
 	${CORE_PRIVATE_MODULES_PATH}Core/GObject/GClass.hpp
@@ -85,6 +85,9 @@ set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}Core/Core.ixx
 	${CORE_PUBLIC_MODULES_PATH}Core/Application.ixx
 	
+	${CORE_PUBLIC_MODULES_PATH}Objects/GObjectBase.ixx
+	${CORE_PUBLIC_MODULES_PATH}Objects/Object2D.ixx
+	
 	${CORE_PUBLIC_MODULES_PATH}Core/Types.ixx
 	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.ixx
 	${CORE_PUBLIC_MODULES_PATH}Utils/ResourceManager.ixx
@@ -133,7 +136,7 @@ target_sources(
 		${CORE_PRIVATE_SOURCES}
 )
 
-target_include_directories(${ECN} PUBLIC includes)
+target_include_directories(${ECN} PUBLIC public)
 target_include_directories(${ECN} PRIVATE src)
 
 #include external libs

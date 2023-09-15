@@ -1,5 +1,5 @@
 module;
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:DebugManager;
@@ -10,7 +10,7 @@ import <vector>;
 
 export namespace GuelderEngine::Vulkan
 {
-    class DebugLayersManager final : INHERIT_GClass(DebugLayersManager)
+    class DebugLayersManager final// : INHERIT_GClass(DebugLayersManager)
     {
     public:
         using ValidationLayer = const char*;
@@ -24,7 +24,7 @@ export namespace GuelderEngine::Vulkan
 
         const std::vector<ValidationLayer> m_Layers;
     };
-    class DebugManager final : public IVulkanObject, INHERIT_GClass(DebugManager)
+    class DebugManager final : public IVulkanObject//, INHERIT_GClass(DebugManager)
     {
     public:
         DECLARE_DCAD_AND_CAM(DebugManager);

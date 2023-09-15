@@ -1,5 +1,5 @@
 module;
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <glfw/glfw3.h>
 #include <vulkan/vulkan.hpp>
@@ -19,7 +19,7 @@ export namespace GuelderEngine::Vulkan
     /**
      * @brief You must manually call .Cleanup() func instead of dtor
     */
-    class DeviceManager final : public IVulkanObject, INHERIT_GClass(DeviceManager)
+    class DeviceManager final : public IVulkanObject//, INHERIT_GClass(DeviceManager)
     {
     public:
         DECLARE_DCAD_AND_CAM(DeviceManager);

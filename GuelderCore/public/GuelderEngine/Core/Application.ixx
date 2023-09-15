@@ -36,7 +36,7 @@ export namespace GuelderEngine
     };
 
     //Guelder Engine Application
-    class GEApplication : public IApplication, INHERIT_GClass(GEApplication)
+    class GEApplication : public IApplication//, INHERIT_GClass(GEApplication)
     {
     public:
         using UpdateFunc = std::function<void()>;

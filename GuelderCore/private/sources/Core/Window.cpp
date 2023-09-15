@@ -1,5 +1,5 @@
 module;
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 #include <imgui/imgui.h>
 #include <glfw/glfw3.h>
 module GuelderEngine.Core;
@@ -150,7 +150,7 @@ namespace GuelderEngine
             {
                 glfwSetErrorCallback(Events::GLFWErrorCallback);
                 glfwTerminate();
-                GE_CORE_CLASS_THROW("cannot initialise glfw");
+                GE_CLASS_THROW("cannot initialise glfw");
             }
 
             is_GLFW_init = true;
@@ -164,7 +164,7 @@ namespace GuelderEngine
         if(!m_GLFWWindow)
         {
             glfwTerminate();
-            GE_CORE_CLASS_THROW("window is nullptr");
+            GE_CLASS_THROW("window is nullptr");
         }
 
         glfwMakeContextCurrent(m_GLFWWindow);

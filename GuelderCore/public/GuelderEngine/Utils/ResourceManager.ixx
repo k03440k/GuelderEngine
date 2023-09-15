@@ -28,7 +28,7 @@ export namespace GuelderEngine
             */
             static vars FindAllVariables(const std::string& resSource);
         };
-        class ResourceManager : INHERIT_GClass(ResourceManager)
+        class ResourceManager// : INHERIT_GClass(ResourceManager)
         {
         public:
 

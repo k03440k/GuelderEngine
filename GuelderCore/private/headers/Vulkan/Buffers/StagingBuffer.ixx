@@ -14,7 +14,6 @@ export namespace GuelderEngine::Vulkan::Buffers
     class StagingBuffer : public IBuffer
     {
     public:
-        //fucking template
         //DECLARE_DCAD_AND_CAM(StagingBuffer);
 
         StagingBuffer(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& indices, const std::vector<T>& data)

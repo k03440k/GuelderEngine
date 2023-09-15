@@ -316,9 +316,9 @@ namespace GuelderEngine::Vulkan
 
         commandBuffer.begin(commandBufferBeginInfo);
 
-        const float greenValue = (sin(glfwGetTime()) / 2.0f) + 0.5f;
+        const float blueValue = (sin(glfwGetTime()) / 2.0f) + 0.5f;
 
-        const vk::ClearValue clearValue{{ 1.0f, greenValue, 0.25f, 1.0f }};
+        const vk::ClearValue clearValue{{ 0.25f, 0.25f, blueValue, 1.0f }};
         const vk::RenderPassBeginInfo renderPassBeginInfo(
             m_RenderPass,
             m_Swapchain.GetFrames()[imageIndex].framebuffer,
@@ -355,7 +355,7 @@ namespace GuelderEngine::Vulkan
         };
         std::vector v{ SimplePushConstantData(
             { sin(glfwGetTime()) / 5.0f * cos(glfwGetTime()) , sin(glfwGetTime()) / 8.0f * tan(glfwGetTime())},//idk how does it work
-            { (sin(glfwGetTime()) / 5.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f }) };
+            { (cos(glfwGetTime()) / 5.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f }) };
 
         for(auto&& ve : v)
         {

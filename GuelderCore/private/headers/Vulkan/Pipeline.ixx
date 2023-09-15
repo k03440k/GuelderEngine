@@ -19,7 +19,7 @@ export namespace GuelderEngine::Vulkan
     struct QueueFamilyIndices;
     class Scene;
 
-    class Pipeline : INHERIT_GClass(Pipeline), public IVulkanObject
+    class Pipeline : /*INHERIT_GClass(Pipeline),*/ public IVulkanObject
     {
     public:
         DECLARE_DCAD_AND_CAM(Pipeline);

@@ -1,5 +1,5 @@
 module;
-#include "../../../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../../../public/GuelderEngine/Utils/Debug.hpp"
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan;
 import :CommandPool;
@@ -23,7 +23,7 @@ namespace GuelderEngine::Vulkan
             familyIndex = queueFamilyIndices.GetTransferFamily();
             break;
             default:
-                GE_CORE_CLASS_THROW("invalid queue type");
+                GE_CLASS_THROW("invalid queue type");
         }
         const vk::CommandPoolCreateInfo poolInfo(
             vk::CommandPoolCreateFlags() | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,

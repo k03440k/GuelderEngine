@@ -16,7 +16,7 @@ export namespace GuelderEngine
         Types::uint width;
         Types::uint height;
     };
-    class Window : INHERIT_GClass(Window)
+    class Window// : INHERIT_GClass(Window)
     {
     public:
         using EventCallbackFunc = std::function<void(Events::BaseEvent&)>;

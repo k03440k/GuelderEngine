@@ -18,5 +18,4 @@ using namespace GuelderEngine::Debug;
 using namespace GuelderEngine::Types;
 using namespace GuelderEngine::Utils;
 using namespace GuelderEngine::Events;
-using namespace GuelderEngine::Core;
 #endif

@@ -1,5 +1,5 @@
 module;
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 #include <vulkan/vulkan.hpp>
 module GuelderEngine.Vulkan;
 import :DebugManager;
@@ -55,11 +55,11 @@ namespace GuelderEngine::Vulkan
     DebugLayersManager::DebugLayersManager(const std::vector<ValidationLayer>& layers)
         : m_Layers(layers)
     {
-        GE_CORE_CLASS_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
+        GE_CLASS_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
     }
     bool DebugLayersManager::AreValidationLayersSupported(const std::vector<ValidationLayer>& layers)
     {
-        GE_CORE_CLASS_ASSERT(layers.size() > 0, "layers size is zero");
+        GE_CLASS_ASSERT(layers.size() > 0, "layers size is zero");
 
         const std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 
@@ -146,6 +146,8 @@ namespace GuelderEngine::Vulkan
                 GE_LOG(VulkanCore, Info, "Memory size in ", heapIndex+1, " heap : ", memorySizeGB, " GB");
             }
         }
+
+        GE_LOG(VulkanCore, Info, "Max push constants memory(in bytes) is ", properties.limits.maxPushConstantsSize);
     }
     void DebugManager::LogPresentMode(const vk::PresentModeKHR& mode)
     {

@@ -1,5 +1,5 @@
 module;
-#include "../includes/GuelderEngine/Utils/Debug.hpp"
+#include "../public/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:Swapchain;
@@ -21,7 +21,7 @@ export namespace GuelderEngine::Vulkan
         std::vector<vk::SurfaceFormatKHR> formats;
         std::vector<vk::PresentModeKHR> presentModes;
     };
-    class Swapchain final : public IVulkanObject, INHERIT_GClass(Swapchain)
+    class Swapchain final : public IVulkanObject//, INHERIT_GClass(Swapchain)
     {
     public:
         DECLARE_DCAD_AND_CAM(Swapchain);
