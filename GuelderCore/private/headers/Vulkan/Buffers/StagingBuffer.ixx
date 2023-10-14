@@ -28,7 +28,7 @@ export namespace GuelderEngine::Vulkan::Buffers
 
                 if(indices.GetGraphicsFamily() != indices.GetTransferFamily())
                 {
-                    const Types::uint uniqueIndices[] = { indices.GetGraphicsFamily(), indices.GetTransferFamily() };
+                    const uint uniqueIndices[] = { indices.GetGraphicsFamily(), indices.GetTransferFamily() };
                     info.queueFamilyIndexCount = 2;
                     info.pQueueFamilyIndices = uniqueIndices;
                     info.sharingMode = vk::SharingMode::eConcurrent;

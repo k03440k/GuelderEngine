@@ -63,15 +63,15 @@ namespace GuelderEngine::Vulkan
     {
         return graphicsFamily.has_value() && presentFamily.has_value() && transferFamily.has_value();
     }
-    Types::uint QueueFamilyIndices::GetGraphicsFamily() const noexcept
+    uint QueueFamilyIndices::GetGraphicsFamily() const noexcept
     {
         return graphicsFamily.value();
     }
-    Types::uint QueueFamilyIndices::GetPresentFamily() const noexcept
+    uint QueueFamilyIndices::GetPresentFamily() const noexcept
     {
         return presentFamily.value();
     }
-    Types::uint QueueFamilyIndices::GetTransferFamily() const noexcept
+    uint QueueFamilyIndices::GetTransferFamily() const noexcept
     {
         return transferFamily.value();
     }

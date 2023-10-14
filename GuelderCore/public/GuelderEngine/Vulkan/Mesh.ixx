@@ -12,10 +12,10 @@ import <vector>;
 
 export namespace GuelderEngine::Vulkan
 {
-    struct Vertex;
+    struct Vertex2D;
     //temp
-    using Vertices = std::vector<Vertex>;
-    using Indices = std::vector<Types::uint>;
+    using Vertices2D = std::vector<Vertex2D>;
+    using Indices = std::vector<uint>;
 
     enum class VertexFormat
     {
@@ -26,7 +26,7 @@ export namespace GuelderEngine::Vulkan
     struct VertexBindingInfo
     {
         VertexFormat format;
-        Types::uint location;//layout(location = 1)
+        uint location;//layout(location = 1)
     };
     struct VertexAttributeDescriptionsInfo
     {
@@ -34,12 +34,12 @@ export namespace GuelderEngine::Vulkan
         VertexBindingInfo color;
     };
     vk::Format ConvertVkFormat(const VertexFormat& format);
-    struct Vertex : public IVulkanObject
+    struct Vertex2D : public IVulkanObject
     {
     public:
-        DECLARE_DCAD_AND_CAM(Vertex);
+        DECLARE_DCAD_AND_CAM(Vertex2D);
 
-        Vertex(const glm::vec2& pos, const glm::vec3& color);
+        Vertex2D(const glm::vec2& pos, const glm::vec3& color);
 
         void Reset() noexcept override;
 
@@ -52,19 +52,19 @@ export namespace GuelderEngine::Vulkan
         glm::vec2 pos;
         glm::vec3 color;
     };
-    class Mesh : public IVulkanObject
+    class Mesh2D : public IVulkanObject
     {
     public:
-        DECLARE_DCAD_AND_CAM(Mesh);
+        DECLARE_DCAD_AND_CAM(Mesh2D);
 
-        Mesh(const Vertices& vertices, const Indices& indices = {});
+        Mesh2D(const Vertices2D& vertices, const Indices& indices = {});
 
         void Reset() noexcept override;
 
-        const Vertices& GetVertices() const noexcept;
+        const Vertices2D& GetVertices() const noexcept;
         const Indices& GetIndices() const noexcept;
     private:
-        Vertices m_Vertices;
+        Vertices2D m_Vertices;
         Indices m_Indices;
     };
 }

@@ -9,14 +9,14 @@ namespace GuelderEngine::Vulkan
 {
     vk::Format ConvertVkFormat(const VertexFormat& format)
     {
-        return static_cast<vk::Format>(static_cast<Types::uint>(format));
+        return static_cast<vk::Format>(static_cast<uint>(format));
     }
-    Vertex::Vertex(const Vertex& other)
+    Vertex2D::Vertex2D(const Vertex2D& other)
     {
         pos = other.pos;
         color = other.color;
     }
-    Vertex& Vertex::operator=(const Vertex& other)
+    Vertex2D& Vertex2D::operator=(const Vertex2D& other)
     {
         if(this == &other)
             return *this;
@@ -26,14 +26,14 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    Vertex::Vertex(Vertex&& other) noexcept
+    Vertex2D::Vertex2D(Vertex2D&& other) noexcept
     {
         pos = other.pos;
         color = other.color;
 
         other.Reset();
     }
-    Vertex& Vertex::operator=(Vertex&& other) noexcept
+    Vertex2D& Vertex2D::operator=(Vertex2D&& other) noexcept
     {
         pos = other.pos;
         color = other.color;
@@ -46,11 +46,11 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    Vertex::Vertex(const glm::vec2& pos, const glm::vec3& color)
+    Vertex2D::Vertex2D(const glm::vec2& pos, const glm::vec3& color)
         : pos(pos), color(color)
     {
     }
-    void Vertex::Reset() noexcept
+    void Vertex2D::Reset() noexcept
     {
         pos = glm::vec2();
         color = glm::vec3();
@@ -64,13 +64,13 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    vk::VertexInputBindingDescription Vertex::GetBindingDescription()
+    vk::VertexInputBindingDescription Vertex2D::GetBindingDescription()
     {
-        constexpr vk::VertexInputBindingDescription description{0, sizeof(Vertex), vk::VertexInputRate::eVertex};
+        constexpr vk::VertexInputBindingDescription description{0, sizeof(Vertex2D), vk::VertexInputRate::eVertex};
 
         return description;
     }
-    std::array<vk::VertexInputAttributeDescription, 2> Vertex::GetAttributeDescriptions(const VertexAttributeDescriptionsInfo& info)
+    std::array<vk::VertexInputAttributeDescription, 2> Vertex2D::GetAttributeDescriptions(const VertexAttributeDescriptionsInfo& info)
     {
         std::array<vk::VertexInputAttributeDescription, 2> descriptions;
 
@@ -78,13 +78,13 @@ namespace GuelderEngine::Vulkan
         descriptions[0].binding = 0;
         descriptions[0].location = info.position.location;
         descriptions[0].format = ConvertVkFormat(info.position.format);
-        descriptions[0].offset = offsetof(Vertex, pos);
+        descriptions[0].offset = offsetof(Vertex2D, pos);
 
         //color
         descriptions[1].binding = 0;
         descriptions[1].location = info.color.location;
         descriptions[1].format = ConvertVkFormat(info.color.format);
-        descriptions[1].offset = offsetof(Vertex, color);
+        descriptions[1].offset = offsetof(Vertex2D, color);
 
         return descriptions;
     }
@@ -92,21 +92,21 @@ namespace GuelderEngine::Vulkan
 
 namespace GuelderEngine::Vulkan
 {
-    Mesh::Mesh(const Vertices& vertices, const Indices& indices)
+    Mesh2D::Mesh2D(const Vertices2D& vertices, const Indices& indices)
         : m_Vertices(vertices), m_Indices(indices)
     {
     }
-    void Mesh::Reset() noexcept
+    void Mesh2D::Reset() noexcept
     {
         m_Vertices.clear();
         m_Indices.clear();
     }
-    Mesh::Mesh(const Mesh& other)
+    Mesh2D::Mesh2D(const Mesh2D& other)
     {
         m_Vertices = other.m_Vertices;
         m_Indices = other.m_Indices;
     }
-    Mesh& Mesh::operator=(const Mesh& other)
+    Mesh2D& Mesh2D::operator=(const Mesh2D& other)
     {
         if(this == &other)
             return *this;
@@ -116,27 +116,27 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-    Mesh::Mesh(Mesh&& other) noexcept
+    Mesh2D::Mesh2D(Mesh2D&& other) noexcept
     {
-        m_Vertices = std::forward<Vertices>(other.m_Vertices);
+        m_Vertices = std::forward<Vertices2D>(other.m_Vertices);
         m_Indices = std::forward<Indices>(other.m_Indices);
 
         other.Reset();
     }
-    Mesh& Mesh::operator=(Mesh&& other) noexcept
+    Mesh2D& Mesh2D::operator=(Mesh2D&& other) noexcept
     {
-        m_Vertices = std::forward<Vertices>(other.m_Vertices);
+        m_Vertices = std::forward<Vertices2D>(other.m_Vertices);
         m_Indices = std::forward<Indices>(other.m_Indices);
 
         other.Reset();
 
         return *this;
     }
-    const Vertices& Mesh::GetVertices() const noexcept
+    const Vertices2D& Mesh2D::GetVertices() const noexcept
     {
         return m_Vertices;
     }
-    const Indices& Mesh::GetIndices() const noexcept
+    const Indices& Mesh2D::GetIndices() const noexcept
     {
         return m_Indices;
     }

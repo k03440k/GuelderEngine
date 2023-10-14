@@ -33,6 +33,8 @@ export namespace GuelderEngine::Vulkan::Buffers
         const vk::DeviceMemory& GetBufferMemory() const noexcept;
         vk::DeviceSize GetSize() const noexcept;
 
+        bool Initialized() const noexcept;
+
     protected:
         vk::Buffer m_Buffer;
         vk::DeviceMemory m_BufferMemory;

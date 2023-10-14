@@ -18,11 +18,9 @@ import <vector>;
 import <string_view>;
 import <set>;
 
-using namespace GuelderEngine::Types;
-
 namespace GuelderEngine::Vulkan
 {
-    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const ShaderInfo& shaderInfo, const std::string_view& name)
+    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const uint& width, const uint& height, const ShaderInfo& shaderInfo, const std::string_view& name)
     {
         m_Instance = CreateVkInstance(name.data());
         m_DeviceManager = DeviceManager(m_Instance, glfwWindow, { width, height }, shaderInfo.vertexPath, shaderInfo.fragmentPath);
@@ -91,7 +89,8 @@ namespace GuelderEngine::Vulkan
         Cleanup();
     }
 
-    void VulkanManager::Render(Types::uint width, Types::uint height, bool& wasWindowResized)
+    void VulkanManager::Render(uint width, uint height, bool& wasWindowResized, const Vulkan::Buffers::VertexBuffer& vertexBuffer,
+        const Vulkan::Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push)
     {
         m_Pipeline.Render(
             m_DeviceManager.GetDevice(), 
@@ -99,13 +98,36 @@ namespace GuelderEngine::Vulkan
             m_DeviceManager.GetSurface(), 
             {width, height},
             wasWindowResized,
-            m_DeviceManager.GetQueueIndices()
+            m_DeviceManager.GetQueueIndices(),
+            vertexBuffer,
+            indexBuffer,
+            push
         );
+    }
+
+    Buffers::VertexBuffer VulkanManager::MakeVertexBuffer(const Mesh2D& mesh) const
+    {
+        return Buffers::VertexBuffer(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), m_Pipeline.GetCommandPoolTransfer(), m_Pipeline.GetTransferQueue(), mesh.GetVertices());
+    }
+
+    Buffers::IndexBuffer VulkanManager::MakeIndexBuffer(const Mesh2D& mesh) const
+    {
+        return Buffers::IndexBuffer(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), m_Pipeline.GetCommandPoolTransfer(), m_Pipeline.GetTransferQueue(), mesh.GetIndices());
+    }
+
+    const DeviceManager& VulkanManager::GetDevice() const noexcept
+    {
+        return m_DeviceManager;
+    }
+
+    void VulkanManager::WaitDevice() const
+    {
+        m_DeviceManager.WaitIdle();
     }
 
     vk::Instance VulkanManager::CreateVkInstance(const char* name)
     {
-        Types::uint version{};
+        uint version{};
         GE_CLASS_ASSERT(vk::enumerateInstanceVersion(&version) == vk::Result::eSuccess, "cannot enumerateInstanceVersion");
 
 #ifdef GE_DEBUG_VULKAN
@@ -116,7 +138,7 @@ namespace GuelderEngine::Vulkan
         vk::ApplicationInfo appInfo(name, VK_MAKE_VERSION(0, 0, 1),
             "Guelder Engine", VK_MAKE_VERSION(0, 0, 1), VK_API_VERSION_1_3);
 
-        Types::uint glfwExtensionsCount{};
+        uint glfwExtensionsCount{};
         const char** const glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
 
         std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionsCount);
@@ -147,7 +169,7 @@ namespace GuelderEngine::Vulkan
         vk::InstanceCreateInfo createInfo(vk::InstanceCreateFlags(),
             &appInfo,
             0, nullptr,//debug layers
-            (Types::uint)extensions.size(), extensions.data());//extensions
+            (uint)extensions.size(), extensions.data());//extensions
 #endif // GE_DEBUG_VULKAN
         return vk::createInstance(createInfo);
     }
@@ -188,10 +210,10 @@ namespace GuelderEngine::Vulkan
 
         return true;
     }
-    void VulkanManager::SetMesh(const Mesh& mesh)
-    {
-        m_Pipeline.SetMesh(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), mesh);
-    }
+    //void VulkanManager::SetMesh(const Mesh2D& mesh)
+    //{
+    //    //m_Pipeline.SetMesh(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), mesh);
+    //}
     void VulkanManager::SetShaderInfo(const ShaderInfo& shaderInfo)
     {
         m_Pipeline.SetShaderInfo(m_DeviceManager.GetDevice(), shaderInfo);

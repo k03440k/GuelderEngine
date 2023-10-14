@@ -12,7 +12,7 @@ namespace GuelderEngine::Vulkan
     void FrameBuffer::Make(const vk::Device& device, const vk::RenderPass& renderPass,
         const vk::Extent2D& swapchainExtent, std::vector<SwapchainFrame>& frames)
     {
-        for(Types::uint i = 0; i < frames.size(); ++i)
+        for(uint i = 0; i < frames.size(); ++i)
         {
             std::vector attachments{frames[i].imageView};//idk
 

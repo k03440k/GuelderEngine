@@ -13,8 +13,8 @@ export namespace GuelderEngine
 {
     struct WindowSize
     {
-        Types::uint width;
-        Types::uint height;
+        uint width;
+        uint height;
     };
     class Window// : INHERIT_GClass(Window)
     {
@@ -24,15 +24,15 @@ export namespace GuelderEngine
         struct WindowData
         {
         public:
-            WindowData(const Types::ushort& width = 640, const Types::ushort& height = 480, const std::string& title = "GuelderEngine window",
+            WindowData(const ushort& width = 640, const ushort& height = 480, const std::string& title = "GuelderEngine window",
                 const bool& showFrameRate = true, const EventCallbackFunc& callback = EventCallbackFunc());
             ~WindowData() = default;
             WindowData& operator=(const WindowData& other);
 
             void Reset() noexcept;
 
-            Types::ushort width = 0;
-            Types::ushort height = 0;
+            ushort width = 0;
+            ushort height = 0;
             std::string title;
             EventCallbackFunc callback;
             
@@ -42,7 +42,7 @@ export namespace GuelderEngine
 
             int GetFrameRate() const noexcept;
 
-            void SetSize(const Types::uint& width, const Types::uint& height) noexcept;
+            void SetSize(const uint& width, const uint& height) noexcept;
 
         private:
             double m_LastTime, m_CurrentTime;
@@ -53,7 +53,7 @@ export namespace GuelderEngine
 
         DECLARE_COPY_AND_MOVING(Window);
         
-        Window(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480, const std::string& windowTitle = "Guelder Engine Window");
+        Window(const ushort& windowWidth = 640, const ushort& windowHeight = 480, const std::string& windowTitle = "Guelder Engine Window");
         Window(const WindowData& data);
         virtual ~Window();
 
@@ -67,8 +67,8 @@ export namespace GuelderEngine
         GLFWwindow* GetGLFWWindow() const noexcept;
 
         void SetCallback(const EventCallbackFunc& callback) noexcept;
-        void SetWindow(const Types::ushort& windowWidth = 640, const Types::ushort& windowHeight = 480, const std::string& windowTitle = std::string("Guelder Engine Window"));
-        void SetWindowSize(const Types::ushort& width = 640, const Types::ushort& height = 480);
+        void SetWindow(const ushort& windowWidth = 640, const ushort& windowHeight = 480, const std::string& windowTitle = std::string("Guelder Engine Window"));
+        void SetWindowSize(const ushort& width = 640, const ushort& height = 480);
         void ShowFrameRate();
 
         bool& WasWindowResized() noexcept;

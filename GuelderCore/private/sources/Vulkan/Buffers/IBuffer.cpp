@@ -65,6 +65,11 @@ namespace GuelderEngine::Vulkan::Buffers
     {
         return m_Size;
     }
+    bool IBuffer::Initialized() const noexcept
+    {
+        return m_Size;
+    }
+
     //void CopyBuffer(const Buffer& srcBuffer, Buffer& dstBuffer, const vk::Device& device, const vk::CommandPool& transferPool, const vk::Queue& transferQueue)
     //{
     //    GE_ASSERT_FN(srcBuffer.GetSize() == dstBuffer.GetSize(), "different buffers sizes");

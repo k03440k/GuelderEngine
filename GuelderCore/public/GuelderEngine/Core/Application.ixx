@@ -6,6 +6,7 @@ import GuelderEngine.Vulkan;
 import GuelderEngine.Events;
 import GuelderEngine.Debug;
 import GuelderEngine.Layers;
+import GuelderEngine.Game;
 import :ResourceManager;
 import :Window;
 
@@ -15,14 +16,9 @@ import <string_view>;
 
 export namespace GuelderEngine
 {
-    namespace Vulkan
-    {
-        class VulkanManager;
-    }
-
     //namespace Events { struct WindowCloseEvent; struct BaseEvent; class EventDispatcher; }
-    namespace Layers { class Layer; }
-
+    //namespace Layers { class Layer; }
+    using namespace Vulkan;
     class IApplication
     {
     public:
@@ -53,10 +49,10 @@ export namespace GuelderEngine
             const Vulkan::VertexAttributeDescriptionsInfo& shaderInfo =
             {
                 {Vulkan::VertexFormat::Vec2Float, 0},
-                { Vulkan::VertexFormat::Vec3Float, 1 }
+                {Vulkan::VertexFormat::Vec3Float, 1 }
             }
         );
-        virtual ~GEApplication() = default;
+        virtual ~GEApplication();
 
         DELETE_COPY_AND_MOVING(GEApplication);
 
@@ -70,13 +66,19 @@ export namespace GuelderEngine
         void SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept;
         int GetFrameRate() const noexcept { return m_Window->GetData().GetFrameRate(); }
 
-        void SetMesh(const Vulkan::Mesh& mesh);
+        //void SetMesh(const Vulkan::Mesh2D& mesh);
         void SetShaderInfo(const Vulkan::ShaderInfo& shaderInfo);
+
+        World& GetWorld();
+
+        void SpawnRenderActor(const Object2DCreateInfo& renderActor);
+        void SpawnRenderActor(Object2DPtr renderActor);
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;
     private:
         std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;
+        std::unique_ptr<World> m_World;
 
         bool OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept;
         

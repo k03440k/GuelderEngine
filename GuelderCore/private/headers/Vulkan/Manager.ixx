@@ -10,14 +10,13 @@ import :IVulkanObject;
 import :DebugManager;
 import :DeviceManager;
 import :Mesh;
+import :Pipeline;
 import GuelderEngine.Core.Types;
 //import :VulkanSurfaceManager;
 
 import <string_view>;
 import <vector>;
 import <optional>;
-
-using namespace GuelderEngine::Types;
 
 export namespace GuelderEngine::Vulkan
 {
@@ -28,7 +27,7 @@ export namespace GuelderEngine::Vulkan
     {
     public:
         VulkanManager() = default;
-        VulkanManager(GLFWwindow* glfwWindow, const Types::uint& width, const Types::uint& height, const ShaderInfo& shaderInfo = {}, const std::string_view& name = "Guelder Engine Editor");
+        VulkanManager(GLFWwindow* glfwWindow, const uint& width, const uint& height, const ShaderInfo& shaderInfo = {}, const std::string_view& name = "Guelder Engine Editor");
         virtual ~VulkanManager();
 
         DECLARE_COPY_AND_MOVING(VulkanManager);
@@ -37,13 +36,20 @@ export namespace GuelderEngine::Vulkan
 
         static bool AreExtensionsSupported(const std::vector<const char*>& extensions);
         //must be called before Render
-        void SetMesh(const Mesh& mesh);
+        //void SetMesh(const Mesh2D& mesh);
         void SetShaderInfo(const ShaderInfo& shaderInfo);
         /**
          * \param width window width
          * \param height window height
          */
-        void Render(Types::uint width, Types::uint height, bool& wasWindowResized);
+        void Render(uint width, uint height, bool& wasWindowResized, const Vulkan::Buffers::VertexBuffer& vertexBuffer,
+            const Vulkan::Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push = {});
+
+        Buffers::VertexBuffer MakeVertexBuffer(const Mesh2D& mesh) const;
+        Buffers::IndexBuffer MakeIndexBuffer(const Mesh2D& mesh) const;
+
+        const DeviceManager& GetDevice() const noexcept;
+        void WaitDevice() const;
     private:
         static vk::Instance CreateVkInstance(const char* name);
         virtual void Cleanup() const noexcept;

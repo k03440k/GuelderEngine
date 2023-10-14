@@ -3,5 +3,6 @@ export module GuelderEngine;
 export import GuelderEngine.Core;
 export import GuelderEngine.Core.Types;
 export import GuelderEngine.Debug;
-
-export import :GObjectBase;
+export import GuelderEngine.Game;
+export import GuelderEngine.Vulkan;
+export import GuelderEngine.Events;

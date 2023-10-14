@@ -13,7 +13,7 @@ namespace GuelderEngine::Vulkan
 {
     CommandPool::CommandPool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices, const vk::QueueFlagBits& queueType)
     {
-        Types::uint familyIndex{};
+        uint familyIndex{};
         switch(queueType)
         {
         case vk::QueueFlagBits::eGraphics:

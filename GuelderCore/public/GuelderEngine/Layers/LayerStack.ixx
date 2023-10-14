@@ -24,7 +24,7 @@ export namespace GuelderEngine::Layers
         LayerVec::iterator begin() { return m_Layers.begin(); }
         LayerVec::iterator end() { return m_Layers.end(); }
 
-        Types::ubyte size() const { return (Types::ubyte)m_Layers.size(); }
+        ubyte size() const { return (ubyte)m_Layers.size(); }
         bool IsEmpty() const { return !m_Layers.size(); }
     private:
         LayerVec m_Layers;

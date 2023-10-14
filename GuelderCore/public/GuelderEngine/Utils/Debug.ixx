@@ -62,7 +62,7 @@ export namespace GuelderEngine::Debug
     concept ConsoleColorAttributes = ((std::is_same_v<Attributes, ::GuelderEngine::Debug::ConsoleForegroundColor> || ...)
         || (std::is_same_v<Attributes, ::GuelderEngine::Debug::ConsoleBackgroundColor> || ...));
 
-    enum class LogLevel : Types::ubyte
+    enum class LogLevel : ubyte
     {
         Info,
         Warning,
@@ -159,7 +159,7 @@ export namespace GuelderEngine::Debug
         constexpr static void Log(const LoggingCategory<LoggingLevels, false>& category, const LogLevel& level, Args&&... args){}
 
         [[noreturn]]
-        static void Throw(const std::string_view& message, const char* fileName, const Types::uint& line);
+        static void Throw(const std::string_view& message, const char* fileName, const uint& line);
 
         [[noreturn]]
         static void Throw(const std::string_view& message);
@@ -176,7 +176,7 @@ export namespace GuelderEngine::Debug
         }
 
         /*if input bool is false, then it will bring throw of runtime_error*/
-        static void Assert(const bool& condition, const std::string& message = "", const char* file = __FILE__, const Types::uint& line = __LINE__);
+        static void Assert(const bool& condition, const std::string& message = "", const char* file = __FILE__, const uint& line = __LINE__);
 
     private:
         template<ConsoleColorAttributes... Attributes>
@@ -203,6 +203,8 @@ export namespace GuelderEngine::Debug
             Format(oss, args...);
         }
 
+        static std::mutex logMutex;
+
         template<LogLevel LoggingLevels>
         static void WriteLog(const LoggingCategory<LoggingLevels, true>& category, const LogLevel& level,
             const std::string_view& message)
@@ -212,6 +214,8 @@ export namespace GuelderEngine::Debug
             //localtime_s(&localTime, &t);
 
             //std::cout << std::put_time(&localTime, "%H:%M:%S") << ' '; // print timestamp
+
+            logMutex.lock();
 
             std::cout << category.name << ": ";
 
@@ -253,6 +257,8 @@ export namespace GuelderEngine::Debug
 
             std::cout << ": " << message << '\n'/*std::endl*//* << DEFAULT_FONT*/;
             SetConsoleColorAttributes(Text::White, Background::Black);
+
+            logMutex.unlock();
         }
 
         static HANDLE console;

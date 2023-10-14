@@ -21,16 +21,16 @@ export namespace GuelderEngine::Vulkan::Buffers
             const QueueFamilyIndices& queueFamilyIndices,
             const vk::CommandPool& transferPool,
             const vk::Queue& transferQueue,
-            const Vertices& mesh
+            const Vertices2D& mesh
         );
 
         void Reset() noexcept override;
 
         void Bind(const vk::CommandBuffer& cmdBuffer, const vk::DeviceSize& offset) const;
 
-        Types::uint GetVerticesCount() const noexcept;
-
+        uint GetVerticesCount() const noexcept;
+            
     private:
-        Types::uint m_VerticesCount;
+        uint m_VerticesCount;
     };
 }

@@ -29,9 +29,9 @@ export namespace GuelderEngine::Vulkan
         void Reset() noexcept override;
         void Cleanup(const vk::Instance& instance) const noexcept;
 
-        //void Render(Types::uint width, Types::uint height, const Scene& scene);
+        //void Render(uint width, uint height, const Scene& scene);
 
-        static Types::uint FindMemType(const vk::PhysicalDevice& physicalDevice, const Types::uint& typeFilter, const vk::MemoryPropertyFlags& properties);
+        static uint FindMemType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties);
 
         const vk::Device& GetDevice() const noexcept;
         const vk::PhysicalDevice& GetPhysicalDevice() const noexcept;

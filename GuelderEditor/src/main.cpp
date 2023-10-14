@@ -16,6 +16,7 @@
 #endif // ENABLE_MEMORY_LEAKS_CHECKING
 
 #include <GuelderEngine/GuelderEngine.hpp>
+#include <glm/gtc/constants.hpp>
 
 import <memory>;
 
@@ -26,9 +27,9 @@ int main(int argc, char** argv)
 {
     try
     {//TODO: clean all GClass
-        const auto app = std::make_unique<GEApplication>(argv[0]);
+        const auto app = std::make_unique<GuelderEngine::GEApplication>(argv[0]);
 
-        const Vulkan::Mesh cube = 
+        const Vulkan::Mesh2D cube = 
         {
             {
                {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -40,7 +41,7 @@ int main(int argc, char** argv)
             {0, 1, 2, 2, 3, 0}
         };
 
-        const Vulkan::Mesh triangle =
+        const Vulkan::Mesh2D triangle =
         {
             {
                {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -51,7 +52,24 @@ int main(int argc, char** argv)
             {0, 1, 2}
         };
 
-        app->SetMesh(cube);
+        class MyActor : public Object2D
+        {
+        public:
+            MyActor() = default;
+            MyActor(const Object2DCreateInfo& info)
+                : Object2D(info) {}
+
+            void Update() override
+            {
+                transform.rotation = glm::mod(transform.rotation + .01f, glm::two_pi<float>());
+            }
+        };
+
+        //TODO: think about pointer system, especially about && in MakeActor func and also find out about MATH
+
+        //app->SetMesh(cube);
+        app->SpawnRenderActor(MakeActor(MyActor{ Object2DCreateInfo{ {{},{.8f, .5f},{},.25f * glm::two_pi<float>()}, triangle} }));
+        //app->SpawnRenderActor(triangle);
 
         app->Run();
     }

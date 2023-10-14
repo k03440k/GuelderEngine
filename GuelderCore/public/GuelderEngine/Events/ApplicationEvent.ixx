@@ -13,11 +13,11 @@ export namespace GuelderEngine
     {
         struct WindowResizeEvent : public BaseEvent
         {
-            WindowResizeEvent(const Types::ushort& newWidth, const Types::ushort& newHeight) :
+            WindowResizeEvent(const ushort& newWidth, const ushort& newHeight) :
                 width(newWidth), height(newHeight) {}
 
-            Types::ushort width;
-            Types::ushort height;
+            ushort width;
+            ushort height;
 
             EVENT_STRUCT_TYPE(WindowResize)
             std::string ToString() const override

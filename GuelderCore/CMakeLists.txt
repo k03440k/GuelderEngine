@@ -27,7 +27,6 @@ set(CORE_PRIVATE_HEADERS
 set(CORE_PUBLIC_HEADERS
 	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.hpp
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.hpp
-	${CORE_PUBLIC_MODULES_PATH}Vulkan/Mesh.ixx
 )
 set(CORE_PRIVATE_SOURCES
 	#${CORE_PRIVATE_SOURCES_PATH}GObject/GClass.cpp
@@ -38,6 +37,11 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Core/Application.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Core/Window.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Layers/LayerStack.cpp
+	
+	${CORE_PRIVATE_SOURCES_PATH}Objects/World.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Objects/ObjectBase.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Objects/Object2D.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Objects/Actor.cpp
 	
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Manager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/DebugManager.cpp
@@ -59,7 +63,7 @@ set(CORE_PRIVATE_SOURCES
 set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Core/Window.ixx
 	
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Vulkan.ixx
+	#${CORE_PRIVATE_MODULES_PATH}Vulkan/Vulkan.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Manager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/DebugManager.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/DeviceManager.ixx
@@ -80,11 +84,17 @@ set(CORE_PRIVATE_MODULES
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx
 	
+	${CORE_PUBLIC_MODULES_PATH}Vulkan/Mesh.ixx
+	${CORE_PUBLIC_MODULES_PATH}Vulkan/Vulkan.ixx
+	
 	${CORE_PUBLIC_MODULES_PATH}Core/Core.ixx
 	${CORE_PUBLIC_MODULES_PATH}Core/Application.ixx
 	
-	${CORE_PUBLIC_MODULES_PATH}Objects/GObjectBase.ixx
+	${CORE_PUBLIC_MODULES_PATH}Objects/Game.ixx
+	${CORE_PUBLIC_MODULES_PATH}Objects/World.ixx
+	${CORE_PUBLIC_MODULES_PATH}Objects/ObjectBase.ixx
 	${CORE_PUBLIC_MODULES_PATH}Objects/Object2D.ixx
+	${CORE_PUBLIC_MODULES_PATH}Objects/Actor.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Core/Types.ixx
 	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.ixx
@@ -101,9 +111,9 @@ set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}Layers/LayerStack.ixx
 )
 set(CORE_MODULES_SOURCE
+	${CORE_PUBLIC_MODULES}
 	${CORE_PRIVATE_MODULES}
 	${CORE_PRIVATE_SOURCES}
-	${CORE_PUBLIC_MODULES}
 )
 set(CORE_SOURCE
 	${CORE_MODULES_SOURCE}
@@ -119,10 +129,11 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES
 	${CORE_SOURCE}
 )
 target_sources(${ECN}
-        PRIVATE
-			FILE_SET module_files_public TYPE CXX_MODULES
-			FILES
-			${CORE_PUBLIC_MODULES}
+        PUBLIC
+		FILE_SET module_files_public TYPE CXX_MODULES
+		FILES
+		
+		${CORE_PUBLIC_MODULES}
 )
 target_sources(
         ${ECN}
@@ -135,7 +146,7 @@ target_sources(
 )
 
 target_include_directories(${ECN} PUBLIC public)
-target_include_directories(${ECN} PRIVATE src)
+target_include_directories(${ECN} PRIVATE private)
 
 #include external libs
 

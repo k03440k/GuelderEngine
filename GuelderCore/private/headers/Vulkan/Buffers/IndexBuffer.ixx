@@ -28,8 +28,8 @@ export namespace GuelderEngine::Vulkan::Buffers
 
         void Bind(const vk::CommandBuffer& cmdBuffer, const vk::DeviceSize& offset) const;
 
-        Types::uint GetIndicesCount() const noexcept;
+        uint GetIndicesCount() const noexcept;
     private:
-        Types::uint m_IndicesCount;
+        uint m_IndicesCount;
     };
 }

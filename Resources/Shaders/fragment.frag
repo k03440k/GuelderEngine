@@ -5,7 +5,8 @@ layout(location = 0) out vec4 fragColor;
 
 layout(push_constant) uniform Push
 {
-	vec2 pos;
+	mat2 transform;
+	vec2 offset;
 	vec3 color;
 } push;
 

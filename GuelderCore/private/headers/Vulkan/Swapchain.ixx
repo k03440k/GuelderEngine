@@ -27,10 +27,10 @@ export namespace GuelderEngine::Vulkan
         DECLARE_DCAD_AND_CAM(Swapchain);
 
         Swapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-            const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices);
+            const vk::Extent2D& extent, const vk::CommandPool& commandPool, const QueueFamilyIndices& queueFamilyIndices);
 
         void Reset() noexcept override;
-        void Cleanup(const vk::Device& device) const noexcept;
+        void Cleanup(const vk::Device& device, const vk::CommandPool& commandPool) const noexcept;
 
         void MakeFrames(const vk::Device& device, const vk::RenderPass& renderPass);
         
@@ -38,19 +38,19 @@ export namespace GuelderEngine::Vulkan
          *@brief Optimized recreation
         */
         void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
-            const QueueFamilyIndices& queueFamilyIndices);
+            const vk::CommandPool& commandPool, const QueueFamilyIndices& queueFamilyIndices);
 
         const CommandPool& GetCommandPool() const noexcept;
         const CommandPool& GetCommandPoolTransfer() const noexcept;
 
-        Types::uint IncrementCurrentFrame() noexcept;
+        uint IncrementCurrentFrame() noexcept;
 
         const std::vector<SwapchainFrame>& GetFrames() const noexcept;
         const vk::SwapchainKHR& GetSwapchain() const noexcept;
         const vk::Format& GetFormat() const noexcept;
         const vk::Extent2D& GetExtent2D() const noexcept;
-        Types::uint GetCurrentFrameNumber() const noexcept;
-        Types::uint GetMaxFramesInFlight() const noexcept;
+        uint GetCurrentFrameNumber() const noexcept;
+        uint GetMaxFramesInFlight() const noexcept;
 
     private:
         static vk::SurfaceFormatKHR ChooseSwapchainSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats);
@@ -63,18 +63,16 @@ export namespace GuelderEngine::Vulkan
         /**
          *@brief For ctor
         */
-        void CreateFrames(const vk::Device& device, const vk::Format& format, const std::vector<vk::Image>& images);
+        void CreateFrames(const vk::Device& device, const vk::Format& format, const vk::CommandPool& commandPool, const std::vector<vk::Image>& images);
 
         ShaderManager m_ShaderManager;
         SwapchainSupportDetails m_Details;
-        CommandPool m_CommandPool;
-        CommandPool m_CommandPoolTransfer;
 
         //if the swapchain was created
         bool m_IsSwapchain : 1;
 
-        Types::uint m_MaxFramesInFlight;
-        Types::uint m_CurrentFrameNumber;
+        uint m_MaxFramesInFlight;
+        uint m_CurrentFrameNumber;
 
         vk::SwapchainKHR m_Swapchain;
         std::vector<SwapchainFrame> m_Frames;

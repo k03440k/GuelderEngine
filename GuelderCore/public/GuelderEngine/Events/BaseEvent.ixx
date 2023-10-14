@@ -60,17 +60,17 @@ export namespace GuelderEngine
                 {
                     if (e.GetType() == EventType::type) func(static_cast<EventType&>(e));
                 };
-                m_EventCallbacks[static_cast<Types::ushort>(EventType::type)] = std::move(baseCallback);
+                m_EventCallbacks[static_cast<ushort>(EventType::type)] = std::move(baseCallback);
             }
 
             void Dispatch(BaseEvent& event) const
             {
-                if (auto& callback = m_EventCallbacks[static_cast<Types::ushort>(event.GetType())])
+                if (auto& callback = m_EventCallbacks[static_cast<ushort>(event.GetType())])
                     callback(event);
             }
 
         private:
-            std::array <std::function<void(BaseEvent&)>, static_cast<Types::ushort>(EventType::EventsCount)> m_EventCallbacks;
+            std::array <std::function<void(BaseEvent&)>, static_cast<ushort>(EventType::EventsCount)> m_EventCallbacks;
         };
         inline std::ostream& operator<<(std::ostream& os, const BaseEvent& e)//idk why inline
         {

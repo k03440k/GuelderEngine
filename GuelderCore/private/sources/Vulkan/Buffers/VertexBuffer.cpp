@@ -19,7 +19,7 @@ namespace GuelderEngine::Vulkan::Buffers
         const QueueFamilyIndices& queueFamilyIndices,
         const vk::CommandPool& transferPool,
         const vk::Queue& transferQueue,
-        const Vertices& mesh
+        const Vertices2D& mesh
     )
         : m_VerticesCount(mesh.size())
     {
@@ -33,7 +33,7 @@ namespace GuelderEngine::Vulkan::Buffers
 
             if(queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetTransferFamily())
             {
-                const Types::uint uniqueIndices[] = { queueFamilyIndices.GetGraphicsFamily(), queueFamilyIndices.GetTransferFamily() };
+                const uint uniqueIndices[] = { queueFamilyIndices.GetGraphicsFamily(), queueFamilyIndices.GetTransferFamily() };
                 info.queueFamilyIndexCount = 2;
                 info.pQueueFamilyIndices = uniqueIndices;
                 info.sharingMode = vk::SharingMode::eConcurrent;
@@ -57,7 +57,7 @@ namespace GuelderEngine::Vulkan::Buffers
             m_BufferMemory = device.allocateMemory(allocInfo);
             device.bindBufferMemory(m_Buffer, m_BufferMemory, 0);
 
-            const auto stagingBuffer = Buffers::StagingBuffer<Vertex>(device, physicalDevice, queueFamilyIndices, mesh);
+            const auto stagingBuffer = Buffers::StagingBuffer<Vertex2D>(device, physicalDevice, queueFamilyIndices, mesh);
             CopyBuffer(stagingBuffer.GetBuffer(), m_Buffer, m_Size, device, transferPool, transferQueue);
             stagingBuffer.Cleanup(device);
 
@@ -116,5 +116,5 @@ namespace GuelderEngine::Vulkan::Buffers
     {
         cmdBuffer.bindVertexBuffers(0, 1, &m_Buffer, &offset);
     }
-    Types::uint VertexBuffer::GetVerticesCount() const noexcept { return m_VerticesCount; }
+    uint VertexBuffer::GetVerticesCount() const noexcept { return m_VerticesCount; }
 }

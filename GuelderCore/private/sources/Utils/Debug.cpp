@@ -16,6 +16,7 @@ namespace GuelderEngine
 {
     namespace Debug
     {
+        std::mutex Logger::logMutex;
         HANDLE Logger::console = GetStdHandle(STD_OUTPUT_HANDLE);
         /*Logger::~Logger()
         {
@@ -23,7 +24,7 @@ namespace GuelderEngine
                 CloseHandle(console);
             }
         }*/
-        void Logger::Throw(const std::string_view& message, const char* const fileName, const Types::uint& line)
+        void Logger::Throw(const std::string_view& message, const char* const fileName, const uint& line)
         {
             throw(std::runtime_error(Format( message, '\n', "file: ", fileName, ", line: ", line)));
         }
@@ -31,7 +32,7 @@ namespace GuelderEngine
         {
             throw(std::runtime_error(message.data()/*Format(ERROR_FONT, message, DEFAULT_FONT)*/));
         }
-        void Logger::Assert(const bool& condition, const std::string& message, const char* const file, const Types::uint& line)
+        void Logger::Assert(const bool& condition, const std::string& message, const char* const file, const uint& line)
         {
             if (!condition)
             {

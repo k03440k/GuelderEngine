@@ -20,12 +20,12 @@ export namespace GuelderEngine::Vulkan
 
         bool IsComplete() const noexcept;
 
-        Types::uint GetGraphicsFamily() const noexcept;
-        Types::uint GetPresentFamily() const noexcept;
-        Types::uint GetTransferFamily() const noexcept;
+        uint GetGraphicsFamily() const noexcept;
+        uint GetPresentFamily() const noexcept;
+        uint GetTransferFamily() const noexcept;
     private:
-        std::optional<Types::uint> graphicsFamily;
-        std::optional<Types::uint> presentFamily;
-        std::optional<Types::uint> transferFamily;
+        std::optional<uint> graphicsFamily;
+        std::optional<uint> presentFamily;
+        std::optional<uint> transferFamily;
     };
 }

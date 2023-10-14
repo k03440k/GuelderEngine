@@ -14,8 +14,8 @@ import <thread>;
 
 namespace GuelderEngine
 {
-    Window::WindowData::WindowData(const Types::ushort& width,
-        const Types::ushort& height, const std::string& title, const bool& showFrameRate,
+    Window::WindowData::WindowData(const ushort& width,
+        const ushort& height, const std::string& title, const bool& showFrameRate,
         const EventCallbackFunc& callback) : title(title), width(width), height(height),
         callback(callback), showFrameRate(showFrameRate) {}
     Window::WindowData& Window::WindowData::operator=(const WindowData& other)
@@ -61,7 +61,7 @@ namespace GuelderEngine
     {
         return m_FrameRate;
     }
-    void Window::WindowData::SetSize(const Types::uint& width, const Types::uint& height) noexcept
+    void Window::WindowData::SetSize(const uint& width, const uint& height) noexcept
     {
         this->width = width;
         this->height = height;
@@ -80,7 +80,7 @@ namespace GuelderEngine
             GE_THROW("GLFW error(", errorCode, "), description: ", description);
         }
     }
-    Window::Window(const Types::ushort& windowWidth, const Types::ushort& windowHeight,
+    Window::Window(const ushort& windowWidth, const ushort& windowHeight,
         const std::string& windowTitle) :
         m_Data(windowWidth, windowHeight, windowTitle)
     {
@@ -293,7 +293,7 @@ namespace GuelderEngine
         return m_GLFWWindow;
     }
     void Window::SetCallback(const EventCallbackFunc& callback) noexcept { m_Data.callback = callback; }
-    void Window::SetWindow(const Types::ushort& windowWidth, const Types::ushort& windowHeight, const std::string& windowTitle)
+    void Window::SetWindow(const ushort& windowWidth, const ushort& windowHeight, const std::string& windowTitle)
     {
         m_Data = Window::WindowData(windowWidth, windowHeight, windowTitle);
 
@@ -301,7 +301,7 @@ namespace GuelderEngine
 
         Init();
     }
-    void Window::SetWindowSize(const Types::ushort& width, const Types::ushort& height)
+    void Window::SetWindowSize(const ushort& width, const ushort& height)
     {
         m_Data.width = width;
         m_Data.height = height;

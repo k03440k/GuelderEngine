@@ -92,15 +92,15 @@ namespace GuelderEngine::Vulkan
         m_Device.destroy();
         instance.destroySurfaceKHR(m_Surface);
     }
-    /*void DeviceManager::Render(Types::uint width, Types::uint height, const Scene& scene)
+    /*void DeviceManager::Render(uint width, uint height, const Scene& scene)
     {
         m_Pipeline.Render(m_Device, m_PhysicalDevice, m_Surface, {width, height}, m_QueueIndices, scene);
     }*/
-    Types::uint DeviceManager::FindMemType(const vk::PhysicalDevice& physicalDevice, const Types::uint& typeFilter, const vk::MemoryPropertyFlags& properties)
+    uint DeviceManager::FindMemType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties)
     {
         const auto memProperties = physicalDevice.getMemoryProperties();
 
-        for (Types::uint i = 0; i < memProperties.memoryTypeCount; ++i)
+        for (uint i = 0; i < memProperties.memoryTypeCount; ++i)
         {
             if(typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
                 return i;
@@ -175,9 +175,9 @@ namespace GuelderEngine::Vulkan
 
         //device choosing
         double theBiggestDeviceMemorySize{};
-        Types::uint idxToDeviceOftheBiggestMemory{};
+        uint idxToDeviceOftheBiggestMemory{};
         //takes the most powerful device
-        for (Types::uint i = 0; i < physicalDevices.size(); i++)
+        for (uint i = 0; i < physicalDevices.size(); i++)
         {
             const vk::PhysicalDeviceMemoryProperties& memoryProperties = physicalDevices[i].getMemoryProperties();
 

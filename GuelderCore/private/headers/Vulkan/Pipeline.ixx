@@ -1,5 +1,6 @@
 module;
 #include <vulkan/vulkan.hpp>
+#include <glm/glm.hpp>
 #include "../../headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan:Pipeline;
 
@@ -17,7 +18,15 @@ import <vector>;
 export namespace GuelderEngine::Vulkan
 {
     struct QueueFamilyIndices;
-    class Scene;
+    //class Scene;
+
+    //TODO: add possibility to push custom constant data
+    struct SimplePushConstantData
+    {
+        glm::mat2 transform{1.0f};
+        glm::vec2 pos;
+        alignas(16) glm::vec3 color;
+    };
 
     class Pipeline : /*INHERIT_GClass(Pipeline),*/ public IVulkanObject
     {
@@ -36,19 +45,29 @@ export namespace GuelderEngine::Vulkan
         void Cleanup(const vk::Device& device) const noexcept;
 
         void Render(
-            const vk::Device& device, 
+            const vk::Device& device,
             const vk::PhysicalDevice& physicalDevice,
             const vk::SurfaceKHR& surface,
             const vk::Extent2D& extent,
             bool& wasWindowResized,
-            const QueueFamilyIndices& queueFamilyIndices
+            const QueueFamilyIndices& queueFamilyIndices,
+            const Vulkan::Buffers::VertexBuffer& vertexBuffers,
+            const Vulkan::Buffers::IndexBuffer& indexBuffer,
+            const SimplePushConstantData& push
         );
 
         /**
          * @brief Must be called before Render method
          */
-        void SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh& mesh);
+        //void SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh2D& mesh);
         void SetShaderInfo(const vk::Device& device, const ShaderInfo& shaderInfo);
+
+        const vk::CommandPool& GetCommandPool() const noexcept;
+        const vk::CommandPool& GetCommandPoolTransfer() const noexcept;
+
+        const vk::Queue& GetGraphicsQueue() const noexcept;
+        const vk::Queue& GetPresetQueue() const noexcept;
+        const vk::Queue& GetTransferQueue() const noexcept;
     private:
         static vk::PipelineLayout CreateLayout(const vk::Device& device);
         static vk::RenderPass CreateRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat);
@@ -62,13 +81,17 @@ export namespace GuelderEngine::Vulkan
         void Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
             const QueueFamilyIndices& queueFamilyIndices);
 
-        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const Types::uint& imageIndex) const;
+        void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const uint& imageIndex, const Buffers::VertexBuffer& vertexBuffers,
+            const Buffers::IndexBuffer& indexBuffers, const SimplePushConstantData& push) const;
 
         ShaderManager m_ShaderManager;
         Swapchain m_Swapchain;
 
-        Buffers::VertexBuffer m_VBuffer;
-        Buffers::IndexBuffer m_IBuffer;
+        CommandPool m_CommandPool;
+        CommandPool m_CommandPoolTransfer;
+
+        //Buffers::VertexBuffer m_VBuffer;
+        //Buffers::IndexBuffer m_IBuffer;
 
         vk::RenderPass m_RenderPass;
         vk::PipelineLayout m_Layout;

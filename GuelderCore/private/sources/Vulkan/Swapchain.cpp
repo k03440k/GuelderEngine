@@ -18,17 +18,14 @@ import <functional>;
 namespace GuelderEngine::Vulkan
 {
     Swapchain::Swapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-        const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices)
+        const vk::Extent2D& extent, const vk::CommandPool& commandPool, const QueueFamilyIndices& queueFamilyIndices)
     {
         m_IsSwapchain = false;
         Create(device, physicalDevice, surface, extent, queueFamilyIndices);
 
-        m_CommandPool = CommandPool(device, queueFamilyIndices, vk::QueueFlagBits::eGraphics);//TODO: move command pools to pipeline and finish buffers remaking
-        m_CommandPoolTransfer = CommandPool(device, queueFamilyIndices, vk::QueueFlagBits::eTransfer);
-
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
 
-        CreateFrames(device, m_Format, images);
+        CreateFrames(device, m_Format, commandPool, images);
 
         m_MaxFramesInFlight = m_Frames.size();
         m_CurrentFrameNumber = 0;
@@ -40,8 +37,6 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandPool = other.m_CommandPool;
-        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
@@ -53,8 +48,6 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
-        m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
@@ -71,8 +64,6 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandPool = other.m_CommandPool;
-        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
@@ -86,8 +77,6 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_Frames = other.m_Frames;
         m_Swapchain = other.m_Swapchain;
-        m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
-        m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
@@ -106,7 +95,7 @@ namespace GuelderEngine::Vulkan
         const auto present = ChooseSwapchainPresentMode(m_Details.presentModes);
         const auto chosenExtent = ChooseSwapchainExtent(extent, m_Details.capabilities);
 
-        const Types::uint imageCount = std::min(m_Details.capabilities.maxImageCount, m_Details.capabilities.minImageCount+1);
+        const uint imageCount = std::min(m_Details.capabilities.maxImageCount, m_Details.capabilities.minImageCount+1);
 
         //GE_LOG(VulkanCore, Info, "max images count: ", m_Details.capabilities.maxImageCount, "; min images count: ", m_Details.capabilities.minImageCount);
 
@@ -128,11 +117,11 @@ namespace GuelderEngine::Vulkan
         else
             createInfo.oldSwapchain = m_Swapchain;
 
-        std::vector<Types::uint> queueIndices(2);
+        std::vector<uint> queueIndices(2);
 
         if(queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetPresentFamily())
         {
-            //const Types::uint queueIndices[] = { queueFamilyIndices.graphicsFamily.value(), queueFamilyIndices.presentFamily.value(), queueFamilyIndices.transferFamily.value() };
+            //const uint queueIndices[] = { queueFamilyIndices.graphicsFamily.value(), queueFamilyIndices.presentFamily.value(), queueFamilyIndices.transferFamily.value() };
             queueIndices[0] = queueFamilyIndices.GetGraphicsFamily();
             queueIndices[1] = queueFamilyIndices.GetPresentFamily();
             createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
@@ -180,28 +169,24 @@ namespace GuelderEngine::Vulkan
             frame.Reset();
 
         m_Frames.clear();
-        m_CommandPool.Reset();
-        m_CommandPoolTransfer.Reset();
         m_MaxFramesInFlight = 0;
         m_CurrentFrameNumber = 0;
     }
-    void Swapchain::Cleanup(const vk::Device& device) const noexcept
+    void Swapchain::Cleanup(const vk::Device& device, const vk::CommandPool& commandPool) const noexcept
     {
         for(auto&& frame : m_Frames)
-            frame.Cleanup(device, m_CommandPool.GetCommandPool());
-
-        m_CommandPool.Cleanup(device);
-        m_CommandPoolTransfer.Cleanup(device);
+            frame.Cleanup(device, commandPool);
+        
         device.destroySwapchainKHR(m_Swapchain);
     }
 
-    void Swapchain::CreateFrames(const vk::Device& device, const vk::Format& format, const std::vector<vk::Image>& images)
+    void Swapchain::CreateFrames(const vk::Device& device, const vk::Format& format, const vk::CommandPool& commandPool, const std::vector<vk::Image>& images)
     {
         m_Frames.resize(images.size());
 
         //GE_LOG(VulkanCore, Info, "images count: ", images.size());
 
-        for(Types::uint i = 0; i < images.size(); ++i)
+        for(uint i = 0; i < images.size(); ++i)
         {
             //store images
             vk::ImageViewCreateInfo imageViewInfo{};
@@ -218,7 +203,7 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.subresourceRange.layerCount = 1;
             imageViewInfo.format = format;
 
-            m_Frames[i] = Vulkan::SwapchainFrame(device, imageViewInfo, m_CommandPool.GetCommandPool());
+            m_Frames[i] = Vulkan::SwapchainFrame(device, imageViewInfo, commandPool);
         }
     }
     void Swapchain::MakeFrames(const vk::Device& device, const vk::RenderPass& renderPass)
@@ -279,13 +264,13 @@ namespace GuelderEngine::Vulkan
     }
 
     void Swapchain::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent,
-        const QueueFamilyIndices& queueFamilyIndices)
+        const vk::CommandPool& commandPool, const QueueFamilyIndices& queueFamilyIndices)
     {
         Create(device, physicalDevice, surface, extent, queueFamilyIndices);
 
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
 
-        for(Types::uint i = 0; i < images.size(); i++)
+        for(uint i = 0; i < images.size(); i++)
         {
             vk::ImageViewCreateInfo imageViewInfo{};
             imageViewInfo.image = images[i];
@@ -302,21 +287,13 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.format = m_Format;
 
             m_Frames[i].Recreate(device, renderPass,
-                extent, imageViewInfo, m_CommandPool.GetCommandPool());
+                extent, imageViewInfo, commandPool);
         }
     }
 }
 namespace GuelderEngine::Vulkan
 {
-    const CommandPool& Swapchain::GetCommandPool() const noexcept
-    {
-        return m_CommandPool;
-    }
-    const CommandPool& Swapchain::GetCommandPoolTransfer() const noexcept
-    {
-        return m_CommandPoolTransfer;
-    }
-    Types::uint Swapchain::IncrementCurrentFrame() noexcept
+    uint Swapchain::IncrementCurrentFrame() noexcept
     {
         m_CurrentFrameNumber = (m_CurrentFrameNumber + 1) % m_MaxFramesInFlight;
         return m_CurrentFrameNumber;
@@ -337,11 +314,11 @@ namespace GuelderEngine::Vulkan
     {
         return m_Extent;
     }
-    Types::uint Swapchain::GetCurrentFrameNumber() const noexcept
+    uint Swapchain::GetCurrentFrameNumber() const noexcept
     {
         return m_CurrentFrameNumber;
     }
-    Types::uint Swapchain::GetMaxFramesInFlight() const noexcept
+    uint Swapchain::GetMaxFramesInFlight() const noexcept
     {
         return m_MaxFramesInFlight;
     }
