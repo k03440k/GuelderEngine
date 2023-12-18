@@ -31,6 +31,9 @@ set(CORE_PUBLIC_HEADERS
 set(CORE_PRIVATE_SOURCES
 	#${CORE_PRIVATE_SOURCES_PATH}GObject/GClass.cpp
 
+	${CORE_PRIVATE_SOURCES_PATH}Renderer/Renderer.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Renderer/RenderSystem.cpp
+	
 	${CORE_PRIVATE_SOURCES_PATH}Utils/Debug.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Utils/ResourceManager.cpp
 	
@@ -83,6 +86,9 @@ set(CORE_PRIVATE_MODULES
 )
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx
+	
+	${CORE_PUBLIC_MODULES_PATH}Renderer/Renderer.ixx
+	${CORE_PUBLIC_MODULES_PATH}Renderer/RenderSystem.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Vulkan/Mesh.ixx
 	${CORE_PUBLIC_MODULES_PATH}Vulkan/Vulkan.ixx

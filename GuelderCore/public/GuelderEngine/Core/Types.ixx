@@ -5,6 +5,7 @@ export module GuelderEngine.Core.Types;
 //export import :GClass;
 
 import <vector>;
+import <memory>;
 
 export namespace GuelderEngine
 {
@@ -16,4 +17,8 @@ export namespace GuelderEngine
 
     using Vector2 = glm::vec2;
     using Vector3 = glm::vec3;
+
+    //uses a std::shared_ptr<T>
+    template<class T>
+    using SharedPtr = std::shared_ptr<T>;
 }

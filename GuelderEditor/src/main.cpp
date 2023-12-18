@@ -26,8 +26,8 @@ DEFINE_LOG_CATEGORY(Editor);
 int main(int argc, char** argv)
 {
     try
-    {//TODO: clean all GClass
-        const auto app = std::make_unique<GuelderEngine::GEApplication>(argv[0]);
+    {
+        const auto app = std::make_unique<GEApplication>(argv[0]);
 
         const Vulkan::Mesh2D cube = 
         {
@@ -61,14 +61,14 @@ int main(int argc, char** argv)
 
             void Update() override
             {
-                transform.rotation = glm::mod(transform.rotation + .01f, glm::two_pi<float>());
+                transform.rotation = glm::mod(transform.rotation + .001f, glm::two_pi<float>());
             }
         };
 
         //TODO: think about pointer system, especially about && in MakeActor func and also find out about MATH
 
         //app->SetMesh(cube);
-        app->SpawnRenderActor(MakeActor(MyActor{ Object2DCreateInfo{ {{},{.8f, .5f},{},.25f * glm::two_pi<float>()}, triangle} }));
+        app->SpawnRenderActor(MakeActor(MyActor{ Object2DCreateInfo{ {{},{.8f, .5f},{},.25f * glm::two_pi<float>()}, cube} }));
         //app->SpawnRenderActor(triangle);
 
         app->Run();

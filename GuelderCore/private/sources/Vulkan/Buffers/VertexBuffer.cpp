@@ -57,7 +57,7 @@ namespace GuelderEngine::Vulkan::Buffers
             m_BufferMemory = device.allocateMemory(allocInfo);
             device.bindBufferMemory(m_Buffer, m_BufferMemory, 0);
 
-            const auto stagingBuffer = Buffers::StagingBuffer<Vertex2D>(device, physicalDevice, queueFamilyIndices, mesh);
+            const auto stagingBuffer = StagingBuffer(device, physicalDevice, queueFamilyIndices, mesh);
             CopyBuffer(stagingBuffer.GetBuffer(), m_Buffer, m_Size, device, transferPool, transferQueue);
             stagingBuffer.Cleanup(device);
 

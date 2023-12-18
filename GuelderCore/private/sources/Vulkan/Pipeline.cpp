@@ -24,89 +24,44 @@ import <vector>;
 //ctors
 namespace GuelderEngine::Vulkan
 {
-    Pipeline::Pipeline(
-        const vk::Device& device,
-        const vk::PhysicalDevice& physicalDevice,
-        const vk::SurfaceKHR& surface,
-        const vk::Extent2D& extent,
-        const QueueFamilyIndices& queueFamilyIndices,
-        const ShaderInfo& shaderInfo
-    )
+    Pipeline::Pipeline(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo)
     {
-        m_Queues.graphics = GetGraphicsQueue(device, queueFamilyIndices);
-        m_Queues.present = GetPresentQueue(device, queueFamilyIndices);
-        m_Queues.transfer = GetTransferQueue(device, queueFamilyIndices);
-
-        m_CommandPool = CommandPool(device, queueFamilyIndices, vk::QueueFlagBits::eGraphics);//TODO: move command pools to pipeline and finish buffers remaking
-        m_CommandPoolTransfer = CommandPool(device, queueFamilyIndices, vk::QueueFlagBits::eTransfer);
-
-        m_Swapchain = Swapchain(device, physicalDevice, surface, extent, m_CommandPool.GetCommandPool(), queueFamilyIndices);
-
         m_ShaderManager = ShaderManager(shaderInfo);
 
-        Create(device, shaderInfo);
-        m_Swapchain.MakeFrames(device, m_RenderPass);
+        Create(device, renderPass, shaderInfo);
 
         //SetMesh(device, physicalDevice, queueFamilyIndices, {});
     }
-    Pipeline::Pipeline(const Pipeline& other)
+    /*Pipeline::Pipeline(const Pipeline& other)
     {
-        m_Queues.graphics = other.m_Queues.graphics;
-        m_Queues.present = other.m_Queues.present;
-        m_Queues.transfer = other.m_Queues.transfer;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
-        m_RenderPass = other.m_RenderPass;
-        m_Swapchain = other.m_Swapchain;
         m_ShaderManager = other.m_ShaderManager;
-        m_CommandPool = other.m_CommandPool;
-        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
-    }
+    }*/
     Pipeline::Pipeline(Pipeline&& other) noexcept
     {
-        m_Queues.graphics = other.m_Queues.graphics;
-        m_Queues.present = other.m_Queues.present;
-        m_Queues.transfer = other.m_Queues.transfer;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
-        m_RenderPass = other.m_RenderPass;
-        m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_ShaderManager = std::forward<ShaderManager>(other.m_ShaderManager);
-        m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
-        m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
 
         other.Reset();
     }
-    Pipeline& Pipeline::operator=(const Pipeline& other)
+    /*Pipeline& Pipeline::operator=(const Pipeline& other)
     {
         if(this == &other)
             return *this;
-
-        m_Queues.graphics = other.m_Queues.graphics;
-        m_Queues.present = other.m_Queues.present;
-        m_Queues.transfer = other.m_Queues.transfer;
+        
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
-        m_RenderPass = other.m_RenderPass;
-        m_Swapchain = other.m_Swapchain;
         m_ShaderManager = other.m_ShaderManager;
-        m_CommandPool = other.m_CommandPool;
-        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
 
         return *this;
-    }
+    }*/
     Pipeline& Pipeline::operator=(Pipeline&& other) noexcept
     {
-        m_Queues.graphics = other.m_Queues.graphics;
-        m_Queues.present = other.m_Queues.present;
-        m_Queues.transfer = other.m_Queues.transfer;
         m_GraphicsPipeline = other.m_GraphicsPipeline;
         m_Layout = other.m_Layout;
-        m_RenderPass = other.m_RenderPass;
-        m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_ShaderManager = std::forward<ShaderManager>(other.m_ShaderManager);
-        m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
-        m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
 
         other.Reset();
 
@@ -115,7 +70,7 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    void Pipeline::Create(const vk::Device& device, const ShaderInfo& shaderInfo)
+    void Pipeline::Create(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo)
     {
         const auto bindingDescription = Vertex2D::GetBindingDescription();
         const auto attributeDescriptions = Vertex2D::GetAttributeDescriptions(shaderInfo.info);
@@ -187,7 +142,6 @@ namespace GuelderEngine::Vulkan
         );
 
         m_Layout = CreateLayout(device);
-        m_RenderPass = CreateRenderPass(device, m_Swapchain.GetFormat());
 
         const std::vector<vk::DynamicState> dynamicStateEnables{vk::DynamicState::eViewport, vk::DynamicState::eScissor};
         vk::PipelineDynamicStateCreateInfo dynamicStateInfo{};
@@ -208,7 +162,7 @@ namespace GuelderEngine::Vulkan
             &colorBlendInfo,
             &dynamicStateInfo,
             m_Layout,
-            m_RenderPass,
+            renderPass,
             0,
             nullptr
         );
@@ -220,23 +174,12 @@ namespace GuelderEngine::Vulkan
     }
     void Pipeline::Reset() noexcept
     {
-        m_Queues.graphics = nullptr;
-        m_Queues.present = nullptr;
-        m_Queues.transfer = nullptr;
         m_GraphicsPipeline = nullptr;
         m_Layout = nullptr;
-        m_RenderPass = nullptr;
-        m_Swapchain.Reset();
-        m_CommandPool.Reset();
-        m_CommandPoolTransfer.Reset();
     }
     void Pipeline::Cleanup(const vk::Device& device) const noexcept
     {
-        m_Swapchain.Cleanup(device, m_CommandPool.GetCommandPool());
-        m_CommandPool.Cleanup(device);
-        m_CommandPoolTransfer.Cleanup(device);
         device.destroyPipelineLayout(m_Layout);
-        device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
     }
 
@@ -261,240 +204,181 @@ namespace GuelderEngine::Vulkan
         );
         return device.createPipelineLayout(layoutInfo);
     }
-    vk::RenderPass Pipeline::CreateRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat)
-    {
-        const vk::AttachmentDescription colorAttachment(
-            vk::AttachmentDescriptionFlags(),
-            swapchainImageFormat,
-            vk::SampleCountFlagBits::e1,
-            vk::AttachmentLoadOp::eClear,
-            vk::AttachmentStoreOp::eStore,
-            vk::AttachmentLoadOp::eDontCare,
-            vk::AttachmentStoreOp::eDontCare,
-            vk::ImageLayout::eUndefined,
-            vk::ImageLayout::ePresentSrcKHR
-        );
 
-        const vk::AttachmentReference colorAttachmentRef(0, vk::ImageLayout::eColorAttachmentOptimal);
-        const vk::SubpassDescription subpassDescription(
-            vk::SubpassDescriptionFlags(),
-            vk::PipelineBindPoint::eGraphics,
-            0,
-            nullptr,
-            1,
-            &colorAttachmentRef
-        );
-        const vk::RenderPassCreateInfo info(
-            vk::RenderPassCreateFlags(),
-            1,
-            &colorAttachment,
-            1,
-            &subpassDescription
-        );
+    //void Pipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const vk::RenderPass& renderPass, const uint& imageIndex, const Buffers::VertexBuffer& vertexBuffer,
+    //    const Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push) const
+    //{
+    //    const vk::CommandBufferBeginInfo commandBufferBeginInfo{};
 
-        return device.createRenderPass(info);
-    }
+    //    commandBuffer.begin(commandBufferBeginInfo);
 
-    void Pipeline::RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const uint& imageIndex, const Buffers::VertexBuffer& vertexBuffer,
-        const Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push) const
-    {
-        const vk::CommandBufferBeginInfo commandBufferBeginInfo{};
+    //    const float blueValue = (sin(glfwGetTime()) / 2.0f) + 0.5f;
 
-        commandBuffer.begin(commandBufferBeginInfo);
+    //    const vk::ClearValue clearValue{{ 0.25f, 0.25f, blueValue, 1.0f }};
+    //    const vk::RenderPassBeginInfo renderPassBeginInfo(
+    //        m_RenderPass,
+    //        m_Swapchain.GetFrames()[imageIndex].framebuffer,
+    //        vk::Rect2D({ 0, 0 }, m_Swapchain.GetExtent2D()),
+    //        1,
+    //        &clearValue
+    //    );
 
-        const float blueValue = (sin(glfwGetTime()) / 2.0f) + 0.5f;
+    //    commandBuffer.beginRenderPass(&renderPassBeginInfo, vk::SubpassContents::eInline);
+    //    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_GraphicsPipeline);
 
-        const vk::ClearValue clearValue{{ 0.25f, 0.25f, blueValue, 1.0f }};
-        const vk::RenderPassBeginInfo renderPassBeginInfo(
-            m_RenderPass,
-            m_Swapchain.GetFrames()[imageIndex].framebuffer,
-            vk::Rect2D({ 0, 0 }, m_Swapchain.GetExtent2D()),
-            1,
-            &clearValue
-        );
+    //    const vk::Viewport viewport{
+    //        0.0f,
+    //            0.0f,
+    //            static_cast<float>(m_Swapchain.GetExtent2D().width),
+    //            static_cast<float>(m_Swapchain.GetExtent2D().height),
+    //            0.f,
+    //            1.0f
+    //    };
+    //    const vk::Rect2D scissors{{0, 0}, m_Swapchain.GetExtent2D()};
 
-        commandBuffer.beginRenderPass(&renderPassBeginInfo, vk::SubpassContents::eInline);
-        commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_GraphicsPipeline);
+    //    commandBuffer.setViewport(0, 1, &viewport);
+    //    commandBuffer.setScissor(0, 1, &scissors);
 
-        const vk::Viewport viewport{
-            0.0f,
-                0.0f,
-                static_cast<float>(m_Swapchain.GetExtent2D().width),
-                static_cast<float>(m_Swapchain.GetExtent2D().height),
-                0.f,
-                1.0f
-        };
-        const vk::Rect2D scissors{{0, 0}, m_Swapchain.GetExtent2D()};
+    //    //TODO: pass vbuffer and ibuffer with reference here. and delete m_VBuffer and m_IBuffer members
+    //    //add vulkanmanager method "make vertex buffer" and "make index buffer" store object buffer data inside GEApplication
+    //    vertexBuffer.Bind(commandBuffer, { 0 });
+    //    if(indexBuffer.GetIndicesCount())
+    //        indexBuffer.Bind(commandBuffer, { 0 });
+    //    //auto* vbs = new vk::Buffer[vertexBuffers.size()];
+    //    //auto* dos = new vk::DeviceSize[vertexBuffers.size()];
+    //    //for(size_t i = 0; i < vertexBuffers.size(); i++)
+    //    //{
+    //    //    vbs[i] = vertexBuffers[i].GetBuffer();
+    //    //    dos[i] = 0;
+    //    //}
+    //    //commandBuffer.bindVertexBuffers(0, vertexBuffers.size(), vbs, dos);
+    //    //commandBuffer.bindIndexBuffer(indexBuffers[0].GetBuffer(), {}, vk::IndexType::eUint32, {0});
+    //    //delete[] vbs;
+    //    //delete[] dos;
 
-        commandBuffer.setViewport(0, 1, &viewport);
-        commandBuffer.setScissor(0, 1, &scissors);
+    //    ////vertices count
+    //    //size_t verticesCount = 0;
+    //    //for(auto& vertex : vertexBuffers)
+    //    //    verticesCount += vertex.GetVerticesCount();
+    //    //size_t indiciesCount = 0;
+    //    //for(auto& indicies : indexBuffers)
+    //    //    indiciesCount += indicies.GetIndicesCount();
 
-        //TODO: pass vbuffer and ibuffer with reference here. and delete m_VBuffer and m_IBuffer members
-        //add vulkanmanager method "make vertex buffer" and "make index buffer" store object buffer data inside GEApplication
-        vertexBuffer.Bind(commandBuffer, { 0 });
-        if(indexBuffer.GetIndicesCount())
-            indexBuffer.Bind(commandBuffer, { 0 });
-        //auto* vbs = new vk::Buffer[vertexBuffers.size()];
-        //auto* dos = new vk::DeviceSize[vertexBuffers.size()];
-        //for(size_t i = 0; i < vertexBuffers.size(); i++)
-        //{
-        //    vbs[i] = vertexBuffers[i].GetBuffer();
-        //    dos[i] = 0;
-        //}
-        //commandBuffer.bindVertexBuffers(0, vertexBuffers.size(), vbs, dos);
-        //commandBuffer.bindIndexBuffer(indexBuffers[0].GetBuffer(), {}, vk::IndexType::eUint32, {0});
-        //delete[] vbs;
-        //delete[] dos;
+    //    commandBuffer.pushConstants(m_Layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(push), &push);
 
-        ////vertices count
-        //size_t verticesCount = 0;
-        //for(auto& vertex : vertexBuffers)
-        //    verticesCount += vertex.GetVerticesCount();
-        //size_t indiciesCount = 0;
-        //for(auto& indicies : indexBuffers)
-        //    indiciesCount += indicies.GetIndicesCount();
+    //    if(indexBuffer.GetIndicesCount())
+    //        commandBuffer.drawIndexed(indexBuffer.GetIndicesCount(), 1, 0, 0, 0);
+    //    else
+    //        commandBuffer.draw(vertexBuffer.GetVerticesCount(), 1, 0, 0);
 
-        commandBuffer.pushConstants(m_Layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(push), &push);
+    //    commandBuffer.endRenderPass();
+    //    commandBuffer.end();
+    //}
+    //void Pipeline::Render(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::RenderPass& renderPass, const vk::Extent2D& extent, bool& wasWindowResized,
+    //    const QueueFamilyIndices& queueFamilyIndices, const Vulkan::Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer, uint currentFrameNumber, const SimplePushConstantData& push)//TODO: remove vectors
+    //{
+    //    const auto& currentFrame = m_Swapchain.GetFrames()[m_Swapchain.GetCurrentFrameNumber()];
 
-        if(indexBuffer.GetIndicesCount())
-            commandBuffer.drawIndexed(indexBuffer.GetIndicesCount(), 1, 0, 0, 0);
-        else
-            commandBuffer.draw(vertexBuffer.GetVerticesCount(), 1, 0, 0);
+    //    //GE_CORE_CLASS_ASSERT(info.device.waitForFences(1, &currentFrame.sync.GetFlightFence(), VK_TRUE, UINT64_MAX) == vk::Result::eSuccess, "cannot wait for fence");
+    //    currentFrame.WaitForImage(device);
 
-        commandBuffer.endRenderPass();
-        commandBuffer.end();
-    }
-    void Pipeline::Render(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent, bool& wasWindowResized,
-        const QueueFamilyIndices& queueFamilyIndices, const Vulkan::Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push)//TODO: remove vectors
-    {
-        const auto& currentFrame = m_Swapchain.GetFrames()[m_Swapchain.GetCurrentFrameNumber()];
+    //    uint imageIndex;
+    //    try
+    //    {
+    //        const auto result = device.acquireNextImageKHR(m_Swapchain.GetSwapchain(), UINT64_MAX, currentFrame.sync.GetImageAvailableSemaphore(), nullptr);
+    //        imageIndex = result.value;
+    //    }
+    //    catch(const vk::OutOfDateKHRError& error)
+    //    {
+    //        Recreate(device, physicalDevice, surface, extent, queueFamilyIndices);
+    //        return;
+    //    }
 
-        //GE_CORE_CLASS_ASSERT(info.device.waitForFences(1, &currentFrame.sync.GetFlightFence(), VK_TRUE, UINT64_MAX) == vk::Result::eSuccess, "cannot wait for fence");
-        currentFrame.WaitForImage(device);
+    //    //const uint imageIndex = acquire.value;
 
-        uint imageIndex;
-        try
-        {
-            const auto result = device.acquireNextImageKHR(m_Swapchain.GetSwapchain(), UINT64_MAX, currentFrame.sync.GetImageAvailableSemaphore(), nullptr);
-            imageIndex = result.value;
-        }
-        catch(const vk::OutOfDateKHRError& error)
-        {
-            Recreate(device, physicalDevice, surface, extent, queueFamilyIndices);
-            return;
-        }
+    //    const auto& commandBuffer = currentFrame.commandBuffer;
+    //    commandBuffer.reset();
 
-        //const uint imageIndex = acquire.value;
+    //    RecordDrawCommands(commandBuffer, renderPass, imageIndex, vertexBuffer, indexBuffer, push);
 
-        const auto& commandBuffer = currentFrame.commandBuffer;
-        commandBuffer.reset();
+    //    const vk::Semaphore waitSemaphores[] = { currentFrame.sync.GetImageAvailableSemaphore() };
+    //    const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+    //    const vk::Semaphore signalSemaphores[] = { currentFrame.sync.GetImageRenderFinishedSemaphore() };
 
-        RecordDrawCommands(commandBuffer, imageIndex, vertexBuffer, indexBuffer, push);
+    //    const vk::SubmitInfo submitInfo(
+    //        1,
+    //        waitSemaphores,
+    //        waitStages,
+    //        1,
+    //        &commandBuffer,
+    //        1,
+    //        signalSemaphores
+    //    );
+    //    currentFrame.ResetFence(device);
 
-        const vk::Semaphore waitSemaphores[] = { currentFrame.sync.GetImageAvailableSemaphore() };
-        const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-        const vk::Semaphore signalSemaphores[] = { currentFrame.sync.GetImageRenderFinishedSemaphore() };
+    //    //GE_CORE_CLASS_ASSERT(info.device.resetFences(1, &currentFrame.sync.GetFlightFence()) == vk::Result::eSuccess, "cannot reset fence");
 
-        const vk::SubmitInfo submitInfo(
-            1,
-            waitSemaphores,
-            waitStages,
-            1,
-            &commandBuffer,
-            1,
-            signalSemaphores
-        );
-        currentFrame.ResetFence(device);
+    //    m_Queues.graphics.submit(submitInfo, currentFrame.sync.GetFlightFence());
 
-        //GE_CORE_CLASS_ASSERT(info.device.resetFences(1, &currentFrame.sync.GetFlightFence()) == vk::Result::eSuccess, "cannot reset fence");
+    //    const vk::SwapchainKHR swapchains[] = { m_Swapchain.GetSwapchain() };
 
-        m_Queues.graphics.submit(submitInfo, currentFrame.sync.GetFlightFence());
+    //    const vk::PresentInfoKHR presentInfo(
+    //        1,
+    //        signalSemaphores,
+    //        1,
+    //        swapchains,
+    //        &imageIndex
+    //    );
 
-        const vk::SwapchainKHR swapchains[] = { m_Swapchain.GetSwapchain() };
+    //    //GE_CORE_CLASS_ASSERT(m_Queues.present.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
 
-        const vk::PresentInfoKHR presentInfo(
-            1,
-            signalSemaphores,
-            1,
-            swapchains,
-            &imageIndex
-        );
+    //    vk::Result presentResult;
+    //    try
+    //    {
+    //        presentResult = m_Queues.present.presentKHR(presentInfo);
+    //    }
+    //    catch(const vk::OutOfDateKHRError& error)
+    //    {
+    //        presentResult = vk::Result::eErrorOutOfDateKHR;
+    //    }
 
-        //GE_CORE_CLASS_ASSERT(m_Queues.present.presentKHR(presentInfo) == vk::Result::eSuccess, "cannot present");
+    //    if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR || wasWindowResized)
+    //    {
+    //        Recreate(device, physicalDevice, surface, extent, queueFamilyIndices);
+    //        wasWindowResized = false;
+    //        return;
+    //    }
 
-        vk::Result presentResult;
-        try
-        {
-            presentResult = m_Queues.present.presentKHR(presentInfo);
-        }
-        catch(const vk::OutOfDateKHRError& error)
-        {
-            presentResult = vk::Result::eErrorOutOfDateKHR;
-        }
+    //    //m_Swapchain.m_CurrentFrameNumber = (m_Swapchain.GetCurrentFrameNumber() + 1) % m_Swapchain.m_MaxFramesInFlight;
+    //    //m_Swapchain.IncrementCurrentFrame();
+    //}
 
-        if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR || wasWindowResized)
-        {
-            Recreate(device, physicalDevice, surface, extent, queueFamilyIndices);
-            wasWindowResized = false;
-            return;
-        }
-
-        //m_Swapchain.m_CurrentFrameNumber = (m_Swapchain.GetCurrentFrameNumber() + 1) % m_Swapchain.m_MaxFramesInFlight;
-        m_Swapchain.IncrementCurrentFrame();
-    }
-
-    void Pipeline::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
-        const QueueFamilyIndices& queueFamilyIndices)
+    void Pipeline::Recreate(const vk::Device& device, const vk::RenderPass& renderPass)
     {
         device.waitIdle();
 
         device.destroyPipelineLayout(m_Layout);
-        device.destroyRenderPass(m_RenderPass);
         device.destroyPipeline(m_GraphicsPipeline);
 
-        Create(device, m_ShaderManager.GetShaderInfo());
-
-        m_Swapchain.Recreate(device, physicalDevice, surface, m_RenderPass, extent, m_CommandPool.GetCommandPool(), queueFamilyIndices);
+        Create(device, renderPass, m_ShaderManager.GetShaderInfo());
     }
 
-    void Pipeline::SetShaderInfo(const vk::Device& device, const ShaderInfo& shaderInfo)
+    void Pipeline::SetShaderInfo(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo)
     {
         m_ShaderManager = ShaderManager(shaderInfo);
 
-        Create(device, shaderInfo);
+        Create(device, renderPass, shaderInfo);
     }
-
-    const vk::CommandPool& Pipeline::GetCommandPool() const noexcept
+    const vk::Pipeline& Pipeline::GetPipeline() const noexcept
     {
-        return m_CommandPool.GetCommandPool();
+        return m_GraphicsPipeline;
     }
-
-    const vk::CommandPool& Pipeline::GetCommandPoolTransfer() const noexcept
+    const vk::PipelineLayout& Pipeline::GetPipelineLayout() const noexcept
     {
-        return m_CommandPoolTransfer.GetCommandPool();
+        return m_Layout;
     }
-    const vk::Queue& Pipeline::GetGraphicsQueue() const noexcept
+    const ShaderManager& Pipeline::GetShaderManager() const
     {
-        return m_Queues.graphics;
-    }
-    const vk::Queue& Pipeline::GetPresetQueue() const noexcept
-    {
-        return m_Queues.present;
-    }
-    const vk::Queue& Pipeline::GetTransferQueue() const noexcept
-    {
-        return m_Queues.transfer;
-    }
-    vk::Queue Pipeline::GetGraphicsQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
-    {
-        return device.getQueue(indices.GetGraphicsFamily(), 0);
-    }
-    vk::Queue Pipeline::GetPresentQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
-    {
-        return device.getQueue(indices.GetPresentFamily(), 0);
-    }
-    vk::Queue Pipeline::GetTransferQueue(const vk::Device& device, const QueueFamilyIndices& indices) noexcept
-    {
-        return device.getQueue(indices.GetTransferFamily(), 0);
+        return m_ShaderManager;
     }
 }

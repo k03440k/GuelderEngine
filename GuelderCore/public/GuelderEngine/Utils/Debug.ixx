@@ -112,7 +112,7 @@ export namespace GuelderEngine::Debug
     template<LogLevel LoggingLevels>
     struct LoggingCategory<LoggingLevels, false>
     {
-        LoggingCategory(const std::string_view& name) {}
+        constexpr LoggingCategory(const std::string_view& name) {}
 
         static constexpr LogLevel supportedLoggingLevels = LoggingLevels;
         static constexpr bool enable = false;
@@ -120,7 +120,7 @@ export namespace GuelderEngine::Debug
     template<LogLevel LoggingLevels>
     struct LoggingCategory<LoggingLevels, true>
     {
-        LoggingCategory(const std::string_view& name)
+        constexpr LoggingCategory(const std::string_view& name)
             : name(name) {}
         virtual ~LoggingCategory() = default;
 
@@ -133,7 +133,7 @@ export namespace GuelderEngine::Debug
         }
 
         static constexpr LogLevel supportedLoggingLevels = LoggingLevels;
-        const std::string name;
+        const std::string_view name;
         static constexpr bool enable = true;
     };
     /*
@@ -215,7 +215,7 @@ export namespace GuelderEngine::Debug
 
             //std::cout << std::put_time(&localTime, "%H:%M:%S") << ' '; // print timestamp
 
-            logMutex.lock();
+            std::lock_guard lock(logMutex);
 
             std::cout << category.name << ": ";
 
@@ -255,10 +255,8 @@ export namespace GuelderEngine::Debug
                 Throw(Format("Logger::WriteLog: invalid logging level or ", category.name,
                     " doesn't support logging level"), __FILE__, __LINE__);
 
-            std::cout << ": " << message << '\n'/*std::endl*//* << DEFAULT_FONT*/;
+            std::cout << ": " << message << '\n';
             SetConsoleColorAttributes(Text::White, Background::Black);
-
-            logMutex.unlock();
         }
 
         static HANDLE console;
@@ -271,7 +269,7 @@ namespace GuelderEngine::Debug
     {
         CoreLoggingCategory() : LoggingCategory("Core") {}
     };
-    CoreLoggingCategory coreLoggingCategory;
+    const CoreLoggingCategory coreLoggingCategory;
 }
 
 #pragma region logging fuctions

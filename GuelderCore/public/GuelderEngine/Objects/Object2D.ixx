@@ -8,13 +8,8 @@ import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
 import :Actor;
 
-import <memory>;
-
 export namespace GuelderEngine
 {
-    class Object2D;
-    using Object2DPtr = std::shared_ptr<Object2D>;
-
     struct Object2DTransform
     {
         glm::mat2 translation;

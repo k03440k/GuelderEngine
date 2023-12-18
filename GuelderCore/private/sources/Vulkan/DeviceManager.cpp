@@ -17,7 +17,7 @@ import <ranges>;
 
 namespace GuelderEngine::Vulkan
 {
-    DeviceManager::DeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const vk::Extent2D& windowSize, const std::string_view& vertPath, const std::string_view& fragPath, const std::vector<const char*>& extensions)
+    DeviceManager::DeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::vector<const char*>& extensions)
     {
         VkSurfaceKHR cStyle;
         GE_CLASS_ASSERT(glfwCreateWindowSurface(instance, glfwWindow, nullptr, &cStyle) == VK_SUCCESS,
@@ -28,8 +28,12 @@ namespace GuelderEngine::Vulkan
         m_QueueIndices = QueueFamilyIndices(m_PhysicalDevice, m_Surface);
         m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices, extensions);
 
-        /*m_Pipeline = Pipeline(m_Device, m_PhysicalDevice, m_Surface, {windowSize.width, windowSize.height}, m_QueueIndices,
-             vertPath, fragPath);*/
+        m_Queues.graphics = m_Device.getQueue(m_QueueIndices.GetGraphicsFamily(), 0);
+        m_Queues.present = m_Device.getQueue(m_QueueIndices.GetPresentFamily(), 0);
+        m_Queues.transfer = m_Device.getQueue(m_QueueIndices.GetTransferFamily(), 0);
+
+        m_CommandPool = CommandPool(m_Device, m_QueueIndices, vk::QueueFlagBits::eGraphics);//TODO: move command pools to pipeline and finish buffers remaking
+        m_CommandPoolTransfer = CommandPool(m_Device, m_QueueIndices, vk::QueueFlagBits::eTransfer);
     }
     DeviceManager::DeviceManager(const DeviceManager& other)
     {
@@ -37,7 +41,9 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        //m_Pipeline = other.m_Pipeline;
+        m_CommandPool = other.m_CommandPool;
+        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
+        m_Queues = other.m_Queues;
     }
     DeviceManager::DeviceManager(DeviceManager&& other) noexcept
     {
@@ -45,7 +51,9 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        //m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
+        m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
+        m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
+        m_Queues = other.m_Queues;
 
         other.Reset();
     }
@@ -58,7 +66,9 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        //m_Pipeline = other.m_Pipeline;
+        m_CommandPool = other.m_CommandPool;
+        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
+        m_Queues = other.m_Queues;
 
         return *this;
     }
@@ -68,7 +78,9 @@ namespace GuelderEngine::Vulkan
         m_Device = other.m_Device;
         m_QueueIndices = other.m_QueueIndices;
         m_Surface = other.m_Surface;
-        //m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
+        m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
+        m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
+        m_Queues = other.m_Queues;
 
         other.Reset();
 
@@ -83,19 +95,20 @@ namespace GuelderEngine::Vulkan
         m_Device = nullptr;
         m_QueueIndices = {};
         m_Surface = nullptr;
-        //m_Pipeline.Reset();
+        m_Queues.transfer = nullptr;
+        m_Queues.present = nullptr;
+        m_Queues.graphics = nullptr;
+        m_CommandPool.Reset();
+        m_CommandPoolTransfer.Reset();
     }
     void DeviceManager::Cleanup(const vk::Instance& instance) const noexcept
     {
         //m_Device.waitIdle();
-        //m_Pipeline.Cleanup(m_Device);
+        m_CommandPool.Cleanup(m_Device);
+        m_CommandPoolTransfer.Cleanup(m_Device);
         m_Device.destroy();
         instance.destroySurfaceKHR(m_Surface);
     }
-    /*void DeviceManager::Render(uint width, uint height, const Scene& scene)
-    {
-        m_Pipeline.Render(m_Device, m_PhysicalDevice, m_Surface, {width, height}, m_QueueIndices, scene);
-    }*/
     uint DeviceManager::FindMemType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties)
     {
         const auto memProperties = physicalDevice.getMemoryProperties();
@@ -107,6 +120,28 @@ namespace GuelderEngine::Vulkan
         }
 
         GE_CLASS_THROW("Failed to find suitable memory type");
+    }
+    vk::Format DeviceManager::FindSupportedFormat(const vk::PhysicalDevice& physicalDevice, const std::vector<vk::Format>& formats, const vk::ImageTiling& imageTiling, const vk::FormatFeatureFlagBits& features)
+    {
+        for(auto& format : formats)
+        {
+            vk::FormatProperties properties;
+            physicalDevice.getFormatProperties(format, &properties);
+
+            if(imageTiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & features) == features)
+                return format;
+            else if(imageTiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & features) == features)
+                return format;
+        }
+        GE_THROW("failed to find supported format");
+    }
+    Buffers::VertexBuffer DeviceManager::MakeVertexBuffer(const Vertices2D& vertices) const
+    {
+        return Buffers::VertexBuffer(m_Device, m_PhysicalDevice, m_QueueIndices, m_CommandPoolTransfer.GetCommandPool(), m_Queues.transfer, vertices);
+    }
+    Buffers::IndexBuffer DeviceManager::MakeIndexBuffer(const Indices& indices) const
+    {
+        return Buffers::IndexBuffer(m_Device, m_PhysicalDevice, m_QueueIndices, m_CommandPoolTransfer.GetCommandPool(), m_Queues.transfer, indices);
     }
     const vk::Device& DeviceManager::GetDevice() const noexcept
     {
@@ -123,6 +158,18 @@ namespace GuelderEngine::Vulkan
     const vk::SurfaceKHR& DeviceManager::GetSurface() const noexcept
     {
         return m_Surface;
+    }
+    const CommandPool& DeviceManager::GetCommandPool() const
+    {
+        return m_CommandPool;
+    }
+    const CommandPool& DeviceManager::GetCommandPoolTransfer() const
+    {
+        return m_CommandPoolTransfer;
+    }
+    const Queues& DeviceManager::GetQueues() const
+    {
+        return m_Queues;
     }
     void DeviceManager::WaitIdle() const noexcept
     {

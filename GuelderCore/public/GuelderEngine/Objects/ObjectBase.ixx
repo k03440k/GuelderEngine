@@ -19,6 +19,6 @@ export namespace GuelderEngine
     protected:
         static ID currentID;
 
-        ID m_ID;//burnt out :(
+        ID m_ID;
     };
 }

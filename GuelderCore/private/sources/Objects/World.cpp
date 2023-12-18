@@ -6,6 +6,7 @@ module GuelderEngine.Game;
 import :World;
 
 import GuelderEngine.Vulkan;
+import GuelderEngine.Core.Types;
 import :Actor;
 
 import <algorithm>;
@@ -18,45 +19,43 @@ namespace GuelderEngine
 {
     void World::UpdateActors()
     {
-        std::thread renderActors([&] {std::for_each(std::execution::par, m_RenderActors.begin(), m_RenderActors.end(), [](RenderActorPtr actor) { actor->Update(); }); });
+        std::thread renderActors([&] {std::for_each(std::execution::par, m_RenderActors.begin(), m_RenderActors.end(), [](SharedPtr<RenderActor> actor) { actor->Update(); }); });
         if(!m_Actors.empty())
         {
-            std::thread actors([&] {std::for_each(std::execution::par, m_Actors.begin(), m_Actors.end(), [](ActorPtr actor) { actor->Update(); }); });
+            std::thread actors([&] {std::for_each(std::execution::par, m_Actors.begin(), m_Actors.end(), [](SharedPtr<Actor> actor) { actor->Update(); }); });
             actors.join();
         }
         renderActors.join();
     }
     void World::Begin()
     {
-        std::ranges::for_each(m_Actors, [](ActorPtr& actor) {actor->Begin(); });
+        std::ranges::for_each(m_Actors, [](SharedPtr<Actor> actor) {actor->Begin(); });
     }
-    void World::SpawnActor(Actor&& actor)
+    void World::SpawnActor(SharedPtr<Actor> actor)
     {
-        m_Actors.push_back(MakeActor<Actor>(std::forward<Actor>(actor)));
+        m_Actors.push_back(actor);
     }
-    void World::SpawnRenderActor(Object2DPtr actor)
+    void World::SpawnRenderActor(SharedPtr<RenderActor> actor)
     {
-        /*if(!actor.IsComplete())
-            return;*/
-
-        //auto a = std::make_shared<Object2D>(std::forward<Object2D>(actor));
-        actor->Update();
+        if(!actor->IsComplete())
+            return;
+        
+        //actor->Update();
         m_RenderActors.push_back(actor);
-        //m_VertexBuffers.push_back(actor.vertexBuffer);
     }
-    ActorPtr& World::GetActor(const Actor::ID& id)
+    SharedPtr<Actor>& World::GetActor(const Actor::ID& id)
     {
         return m_Actors[id];
     }
-    std::vector<ActorPtr>& World::GetActors()
+    std::vector<SharedPtr<Actor>>& World::GetActors()
     {
         return m_Actors;
     }
-    Object2DPtr& World::GetRenderActor(const Actor::ID& id)
+    SharedPtr<RenderActor>& World::GetRenderActor(const Actor::ID& id)
     {
         return m_RenderActors[id];
     }
-    std::vector<Object2DPtr>& World::GetRenderActors()
+    std::vector<SharedPtr<RenderActor>>& World::GetRenderActors()
     {
         return m_RenderActors;
     }

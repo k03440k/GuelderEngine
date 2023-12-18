@@ -2,6 +2,7 @@ module;
 #include "../private/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Core:Application;
 
+import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
 import GuelderEngine.Events;
 import GuelderEngine.Debug;
@@ -66,18 +67,22 @@ export namespace GuelderEngine
         void SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept;
         int GetFrameRate() const noexcept { return m_Window->GetData().GetFrameRate(); }
 
+        static double GetTime();
+
         //void SetMesh(const Vulkan::Mesh2D& mesh);
         void SetShaderInfo(const Vulkan::ShaderInfo& shaderInfo);
 
         World& GetWorld();
 
         void SpawnRenderActor(const Object2DCreateInfo& renderActor);
-        void SpawnRenderActor(Object2DPtr renderActor);
+        void SpawnRenderActor(SharedPtr<Object2D> renderActor);
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;
     private:
         std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;
+        std::unique_ptr<Vulkan::Renderer> m_Renderer;
+        std::unique_ptr<Vulkan::RenderSystem> m_RenderSystem;
         std::unique_ptr<World> m_World;
 
         bool OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept;

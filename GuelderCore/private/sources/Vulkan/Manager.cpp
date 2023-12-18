@@ -20,28 +20,18 @@ import <set>;
 
 namespace GuelderEngine::Vulkan
 {
-    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const uint& width, const uint& height, const ShaderInfo& shaderInfo, const std::string_view& name)
+    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const std::string_view& name)
     {
         m_Instance = CreateVkInstance(name.data());
-        m_DeviceManager = DeviceManager(m_Instance, glfwWindow, { width, height }, shaderInfo.vertexPath, shaderInfo.fragmentPath);
+        m_DeviceManager = DeviceManager(m_Instance, glfwWindow);
 
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = DebugManager(m_Instance);
 #endif // GE_DEBUG_VULKAN
-
-        m_Pipeline = Pipeline(
-            m_DeviceManager.GetDevice(), 
-            m_DeviceManager.GetPhysicalDevice(), 
-            m_DeviceManager.GetSurface(),
-            {width, height}, 
-            m_DeviceManager.GetQueueIndices(),
-            shaderInfo
-        );
     }
     VulkanManager::VulkanManager(const VulkanManager& other)
     {
         m_Instance = other.m_Instance;
-        m_Pipeline = other.m_Pipeline;
         m_DeviceManager = other.m_DeviceManager;
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = other.m_DebugManager;
@@ -50,7 +40,6 @@ namespace GuelderEngine::Vulkan
     VulkanManager::VulkanManager(VulkanManager&& other) noexcept
     {
         m_Instance = other.m_Instance;
-        m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
         m_DeviceManager = std::forward<DeviceManager>(other.m_DeviceManager);
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = std::forward<DebugManager>(other.m_DebugManager);
@@ -64,7 +53,6 @@ namespace GuelderEngine::Vulkan
             return *this;
 
         m_Instance = other.m_Instance;
-        m_Pipeline = other.m_Pipeline;
         m_DeviceManager = other.m_DeviceManager;
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = other.m_DebugManager;
@@ -75,7 +63,6 @@ namespace GuelderEngine::Vulkan
     VulkanManager& VulkanManager::operator=(VulkanManager&& other) noexcept
     {
         m_Instance = other.m_Instance;
-        m_Pipeline = std::forward<Pipeline>(other.m_Pipeline);
         m_DeviceManager = std::forward<DeviceManager>(other.m_DeviceManager);
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = std::forward<DebugManager>(other.m_DebugManager);
@@ -86,10 +73,9 @@ namespace GuelderEngine::Vulkan
     }
     VulkanManager::~VulkanManager()
     {
-        Cleanup();
+        VulkanManager::Cleanup();
     }
-
-    void VulkanManager::Render(uint width, uint height, bool& wasWindowResized, const Vulkan::Buffers::VertexBuffer& vertexBuffer,
+    /*void VulkanManager::Render(uint width, uint height, bool& wasWindowResized, const Vulkan::Buffers::VertexBuffer& vertexBuffer,
         const Vulkan::Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push)
     {
         m_Pipeline.Render(
@@ -103,28 +89,27 @@ namespace GuelderEngine::Vulkan
             indexBuffer,
             push
         );
-    }
-
+    }*/
     Buffers::VertexBuffer VulkanManager::MakeVertexBuffer(const Mesh2D& mesh) const
     {
-        return Buffers::VertexBuffer(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), m_Pipeline.GetCommandPoolTransfer(), m_Pipeline.GetTransferQueue(), mesh.GetVertices());
+        return m_DeviceManager.MakeVertexBuffer(mesh.GetVertices());
     }
-
     Buffers::IndexBuffer VulkanManager::MakeIndexBuffer(const Mesh2D& mesh) const
     {
-        return Buffers::IndexBuffer(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), m_Pipeline.GetCommandPoolTransfer(), m_Pipeline.GetTransferQueue(), mesh.GetIndices());
+        return m_DeviceManager.MakeIndexBuffer(mesh.GetIndices());
     }
-
     const DeviceManager& VulkanManager::GetDevice() const noexcept
     {
         return m_DeviceManager;
     }
-
     void VulkanManager::WaitDevice() const
     {
         m_DeviceManager.WaitIdle();
     }
-
+    const vk::Instance& VulkanManager::GetInstance() const
+    {
+        return m_Instance;
+    }
     vk::Instance VulkanManager::CreateVkInstance(const char* name)
     {
         uint version{};
@@ -214,10 +199,6 @@ namespace GuelderEngine::Vulkan
     //{
     //    //m_Pipeline.SetMesh(m_DeviceManager.GetDevice(), m_DeviceManager.GetPhysicalDevice(), m_DeviceManager.GetQueueIndices(), mesh);
     //}
-    void VulkanManager::SetShaderInfo(const ShaderInfo& shaderInfo)
-    {
-        m_Pipeline.SetShaderInfo(m_DeviceManager.GetDevice(), shaderInfo);
-    }
     /*void VulkanManager::LoadVertexShader(const std::string_view& name)
 {
 }
@@ -227,7 +208,6 @@ void VulkanManager::LoadFragmentShader(const std::string_view& name)
     void VulkanManager::Reset() noexcept
     {
         m_Instance = nullptr;
-        m_Pipeline.Reset();
         m_DeviceManager.Reset();
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager.Reset();
@@ -236,7 +216,6 @@ void VulkanManager::LoadFragmentShader(const std::string_view& name)
     void VulkanManager::Cleanup() const noexcept
     {
         m_DeviceManager.WaitIdle();
-        m_Pipeline.Cleanup(m_DeviceManager.GetDevice());
         m_DeviceManager.Cleanup(m_Instance);
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager.Cleanup(m_Instance);

@@ -13,9 +13,16 @@ import :Pipeline;
 import GuelderEngine.Core.Types;
 
 import <optional>;
+import :CommandPool;
 
 export namespace GuelderEngine::Vulkan
 {
+    struct Queues
+    {
+        vk::Queue graphics;
+        vk::Queue present;
+        vk::Queue transfer;
+    };
     /**
      * @brief You must manually call .Cleanup() func instead of dtor
     */
@@ -24,7 +31,7 @@ export namespace GuelderEngine::Vulkan
     public:
         DECLARE_DCAD_AND_CAM(DeviceManager);
 
-        DeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const vk::Extent2D& windowSize, const std::string_view& vertPath, const std::string_view& fragPath, const std::vector<const char*>& extensions = {});
+        DeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::vector<const char*>& extensions = {});
 
         void Reset() noexcept override;
         void Cleanup(const vk::Instance& instance) const noexcept;
@@ -32,13 +39,21 @@ export namespace GuelderEngine::Vulkan
         //void Render(uint width, uint height, const Scene& scene);
 
         static uint FindMemType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties);
+        static vk::Format FindSupportedFormat(const vk::PhysicalDevice& physicalDevice, const std::vector<vk::Format>& formats, const vk::ImageTiling& imageTiling, const vk::FormatFeatureFlagBits& features);
+
+        Buffers::VertexBuffer MakeVertexBuffer(const Vertices2D& vertices) const;
+        Buffers::IndexBuffer MakeIndexBuffer(const Indices& indices) const;
+
+        void WaitIdle() const noexcept;
 
         const vk::Device& GetDevice() const noexcept;
         const vk::PhysicalDevice& GetPhysicalDevice() const noexcept;
         const QueueFamilyIndices& GetQueueIndices() const noexcept;
         const vk::SurfaceKHR& GetSurface() const noexcept;
 
-        void WaitIdle() const noexcept;
+        const CommandPool& GetCommandPool() const;
+        const CommandPool& GetCommandPoolTransfer() const;
+        const Queues& GetQueues() const;
     private:
         static bool CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice,
             const std::vector<const char*>& requestedExtensions);
@@ -51,7 +66,9 @@ export namespace GuelderEngine::Vulkan
         QueueFamilyIndices m_QueueIndices;
 
         vk::SurfaceKHR m_Surface;
-        
-        //Pipeline m_Pipeline;
+
+        CommandPool m_CommandPool;
+        CommandPool m_CommandPoolTransfer;
+        Queues m_Queues;
     };
 }

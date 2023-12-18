@@ -5,12 +5,12 @@ module;
 module GuelderEngine.Core;
 import :Application;
 
-import :Window;
 import GuelderEngine.Layers;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
-import :ResourceManager;
 import GuelderEngine.Game;
+import :ResourceManager;
+import :Window;
 
 import <string>;
 import <string_view>;
@@ -35,23 +35,28 @@ namespace GuelderEngine
         m_Window = std::make_unique<Window>(Window::WindowData(info.width, info.height, info.title.data()));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));
 
-        m_VulkanManager = std::make_unique<Vulkan::VulkanManager>
-            (
-                m_Window->GetGLFWWindow(),
-                m_Window->GetData().width,
-                m_Window->GetData().height,
-                Vulkan::ShaderInfo{
-            resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName),
+        m_VulkanManager = std::make_unique<Vulkan::VulkanManager>(m_Window->GetGLFWWindow(), info.title);
+        m_Renderer = std::make_unique<Vulkan::Renderer>(
+            m_VulkanManager->GetDevice(),
+            info.width, info.height
+        );
+        m_RenderSystem = std::make_unique<Vulkan::RenderSystem>(
+            m_VulkanManager->GetDevice().GetDevice(), 
+            m_Renderer->GetSwapchain().GetRenderPass(), 
+            Vulkan::ShaderInfo
+            {
+                resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName),
                 resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName),
                 shaderInfo
-        },
-                info.title
+            }
             );
         m_World = std::make_unique<World>();
     }
     GEApplication::~GEApplication()
     {
         m_VulkanManager->WaitDevice();
+        m_RenderSystem->Cleanup(m_VulkanManager->GetDevice().GetDevice());
+        m_Renderer->Cleanup(m_VulkanManager->GetDevice());
         for(auto& actor : m_World->GetRenderActors())
             actor->Cleanup(m_VulkanManager->GetDevice().GetDevice());
         //m_VulkanManager.reset();
@@ -63,18 +68,27 @@ namespace GuelderEngine
         while(!m_CloseWindow)
         {
             m_Window->OnUpdate();
-
-            const SimplePushConstantData data(
-                m_World->GetRenderActor()->transform.Mat2(),
+            //temp
+            const Vulkan::SimplePushConstantData data(
+                static_cast<Object2D*>(m_World->GetRenderActor().get())->transform.Mat2(),
                 { sin(glfwGetTime()) / 5.0f * cos(glfwGetTime()) , sin(glfwGetTime()) / 8.0f * tan(glfwGetTime()) },//idk how does it work
-                { (cos(glfwGetTime()) / 5.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f });
+                { (cos(glfwGetTime()) / 5.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f }
+            );
 
             if(m_Window->GetData().width != 0 && m_Window->GetData().height != 0)
-                m_VulkanManager->Render(m_Window->GetData().width, m_Window->GetData().height, m_Window->WasWindowResized(), m_World->GetRenderActor()->vertexBuffer, m_World->GetRenderActor()->indexBuffer, data);//temp
+                if(const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height}))
+                {
+                    m_Renderer->BeginSwapchainRenderPass(commandBuffer);
+                    //insert render here
+                    m_RenderSystem->Render(commandBuffer, data, m_World->GetRenderActor()->vertexBuffer, m_World->GetRenderActor()->indexBuffer);
+                    m_Renderer->EndSwapchainRenderPass(commandBuffer);
+                    m_Renderer->EndFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }, m_Window->WasWindowResized());
+                }
+            //    m_VulkanManager->Render(m_Window->GetData().width, m_Window->GetData().height, m_Window->WasWindowResized(), m_World->GetRenderActor()->vertexBuffer, m_World->GetRenderActor()->indexBuffer, data);//temp
 
             m_OnUpdate();
 
-            m_World->UpdateActors();
+           m_World->UpdateActors();
 
             if(!m_LayerStack.IsEmpty())
             {
@@ -112,6 +126,10 @@ namespace GuelderEngine
         m_LayerStack.PushOverlay(overlay);
     }
     void GEApplication::SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept { m_OnUpdate = onUpdate; }
+    double GEApplication::GetTime()
+    {
+        return glfwGetTime();
+    }
     bool GEApplication::OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept
     {
         m_CloseWindow = true;
@@ -119,7 +137,7 @@ namespace GuelderEngine
     }
     void GEApplication::SetShaderInfo(const Vulkan::ShaderInfo& shaderInfo)
     {
-        m_VulkanManager->SetShaderInfo(shaderInfo);
+        m_RenderSystem->SetShaderInfo(m_VulkanManager->GetDevice().GetDevice(), m_Renderer->GetSwapchain().GetRenderPass(), shaderInfo);
     }
     World& GEApplication::GetWorld()
     {
@@ -132,15 +150,11 @@ namespace GuelderEngine
         obj.transform = renderActor.transform;
         m_World->SpawnRenderActor(MakeActor(std::move(obj)));
     }
-    void GEApplication::SpawnRenderActor(Object2DPtr renderActor)
+    void GEApplication::SpawnRenderActor(SharedPtr<Object2D> renderActor)
     {
         renderActor->vertexBuffer = m_VulkanManager->MakeVertexBuffer(renderActor->GetMesh());
         renderActor->indexBuffer = m_VulkanManager->MakeIndexBuffer(renderActor->GetMesh());
         m_World->SpawnRenderActor(renderActor);
     }
-    /*void GEApplication::SetMesh(const Vulkan::Mesh2D& mesh)
-    {
-        m_VulkanManager->SetMesh(mesh);
-    }*/
 #pragma endregion
 }

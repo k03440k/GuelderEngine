@@ -13,18 +13,13 @@ import <memory>;
 
 export namespace GuelderEngine
 {
-    class Actor;
-    class RenderActor;
-    using ActorPtr = std::shared_ptr<Actor>;
-    using RenderActorPtr = std::shared_ptr<RenderActor>;
-
+    //it is insufficient for memory, because we allocate a memory with pointer and then with vector. right now I don't know what to choose else
     template<class _Actor>
-    std::shared_ptr<_Actor> MakeActor(_Actor&& actor)
+    std::shared_ptr<_Actor> MakeActor(const _Actor&& actor)
     {
         return std::make_shared<_Actor>(actor);
     }
-
-    //Vulkan::Buffers::VertexBuffer vb;
+    
     class Actor : public GObjectBase
     {
     public:
@@ -35,6 +30,7 @@ export namespace GuelderEngine
         virtual void Update() {}
     private:
     };
+    //with buffers
     class RenderActor : public Actor
     {
     public:

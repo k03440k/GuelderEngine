@@ -18,13 +18,13 @@ export namespace GuelderEngine
     public:
         World() = default;
 
-        void SpawnActor(Actor&& actor);
-        void SpawnRenderActor(Object2DPtr actor);
+        void SpawnActor(SharedPtr<Actor> actor);
+        void SpawnRenderActor(SharedPtr<RenderActor> actor);
 
-        ActorPtr& GetActor(const Actor::ID& id = 0);
-        std::vector<ActorPtr>& GetActors();
-        Object2DPtr& GetRenderActor(const Actor::ID& id = 0);
-        std::vector<Object2DPtr>& GetRenderActors();
+        SharedPtr<Actor>& GetActor(const Actor::ID& id = 0);
+        std::vector<SharedPtr<Actor>>& GetActors();
+        SharedPtr<RenderActor>& GetRenderActor(const Actor::ID& id = 0);
+        std::vector<SharedPtr<RenderActor>>& GetRenderActors();
 
         //const std::vector<Vulkan::Buffers::VertexBuffer>& GetVertexBuffers() const noexcept;
     private:
@@ -32,8 +32,8 @@ export namespace GuelderEngine
         void UpdateActors();
         void Begin();
 
-        std::vector<ActorPtr> m_Actors;
-        std::vector<Object2DPtr> m_RenderActors;
+        std::vector<SharedPtr<Actor>> m_Actors;
+        std::vector<SharedPtr<RenderActor>> m_RenderActors;
         //std::vector<Vulkan::Buffers::VertexBuffer> m_VertexBuffers;
     };
 }

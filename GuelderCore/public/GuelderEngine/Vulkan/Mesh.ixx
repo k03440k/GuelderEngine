@@ -4,8 +4,8 @@ module;
 #include <glm/glm.hpp>
 export module GuelderEngine.Vulkan:Mesh;
 
-import :IVulkanObject;
 import GuelderEngine.Core.Types;
+import :IVulkanObject;
 
 import <array>;
 import <vector>;
@@ -16,6 +16,14 @@ export namespace GuelderEngine::Vulkan
     //temp
     using Vertices2D = std::vector<Vertex2D>;
     using Indices = std::vector<uint>;
+
+    //TODO: add possibility to push custom constant data
+    struct SimplePushConstantData
+    {
+        glm::mat2 transform{1.0f};
+        glm::vec2 pos;
+        alignas(16) glm::vec3 color;
+    };
 
     enum class VertexFormat
     {

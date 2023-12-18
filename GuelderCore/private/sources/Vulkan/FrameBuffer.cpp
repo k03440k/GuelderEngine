@@ -28,8 +28,8 @@ namespace GuelderEngine::Vulkan
                 1
             );
 
-            //frames[i].framebuffer = device.createFramebuffer(framebufferInfo);
-            frames[i].CreateFrameBuffer(device, framebufferInfo);
+            frames[i].framebuffer = device.createFramebuffer(framebufferInfo);
+            //frames[i].CreateFrameBuffer(device, framebufferInfo);
         }
     }
 }

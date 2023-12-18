@@ -95,10 +95,6 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    void SwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::FramebufferCreateInfo& info)
-    {
-        framebuffer = device.createFramebuffer(info);
-    }
     void SwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent)
     {
         const std::vector attachments{imageView};//idk
@@ -113,11 +109,11 @@ namespace GuelderEngine::Vulkan
             1
         );
         
-        CreateFrameBuffer(device, framebufferInfo);
+        framebuffer = device.createFramebuffer(framebufferInfo);
     }
     void SwapchainFrame::CreateImage(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo)
     {
-        this->image = viewInfo.image;
+        image = viewInfo.image;
         imageView = device.createImageView(viewInfo);
     }
     void SwapchainFrame::CreateCommandBuffer(const vk::Device& device, const vk::CommandPool& pool)

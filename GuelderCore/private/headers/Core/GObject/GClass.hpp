@@ -69,3 +69,5 @@ import GuelderEngine.Core.Types;
     DECLARE_DEFAULT_CTOR_AND_DTOR(className);\
     DECLARE_DEFAULT_COPY(className);\
     DECLARE_DEFAULT_MOVING(className)
+
+#define FORCE_INLINE __forceinline
