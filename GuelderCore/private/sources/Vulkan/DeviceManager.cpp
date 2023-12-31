@@ -109,7 +109,7 @@ namespace GuelderEngine::Vulkan
         m_Device.destroy();
         instance.destroySurfaceKHR(m_Surface);
     }
-    uint DeviceManager::FindMemType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties)
+    /*uint DeviceManager::FindMemType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties)
     {
         const auto memProperties = physicalDevice.getMemoryProperties();
 
@@ -120,7 +120,7 @@ namespace GuelderEngine::Vulkan
         }
 
         GE_CLASS_THROW("Failed to find suitable memory type");
-    }
+    }*/
     vk::Format DeviceManager::FindSupportedFormat(const vk::PhysicalDevice& physicalDevice, const std::vector<vk::Format>& formats, const vk::ImageTiling& imageTiling, const vk::FormatFeatureFlagBits& features)
     {
         for(auto& format : formats)
@@ -134,10 +134,6 @@ namespace GuelderEngine::Vulkan
                 return format;
         }
         GE_THROW("failed to find supported format");
-    }
-    Buffers::VertexBuffer DeviceManager::MakeVertexBuffer(const Vertices2D& vertices) const
-    {
-        return Buffers::VertexBuffer(m_Device, m_PhysicalDevice, m_QueueIndices, m_CommandPoolTransfer.GetCommandPool(), m_Queues.transfer, vertices);
     }
     Buffers::IndexBuffer DeviceManager::MakeIndexBuffer(const Indices& indices) const
     {

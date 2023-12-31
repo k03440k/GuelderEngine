@@ -68,7 +68,7 @@ int main(int argc, char** argv)
         //TODO: think about pointer system, especially about && in MakeActor func and also find out about MATH
 
         //app->SetMesh(cube);
-        app->SpawnRenderActor(MakeActor(MyActor{ Object2DCreateInfo{ {{},{.8f, .5f},{},.25f * glm::two_pi<float>()}, cube} }));
+        app->SpawnActor2D(MakeActor(MyActor{ { { {}, Vector2{.8f, .6f}, {}, .25f * glm::two_pi<float>() }, cube} }));
         //app->SpawnRenderActor(triangle);
 
         app->Run();

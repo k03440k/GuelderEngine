@@ -5,6 +5,7 @@ export module GuelderEngine.Debug;
 export import GuelderEngine.Core.Types;
 
 import <iostream>;
+import <mutex>;
 import <stdexcept>;
 import <string_view>;
 import <string>;

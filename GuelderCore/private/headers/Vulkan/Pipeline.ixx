@@ -9,7 +9,7 @@ import :Swapchain;
 import :ShaderManager;
 import :Mesh;
 import :ShaderManager;
-import :VertexBuffer;
+//import :VertexBuffer;
 import :IndexBuffer;
 import GuelderEngine.Core.Types;
 

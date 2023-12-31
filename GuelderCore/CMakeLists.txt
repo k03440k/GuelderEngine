@@ -30,9 +30,6 @@ set(CORE_PUBLIC_HEADERS
 )
 set(CORE_PRIVATE_SOURCES
 	#${CORE_PRIVATE_SOURCES_PATH}GObject/GClass.cpp
-
-	${CORE_PRIVATE_SOURCES_PATH}Renderer/Renderer.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Renderer/RenderSystem.cpp
 	
 	${CORE_PRIVATE_SOURCES_PATH}Utils/Debug.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Utils/ResourceManager.cpp
@@ -44,8 +41,11 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Objects/World.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Objects/ObjectBase.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Objects/Object2D.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Objects/Object3D.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Objects/Actor.cpp
 	
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Renderer.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/RenderSystem.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Manager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/DebugManager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/DeviceManager.cpp
@@ -57,7 +57,7 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/CommandPool.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/FrameBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainFrame.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Mesh.cpp
+	#${CORE_PRIVATE_SOURCES_PATH}Vulkan/Mesh.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/IBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/VertexBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/StagingBuffer.cpp
@@ -83,12 +83,11 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/VertexBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/StagingBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/IndexBuffer.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/Renderer.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/RenderSystem.ixx
 )
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx
-	
-	${CORE_PUBLIC_MODULES_PATH}Renderer/Renderer.ixx
-	${CORE_PUBLIC_MODULES_PATH}Renderer/RenderSystem.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Vulkan/Mesh.ixx
 	${CORE_PUBLIC_MODULES_PATH}Vulkan/Vulkan.ixx
@@ -100,6 +99,7 @@ set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}Objects/World.ixx
 	${CORE_PUBLIC_MODULES_PATH}Objects/ObjectBase.ixx
 	${CORE_PUBLIC_MODULES_PATH}Objects/Object2D.ixx
+	${CORE_PUBLIC_MODULES_PATH}Objects/Object3D.ixx
 	${CORE_PUBLIC_MODULES_PATH}Objects/Actor.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Core/Types.ixx

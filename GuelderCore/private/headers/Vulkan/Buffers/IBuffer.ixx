@@ -35,6 +35,8 @@ export namespace GuelderEngine::Vulkan::Buffers
 
         bool Initialized() const noexcept;
 
+        static uint FindMemoryType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties);
+
     protected:
         vk::Buffer m_Buffer;
         vk::DeviceMemory m_BufferMemory;

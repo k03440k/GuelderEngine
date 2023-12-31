@@ -194,8 +194,8 @@ namespace GuelderEngine::Vulkan
 
     vk::PipelineLayout Pipeline::CreateLayout(const vk::Device& device)
     {
-        constexpr vk::PushConstantRange constantInfo(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(SimplePushConstantData));
-        constexpr vk::PipelineLayoutCreateInfo layoutInfo(
+        const vk::PushConstantRange constantInfo(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(SimplePushConstantData2D));
+        const vk::PipelineLayoutCreateInfo layoutInfo(
             vk::PipelineLayoutCreateFlags(),
             0,
             nullptr,

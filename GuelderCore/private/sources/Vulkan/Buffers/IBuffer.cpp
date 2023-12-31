@@ -69,6 +69,18 @@ namespace GuelderEngine::Vulkan::Buffers
     {
         return m_Size;
     }
+    uint IBuffer::FindMemoryType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties)
+    {
+        const auto memProperties = physicalDevice.getMemoryProperties();
+
+        for(uint i = 0; i < memProperties.memoryTypeCount; ++i)
+        {
+            if(typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+                return i;
+        }
+
+        GE_CLASS_THROW("Failed to find suitable memory type");
+    }
 
     //void CopyBuffer(const Buffer& srcBuffer, Buffer& dstBuffer, const vk::Device& device, const vk::CommandPool& transferPool, const vk::Queue& transferQueue)
     //{

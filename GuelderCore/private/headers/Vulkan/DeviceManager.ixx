@@ -10,6 +10,7 @@ import :DebugManager;
 import :QueueFamilyIndices;
 import :Swapchain;
 import :Pipeline;
+import :VertexBuffer;
 import GuelderEngine.Core.Types;
 
 import <optional>;
@@ -23,6 +24,7 @@ export namespace GuelderEngine::Vulkan
         vk::Queue present;
         vk::Queue transfer;
     };
+
     /**
      * @brief You must manually call .Cleanup() func instead of dtor
     */
@@ -41,7 +43,11 @@ export namespace GuelderEngine::Vulkan
         static uint FindMemType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties);
         static vk::Format FindSupportedFormat(const vk::PhysicalDevice& physicalDevice, const std::vector<vk::Format>& formats, const vk::ImageTiling& imageTiling, const vk::FormatFeatureFlagBits& features);
 
-        Buffers::VertexBuffer MakeVertexBuffer(const Vertices2D& vertices) const;
+        template<uint dimension>
+        Buffers::VertexBuffer<dimension> MakeVertexBuffer(const Vertices<dimension>& vertices) const
+        {
+            return Buffers::VertexBuffer(m_Device, m_PhysicalDevice, m_QueueIndices, m_CommandPoolTransfer.GetCommandPool(), m_Queues.transfer, vertices);
+        }
         Buffers::IndexBuffer MakeIndexBuffer(const Indices& indices) const;
 
         void WaitIdle() const noexcept;

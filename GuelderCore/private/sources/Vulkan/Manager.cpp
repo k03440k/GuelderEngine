@@ -90,14 +90,6 @@ namespace GuelderEngine::Vulkan
             push
         );
     }*/
-    Buffers::VertexBuffer VulkanManager::MakeVertexBuffer(const Mesh2D& mesh) const
-    {
-        return m_DeviceManager.MakeVertexBuffer(mesh.GetVertices());
-    }
-    Buffers::IndexBuffer VulkanManager::MakeIndexBuffer(const Mesh2D& mesh) const
-    {
-        return m_DeviceManager.MakeIndexBuffer(mesh.GetIndices());
-    }
     const DeviceManager& VulkanManager::GetDevice() const noexcept
     {
         return m_DeviceManager;

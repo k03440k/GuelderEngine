@@ -1,18 +1,14 @@
-//TODO: move this file to vulkan folder
 module;
 #include <vulkan/vulkan.hpp>
 #include "../private/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan:RenderSystem;
 
 import :IVulkanObject;
-import :Pipeline;
 import :Mesh;
 import :VertexBuffer;
 import :IndexBuffer;
-
-import <vector>;
-import <type_traits>;
-import <algorithm>;
+import :StagingBuffer;
+import :Pipeline;
 
 export namespace GuelderEngine::Vulkan
 {
@@ -35,9 +31,23 @@ export namespace GuelderEngine::Vulkan
             commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline.GetPipeline());
             std::for_each(begin, end, [](const RenderActor& actor){ RenderActor(commandBuffer, push, actor.vertexBuffer, actor.indexBuffer)} );
         }*/
-        void SetShaderInfo(const vk::Device& device, const vk::RenderPass& renderPass, const Vulkan::ShaderInfo& shaderInfo);
+        void SetShaderInfo(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo);
 
-        void Render(const vk::CommandBuffer& commandBuffer, const SimplePushConstantData& push, const Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer);
+        template<uint dimension>
+        void Render(const vk::CommandBuffer& commandBuffer, const SimplePushConstantData<dimension>& push, const Buffers::VertexBuffer<dimension>& vertexBuffer, const Buffers::IndexBuffer& indexBuffer) const
+        {
+            commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline.GetPipeline());
+
+            vertexBuffer.Bind(commandBuffer, { 0 });
+            if(indexBuffer.GetIndicesCount())
+                indexBuffer.Bind(commandBuffer, { 0 });
+            commandBuffer.pushConstants(m_Pipeline.GetPipelineLayout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(push), &push);
+
+            if(indexBuffer.GetIndicesCount())
+                commandBuffer.drawIndexed(indexBuffer.GetIndicesCount(), 1, 0, 0, 0);
+            else
+                commandBuffer.draw(vertexBuffer.GetVerticesCount(), 1, 0, 0);
+        }
     private:
         Pipeline m_Pipeline;
     };

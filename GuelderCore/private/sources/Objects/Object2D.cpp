@@ -11,12 +11,12 @@ import :Actor;
 
 namespace GuelderEngine
 {
-    Object2D::Object2D(const Vulkan::Buffers::VertexBuffer& vertexBuffer, const Vulkan::Buffers::IndexBuffer& indexBuffer)
+    Object2D::Object2D(const Vulkan::Buffers::VertexBuffer2D& vertexBuffer, const Vulkan::Buffers::IndexBuffer& indexBuffer)
         : RenderActor(vertexBuffer, indexBuffer)
     {
     }
     Object2D::Object2D(const Object2DCreateInfo& info)
-        : transform(info.transform), mesh(info.mesh)
+        : RenderActor(info.transform), mesh(info.mesh)
     {
     }
     void Object2D::SetMesh(const Vulkan::Mesh2D& mesh)
@@ -27,7 +27,8 @@ namespace GuelderEngine
     {
         return mesh;
     }
-    glm::mat2 Object2DTransform::Mat2() const noexcept
+
+    /*Mat<2> Object2DTransform::Mat() const noexcept
     {
         const float _sin = glm::sin(rotation);
         const float _cos = glm::cos(rotation);
@@ -36,5 +37,5 @@ namespace GuelderEngine
         const glm::mat2 scaleMatrix{{scale.x, 0.0f}, { 0.0f, scale.y }};
 
         return scaleMatrix * rotationMatrix;
-    }
+    }*/
 }

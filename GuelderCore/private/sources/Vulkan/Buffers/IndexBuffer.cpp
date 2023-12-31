@@ -6,7 +6,6 @@ import :IndexBuffer;
 
 import :IBuffer;
 import :StagingBuffer;
-import :DeviceManager;
 
 export namespace GuelderEngine::Vulkan::Buffers
 {
@@ -45,7 +44,7 @@ export namespace GuelderEngine::Vulkan::Buffers
 
             vk::MemoryAllocateInfo allocInfo{
                 memRequirements.size,
-                    DeviceManager::FindMemType(
+                    IBuffer::FindMemoryType(
                         physicalDevice,
                         memRequirements.memoryTypeBits,
                         vk::MemoryPropertyFlagBits::eDeviceLocal

@@ -44,8 +44,16 @@ export namespace GuelderEngine::Vulkan
         //void Render(uint width, uint height, bool& wasWindowResized, const Vulkan::Buffers::VertexBuffer& vertexBuffer,
         //const Vulkan::Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push = {});
 
-        Buffers::VertexBuffer MakeVertexBuffer(const Mesh2D& mesh) const;
-        Buffers::IndexBuffer MakeIndexBuffer(const Mesh2D& mesh) const;
+        template<uint dimension>
+        Buffers::VertexBuffer<dimension> MakeVertexBuffer(const Mesh<dimension>& mesh) const
+        {
+            return m_DeviceManager.MakeVertexBuffer<dimension>(mesh.GetVertices());
+        }
+        template<uint dimension>
+        Buffers::IndexBuffer MakeIndexBuffer(const Mesh<dimension>& mesh) const
+        {
+            return m_DeviceManager.MakeIndexBuffer(mesh.GetIndices());
+        }
 
         const DeviceManager& GetDevice() const noexcept;
         void WaitDevice() const;

@@ -74,8 +74,10 @@ export namespace GuelderEngine
 
         World& GetWorld();
 
-        void SpawnRenderActor(const Object2DCreateInfo& renderActor);
-        void SpawnRenderActor(SharedPtr<Object2D> renderActor);
+        void SpawnActor2D(const Object2DCreateInfo& renderActor);
+        void SpawnActor2D(SharedPtr<Object2D> renderActor);
+        void SpawnActor3D(const Object3DCreateInfo& renderActor);
+        void SpawnActor3D(SharedPtr<Object3D> renderActor);
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;
