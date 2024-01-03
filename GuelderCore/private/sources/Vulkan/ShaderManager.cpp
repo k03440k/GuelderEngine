@@ -5,7 +5,7 @@ module GuelderEngine.Vulkan;
 import :ShaderManager;
 
 import GuelderEngine.Core.Types;
-import GuelderEngine.Core;
+import GuelderEngine.Utils;
 
 namespace GuelderEngine::Vulkan
 {

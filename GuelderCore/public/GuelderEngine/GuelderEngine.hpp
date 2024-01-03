@@ -18,4 +18,5 @@ using namespace GuelderEngine;
 using namespace Debug;
 using namespace Utils;
 using namespace Events;
+using namespace Vulkan;
 #endif

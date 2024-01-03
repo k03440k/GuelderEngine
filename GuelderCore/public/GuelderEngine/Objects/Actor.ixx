@@ -15,11 +15,11 @@ import <memory>;
 
 export namespace GuelderEngine
 {
-    template<uint>
+    template<uint, typename = float>
     class RenderActor;
 
     using Actor2D = RenderActor<2>;
-    using Actor3D = RenderActor<3>;
+    using Actor3D = RenderActor<3, Vector3>;
 
     //it is insufficient for memory, because we allocate a memory with pointer and then with vector. right now I don't know what to choose else
     template<class _Actor>
@@ -39,32 +39,37 @@ export namespace GuelderEngine
     private:
     };
 
-    template<uint dimension>
+    template<uint dimension, typename RotationType = float>
     struct RenderActorTransform
     {
+    public:
+        using Vec = Vector<dimension>;
+    public:
         DECLARE_DEFAULT_COPY(RenderActorTransform);
         DECLARE_DEFAULT_MOVING(RenderActorTransform);
         
         RenderActorTransform() = default;
-        RenderActorTransform(const Mat<dimension>& translation, const Vector<dimension>& scale, const Vector<dimension>& position, float rotation)
+        RenderActorTransform(const Vec& translation, const Vec& scale, const Vec& position, const RotationType& rotation)
             : translation(translation), scale(scale), position(position), rotation(rotation) {}
         ~RenderActorTransform() = default;
 
-        Mat<dimension> translation;
-        Vector<dimension> scale;
-        Vector<dimension> position;
-        float rotation;
+        Vec translation;
+        Vec scale;
+        Vec position;
+        RotationType rotation;
     };
-    template<uint dimension>
-    Mat<dimension> MatFromRenderActorTransform(const RenderActor<dimension>&)
+    template<uint dimension, uint matrix, typename RotateType = float>
+    Mat<matrix> MatFromRenderActorTransform(const RenderActorTransform<dimension, RotateType>&)
     {
         GE_THROW("There is no a such dimension(", dimension, ')');
     }
 
     //with buffers
-    template<uint dimension>
+    template<uint dimension, typename RotationType = float>
     class RenderActor : public Actor
     {
+    public:
+        using Transform = RenderActorTransform<dimension, RotationType>;
     public:
         RenderActor() = default;
         virtual ~RenderActor() = default;
@@ -74,7 +79,7 @@ export namespace GuelderEngine
             vertexBuffer = _vertexBuffer;
             indexBuffer = _indexBuffer;
         }
-        RenderActor(const RenderActorTransform<dimension>& transform)
+        RenderActor(const Transform& transform)
             : transform(transform) {}
 
         void Cleanup(const vk::Device& device) const noexcept
@@ -88,7 +93,7 @@ export namespace GuelderEngine
         Vulkan::Buffers::VertexBuffer<dimension> vertexBuffer;
         Vulkan::Buffers::IndexBuffer indexBuffer;
 
-        RenderActorTransform<dimension> transform;
+        Transform transform;
     private:
     };
 }

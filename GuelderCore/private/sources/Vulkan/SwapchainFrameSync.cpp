@@ -4,7 +4,7 @@ module;
 module GuelderEngine.Vulkan;
 import :SwapchainFrameSync;
 
-import GuelderEngine.Core;
+import GuelderEngine.Utils;
 import GuelderEngine.Core.Types;
 
 namespace GuelderEngine::Vulkan

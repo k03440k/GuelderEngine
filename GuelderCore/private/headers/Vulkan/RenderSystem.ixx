@@ -12,16 +12,24 @@ import :Pipeline;
 
 export namespace GuelderEngine::Vulkan
 {
+    template<uint dimension>
     class RenderSystem : public IVulkanObject
     {
     public:
         DELETE_COPY_AND_MOVING(RenderSystem);
         DECLARE_DEFAULT_CTOR_AND_DTOR(RenderSystem);
 
-        RenderSystem(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo);
+        RenderSystem(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo)
+            : m_Pipeline(device, renderPass, shaderInfo) {}
 
-        void Reset() noexcept override;
-        void Cleanup(const vk::Device& device) const noexcept;
+        void Reset() noexcept override
+        {
+            m_Pipeline.Reset();
+        }
+        void Cleanup(const vk::Device& device) const noexcept
+        {
+            m_Pipeline.Cleanup(device);
+        }
 
         /*template<class Iterator>
         requires std::is_base_of_v<typename std::iterator_traits<Iterator>::iterator_category, std::forward_iterator_tag> &&
@@ -31,9 +39,11 @@ export namespace GuelderEngine::Vulkan
             commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline.GetPipeline());
             std::for_each(begin, end, [](const RenderActor& actor){ RenderActor(commandBuffer, push, actor.vertexBuffer, actor.indexBuffer)} );
         }*/
-        void SetShaderInfo(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo);
-
-        template<uint dimension>
+        void SetShaderInfo(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo)
+        {
+            m_Pipeline.SetShaderInfo(device, renderPass, shaderInfo);
+        }
+        
         void Render(const vk::CommandBuffer& commandBuffer, const SimplePushConstantData<dimension>& push, const Buffers::VertexBuffer<dimension>& vertexBuffer, const Buffers::IndexBuffer& indexBuffer) const
         {
             commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline.GetPipeline());
@@ -49,6 +59,6 @@ export namespace GuelderEngine::Vulkan
                 commandBuffer.draw(vertexBuffer.GetVerticesCount(), 1, 0, 0);
         }
     private:
-        Pipeline m_Pipeline;
+        Pipeline<dimension> m_Pipeline;
     };
 }

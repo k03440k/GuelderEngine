@@ -1,4 +1,5 @@
 module;
+#include <cstring>//for memcpy
 #include <vulkan/vulkan.hpp>
 #include "../../Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan:StagingBuffer;

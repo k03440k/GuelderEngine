@@ -1,6 +1,6 @@
 module;
 #include "../public/GuelderEngine/Utils/Debug.hpp"
-module GuelderEngine.Core;
+module GuelderEngine.Utils;
 import :ResourceManager;
 
 import <fstream>;

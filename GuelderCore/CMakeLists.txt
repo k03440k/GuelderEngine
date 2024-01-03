@@ -29,8 +29,6 @@ set(CORE_PUBLIC_HEADERS
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.hpp
 )
 set(CORE_PRIVATE_SOURCES
-	#${CORE_PRIVATE_SOURCES_PATH}GObject/GClass.cpp
-	
 	${CORE_PRIVATE_SOURCES_PATH}Utils/Debug.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Utils/ResourceManager.cpp
 	
@@ -51,13 +49,11 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/DeviceManager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Swapchain.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/ShaderManager.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Pipeline.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainFrameSync.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/QueueFamilyIndices.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/CommandPool.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/FrameBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainFrame.cpp
-	#${CORE_PRIVATE_SOURCES_PATH}Vulkan/Mesh.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/IBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/VertexBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/StagingBuffer.cpp
@@ -93,6 +89,7 @@ set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}Vulkan/Vulkan.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Core/Core.ixx
+	${CORE_PUBLIC_MODULES_PATH}Core/Utils.ixx
 	${CORE_PUBLIC_MODULES_PATH}Core/Application.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Objects/Game.ixx
@@ -260,25 +257,33 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
 
 find_program(GLSLC_EXECUTABLE NAMES glslc HINTS Vulkan::glslc)
 
-foreach(GLSL ${GLSL_SOURCE_FILES})
-  get_filename_component(FILE_NAME ${GLSL} NAME)
-  set(DSPIRV "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/${FILE_NAME}.spv")
-  set(RSPIRV "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/${FILE_NAME}.spv")
-  add_custom_command(
-    OUTPUT ${DSPIRV}
-	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/"
-	COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${DSPIRV}
-    COMMAND ${GLSLC_EXECUTABLE} -o ${DSPIRV} ${GLSL}
-    DEPENDS ${GLSL} "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/")
+foreach(SHADER ${GLSL_SOURCE_FILES})
+
+    get_filename_component(FILE_NAME ${SHADER} NAME)
+	#Debug
+	set(DEBUG_SHADER_BIN "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/${FILE_NAME}.spv")
+	#Release
+	set(RELEASE_SHADER_BIN "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/${FILE_NAME}.spv")
+
+    add_custom_command(
+		OUTPUT ${DEBUG_SHADER_BIN}
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/"
+		COMMAND ${GLSL_VALIDATOR} -V ${SHADER} -o ${DEBUG_SHADER_BIN}
+        DEPENDS ${SHADER} "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/"
+    )
 	add_custom_command(
-    OUTPUT ${RSPIRV}
-	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
-	COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${RSPIRV}
-    COMMAND ${GLSLC_EXECUTABLE} -o ${RSPIRV} ${GLSL}
-    DEPENDS ${GLSL} "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/")
-  list(APPEND SPIRV_BINARY_FILES ${DSPIRV})
-  list(APPEND SPIRV_BINARY_FILES ${RSPIRV})
-endforeach(GLSL)
+		OUTPUT ${RELEASE_SHADER_BIN}
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
+		COMMAND ${GLSL_VALIDATOR} -V ${SHADER} -o ${RELEASE_SHADER_BIN}
+        DEPENDS ${SHADER} "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
+    )
+	
+	message("Processing " ${SHADER} " Putting into " ${DEBUG_SHADER_BIN} "\n")
+	
+list(APPEND SPIRV_BINARY_FILES ${DEBUG_SHADER_BIN})
+list(APPEND SPIRV_BINARY_FILES ${RELEASE_SHADER_BIN})
+
+endForeach(SHADER)
 
 add_custom_target(Shaders ALL DEPENDS ${SPIRV_BINARY_FILES})
 

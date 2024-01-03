@@ -24,7 +24,7 @@ export namespace GuelderEngine
     using Mat = glm::mat<dimension, dimension, glm::f32, glm::defaultp>;
     using Mat2 = Mat<2>;
     using Mat3 = Mat<3>;
-
+    using Mat4 = Mat<4>;
 
     //uses a std::shared_ptr<T>
     template<class T>

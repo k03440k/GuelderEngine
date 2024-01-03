@@ -32,7 +32,7 @@ namespace GuelderEngine::Vulkan
         m_Queues.present = m_Device.getQueue(m_QueueIndices.GetPresentFamily(), 0);
         m_Queues.transfer = m_Device.getQueue(m_QueueIndices.GetTransferFamily(), 0);
 
-        m_CommandPool = CommandPool(m_Device, m_QueueIndices, vk::QueueFlagBits::eGraphics);//TODO: move command pools to pipeline and finish buffers remaking
+        m_CommandPool = CommandPool(m_Device, m_QueueIndices, vk::QueueFlagBits::eGraphics);
         m_CommandPoolTransfer = CommandPool(m_Device, m_QueueIndices, vk::QueueFlagBits::eTransfer);
     }
     DeviceManager::DeviceManager(const DeviceManager& other)

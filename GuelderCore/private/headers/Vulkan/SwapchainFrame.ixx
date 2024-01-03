@@ -6,9 +6,11 @@ export module GuelderEngine.Vulkan:SwapchainFrame;
 import :IVulkanObject;
 import :SwapchainFrameSync;
 
+import <limits>;
+
 export namespace GuelderEngine::Vulkan
 {
-    struct SwapchainFrame : public IVulkanObject//, INHERIT_GClass(SwapchainFrame)
+    struct SwapchainFrame : public IVulkanObject
     {
     public:
         DECLARE_DCAD_AND_CAM(SwapchainFrame);
@@ -24,7 +26,7 @@ export namespace GuelderEngine::Vulkan
         /**
          *@brief waits for fence
         */
-        void WaitForImage(const vk::Device& device, const uint64_t& delay = UINT64_MAX) const;
+        void WaitForImage(const vk::Device& device, const uint64_t& delay = std::numeric_limits<uint64_t>::max()) const;
         void ResetFence(const vk::Device& device) const;
         void FreeCommandBuffer(const vk::CommandPool& pool, const vk::Device& device) const noexcept;
 

@@ -112,7 +112,7 @@ namespace GuelderEngine::Vulkan
             vk::ImageLayout::eUndefined,
             vk::ImageLayout::ePresentSrcKHR
         );
-        //TODO: subpass dependencies
+        //TODO: subpass dependencies SETUP THIS SHIT
         //const vk::AttachmentDescription depthAttachment(
 
         //);

@@ -1,6 +1,6 @@
 module;
 #include "../private/headers/Core/GObject/GClass.hpp"
-export module GuelderEngine.Core:ResourceManager;
+export module GuelderEngine.Utils:ResourceManager;
 
 import <string>;
 import <string_view>;

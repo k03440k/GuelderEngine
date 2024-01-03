@@ -8,7 +8,7 @@ import GuelderEngine.Events;
 import GuelderEngine.Debug;
 import GuelderEngine.Layers;
 import GuelderEngine.Game;
-import :ResourceManager;
+import GuelderEngine.Utils;
 import :Window;
 
 import <functional>;
@@ -19,6 +19,7 @@ export namespace GuelderEngine
 {
     //namespace Events { struct WindowCloseEvent; struct BaseEvent; class EventDispatcher; }
     //namespace Layers { class Layer; }
+    namespace Utils { class ResourceManager; }
     using namespace Vulkan;
     class IApplication
     {
@@ -35,6 +36,9 @@ export namespace GuelderEngine
     //Guelder Engine Application
     class GEApplication : public IApplication//, INHERIT_GClass(GEApplication)
     {
+    private:
+        using RenderSystem3D = Vulkan::RenderSystem<3>;
+        using RenderSystem2D = Vulkan::RenderSystem<2>;
     public:
         using UpdateFunc = std::function<void()>;
         /**
@@ -45,9 +49,16 @@ export namespace GuelderEngine
         GEApplication(
             const std::string_view& executablePath,
             const Window::WindowData& info = {},
-            const std::string_view& vertexShaderVarName = "vert",
-            const std::string_view& fragmentShaderVarName = "frag",
-            const Vulkan::VertexAttributeDescriptionsInfo& shaderInfo =
+            const std::string_view& vertexShaderVarName3D = "vert3D",
+            const std::string_view& fragmentShaderVarName3D = "frag3D",
+            const Vulkan::VertexAttributeDescriptionsInfo& shaderInfo3D =
+            {
+                {Vulkan::VertexFormat::Vec3Float, 0},
+                {Vulkan::VertexFormat::Vec3Float, 1 }
+            },
+            const std::string_view& vertexShaderVarName2D = "vert2D",
+            const std::string_view& fragmentShaderVarName2D = "frag2D",
+            const Vulkan::VertexAttributeDescriptionsInfo& shaderInfo2D =
             {
                 {Vulkan::VertexFormat::Vec2Float, 0},
                 {Vulkan::VertexFormat::Vec3Float, 1 }
@@ -70,7 +81,8 @@ export namespace GuelderEngine
         static double GetTime();
 
         //void SetMesh(const Vulkan::Mesh2D& mesh);
-        void SetShaderInfo(const Vulkan::ShaderInfo& shaderInfo);
+        void SetShaderInfo3D(const Vulkan::ShaderInfo& shaderInfo);
+        void SetShaderInfo2D(const Vulkan::ShaderInfo& shaderInfo);
 
         World& GetWorld();
 
@@ -84,7 +96,8 @@ export namespace GuelderEngine
     private:
         std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;
         std::unique_ptr<Vulkan::Renderer> m_Renderer;
-        std::unique_ptr<Vulkan::RenderSystem> m_RenderSystem;
+        std::unique_ptr<RenderSystem3D> m_RenderSystem3D;
+        std::unique_ptr<RenderSystem2D> m_RenderSystem2D;
         std::unique_ptr<World> m_World;
 
         bool OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept;

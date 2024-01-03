@@ -27,6 +27,7 @@ export namespace GuelderEngine::Vulkan
     template<uint dimension>
     using Vertices = std::vector<Vertex<dimension>>;
     using Vertices2D = std::vector<Vertex2D>;
+    using Vertices3D = std::vector<Vertex3D>;
     using Indices = std::vector<uint>;
 
     template<uint>
@@ -35,14 +36,14 @@ export namespace GuelderEngine::Vulkan
     struct SimplePushConstantData<2>
     {
         glm::mat2 transform{1.0f};
-        glm::vec2 pos;
+        glm::vec2 offset;
         alignas(16) glm::vec3 color;
     };
     template<>
     struct SimplePushConstantData<3>
     {
-        glm::mat3 transform{1.0f};
-        glm::vec3 pos;
+        glm::mat4 transform{1.0f};
+        //glm::vec3 offset;
         alignas(16) glm::vec3 color;//I guess that the alignas must be different
     };
     using SimplePushConstantData2D = SimplePushConstantData<2>;
@@ -96,7 +97,7 @@ export namespace GuelderEngine::Vulkan
         DECLARE_DEFAULT_COPY(Vertex);
         DECLARE_DEFAULT_MOVING(Vertex);
 
-        Vertex(const PositionVector& pos, const Vector3& color)
+        Vertex(const PositionVector& pos, const Vector3& color = {1.f, 1.f, 1.f})
             : pos(pos), color(color) {}
 
         void Reset() noexcept override

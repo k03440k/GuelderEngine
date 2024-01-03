@@ -152,7 +152,7 @@ namespace GuelderEngine::Vulkan
         GE_CLASS_ASSERT(m_IsFrameStarted, "Cannot start render pass when frame was not started");
         GE_CLASS_ASSERT(commandBuffer == m_Swapchain.GetCurrentFrame().commandBuffer, "cannot begin render pass, when input buffer is different from the current one");
 
-        const float blueValue = (sin(glfwGetTime()) / 2.0f) + 0.5f;
+        const float blueValue = /*(sin(glfwGetTime()) / 2.0f) + 0.5f*/.25f;
         const vk::ClearValue clearValue{{ 0.25f, 0.25f, blueValue, 1.0f }};
 
         const vk::RenderPassBeginInfo renderPassBeginInfo(

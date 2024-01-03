@@ -12,7 +12,7 @@ import :ShaderManager;
 import :Pipeline;
 import GuelderEngine.Debug;
 import GuelderEngine.Core.Types;
-import GuelderEngine.Core;
+import GuelderEngine.Utils;
 
 import <vector>;
 import <string_view>;

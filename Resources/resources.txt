@@ -1,8 +1,11 @@
 shaders
 {
-	var vert = "./Resources/Shaders/Compiled/vertex.vert.spv";
-	var frag = "./Resources/Shaders/Compiled/fragment.frag.spv";
+	var vert3D = "./Resources/Shaders/Compiled/vertex3D.vert.spv";
+	var frag3D = "./Resources/Shaders/Compiled/fragment3D.frag.spv";
 	
-	var vert_code = "./Resources/Shaders/vertex.vert";
-	var frag_code = "./Resources/Shaders/fragment.frag";
+	var vert2D = "./Resources/Shaders/Compiled/vertex2D.vert.spv";
+	var frag2D = "./Resources/Shaders/Compiled/fragment2D.frag.spv";
+	
+	var vert_code = "./Resources/Shaders/vertex3D.vert";
+	var frag_code = "./Resources/Shaders/fragment3D.frag";
 }

@@ -12,13 +12,13 @@ export namespace GuelderEngine
 {
     using Object2DTransform = RenderActorTransform<2>;
     template<>
-    Mat<2> MatFromRenderActorTransform(const Actor2D& actor) noexcept
+    Mat<2> MatFromRenderActorTransform(const Object2DTransform& actorTransform)
     {
-        const float _sin = glm::sin(actor.transform.rotation);
-        const float _cos = glm::cos(actor.transform.rotation);
+        const float _sin = glm::sin(actorTransform.rotation);
+        const float _cos = glm::cos(actorTransform.rotation);
         const glm::mat2 rotationMatrix{ {_cos, _sin}, { -_sin, _cos } };
 
-        const glm::mat2 scaleMatrix{ {actor.transform.scale.x, 0.0f}, { 0.0f, actor.transform.scale.y } };
+        const glm::mat2 scaleMatrix{ {actorTransform.scale.x, 0.0f}, { 0.0f, actorTransform.scale.y } };
 
         return scaleMatrix * rotationMatrix;
     }
