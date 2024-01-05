@@ -383,6 +383,11 @@ namespace GuelderEngine::Vulkan
 
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
 
+        for(auto&& image : m_DepthImages)
+            image.Cleanup(device);
+
+        CreateDepthImages(device, physicalDevice, m_DepthFormat, queueFamilyIndices, images);
+
         for(uint i = 0; i < images.size(); i++)
         {
             vk::ImageViewCreateInfo imageViewInfo{};
@@ -398,9 +403,6 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.subresourceRange.baseArrayLayer = 0;
             imageViewInfo.subresourceRange.layerCount = 1;
             imageViewInfo.format = m_Format;
-
-            m_DepthImages[i].Cleanup(device);
-            CreateDepthImages(device, physicalDevice, m_DepthFormat, queueFamilyIndices, images);
 
             m_Frames[i].Recreate(device, m_RenderPass,
                 extent, imageViewInfo, m_DepthImages[i].imageView, commandPool);
