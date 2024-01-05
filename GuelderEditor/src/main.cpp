@@ -15,6 +15,8 @@
 
 #endif // ENABLE_MEMORY_LEAKS_CHECKING
 
+#define GE_USING_NAMESPACES
+
 #include <GuelderEngine/GuelderEngine.hpp>
 #include <glm/gtc/constants.hpp>
 

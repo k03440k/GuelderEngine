@@ -7,3 +7,4 @@ export import :Actor;
 export import :World;
 export import :Object2D;
 export import :Object3D;
+export import :ActorComponent;

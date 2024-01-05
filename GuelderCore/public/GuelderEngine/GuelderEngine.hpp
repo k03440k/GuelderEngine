@@ -11,8 +11,6 @@ import GuelderEngine;
 //import GuelderEngine.Vulkan;
 //import GuelderEngine.Game;
 
-#define GE_USING_NAMESPACES
-
 #ifdef GE_USING_NAMESPACES
 using namespace GuelderEngine;
 using namespace Debug;
