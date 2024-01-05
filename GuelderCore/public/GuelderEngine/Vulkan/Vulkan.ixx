@@ -5,6 +5,7 @@ export import :DeviceManager;
 export import :Manager;
 export import :Swapchain;
 export import :SwapchainFrame;
+export import :SwapchainDepthImage;
 export import :Pipeline;//temp
 export import :Renderer;
 export import :RenderSystem;

@@ -9,6 +9,8 @@ import :SwapchainFrameSync;
 import :CommandPool;
 import GuelderEngine.Core.Types;
 
+import <array>;
+
 //Ctors
 namespace GuelderEngine::Vulkan
 {
@@ -95,9 +97,9 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    void SwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent)
+    void SwapchainFrame::CreateFrameBuffer(const vk::Device& device, const vk::ImageView& depthImageView, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent)
     {
-        const std::vector attachments{imageView};//idk
+        std::array attachments{imageView, depthImageView};
 
         const vk::FramebufferCreateInfo framebufferInfo(
             vk::FramebufferCreateFlags(),
@@ -137,14 +139,14 @@ namespace GuelderEngine::Vulkan
     }
 
     void SwapchainFrame::Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,
-        const vk::ImageViewCreateInfo& viewInfo, const vk::CommandPool& pool)
+        const vk::ImageViewCreateInfo& viewInfo, const vk::ImageView& depthImageView, const vk::CommandPool& pool)
     {
         CleanupImageView(device);
         CleanupFramebuffer(device);
         FreeCommandBuffer(pool, device);
 
         CreateImage(device, viewInfo);
-        CreateFrameBuffer(device, renderPass, swapchainExtent);
+        CreateFrameBuffer(device, depthImageView, renderPass, swapchainExtent);
         CreateCommandBuffer(device, pool);
     }
 }

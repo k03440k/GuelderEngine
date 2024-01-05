@@ -41,6 +41,7 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Objects/Object2D.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Objects/Object3D.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Objects/Actor.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Objects/ActorComponent.cpp
 	
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Renderer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/RenderSystem.cpp
@@ -54,6 +55,7 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/CommandPool.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/FrameBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainFrame.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainDepthImage.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/IBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/VertexBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/StagingBuffer.cpp
@@ -75,6 +77,7 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/CommandPool.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/FrameBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainFrame.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainDepthImage.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/IBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/VertexBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/StagingBuffer.ixx
@@ -98,6 +101,7 @@ set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}Objects/Object2D.ixx
 	${CORE_PUBLIC_MODULES_PATH}Objects/Object3D.ixx
 	${CORE_PUBLIC_MODULES_PATH}Objects/Actor.ixx
+	${CORE_PUBLIC_MODULES_PATH}Objects/ActorComponent.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Core/Types.ixx
 	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.ixx

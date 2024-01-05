@@ -10,7 +10,7 @@ import <limits>;
 
 export namespace GuelderEngine::Vulkan
 {
-    struct SwapchainFrame : public IVulkanObject
+    struct SwapchainFrame final : public IVulkanObject
     {
     public:
         DECLARE_DCAD_AND_CAM(SwapchainFrame);
@@ -21,7 +21,7 @@ export namespace GuelderEngine::Vulkan
         void Cleanup(const vk::Device& device, const vk::CommandPool& pool) const noexcept;
 
         void Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,
-            const vk::ImageViewCreateInfo& viewInfo, const vk::CommandPool& pool);
+            const vk::ImageViewCreateInfo& viewInfo, const vk::ImageView& depthImageView, const vk::CommandPool& pool);
 
         /**
          *@brief waits for fence
@@ -40,7 +40,7 @@ export namespace GuelderEngine::Vulkan
         void CleanupImageView(const vk::Device& device) const noexcept;
         void CleanupFramebuffer(const vk::Device& device) const noexcept;
 
-        void CreateFrameBuffer(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent);
+        void CreateFrameBuffer(const vk::Device& device, const vk::ImageView& depthImageView, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent);
         void CreateImage(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo);
         void CreateCommandBuffer(const vk::Device& device, const vk::CommandPool& pool);
     };

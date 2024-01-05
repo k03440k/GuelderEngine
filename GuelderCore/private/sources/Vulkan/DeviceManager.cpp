@@ -128,9 +128,8 @@ namespace GuelderEngine::Vulkan
             vk::FormatProperties properties;
             physicalDevice.getFormatProperties(format, &properties);
 
-            if(imageTiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & features) == features)
-                return format;
-            else if(imageTiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & features) == features)
+            if(imageTiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & features) == features ||
+                imageTiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & features) == features)
                 return format;
         }
         GE_THROW("failed to find supported format");

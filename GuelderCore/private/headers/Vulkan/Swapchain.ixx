@@ -8,6 +8,7 @@ import :IVulkanObject;
 import :QueueFamilyIndices;
 import :CommandPool;
 import :SwapchainFrame;
+import :SwapchainDepthImage;
 import :ShaderManager;
 import GuelderEngine.Core.Types;
 
@@ -58,13 +59,14 @@ export namespace GuelderEngine::Vulkan
         static vk::Extent2D ChooseExtent(const vk::Extent2D& extent, const vk::SurfaceCapabilitiesKHR& capabilities);
         static SwapchainSupportDetails QuerySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface);
 
-        static vk::RenderPass CreateRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat);
+        static vk::RenderPass CreateRenderPass(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::Format& swapchainImageFormat);
         void Create(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
             const QueueFamilyIndices& queueFamilyIndices);
         /**
          *@brief For ctor
         */
         void CreateFrames(const vk::Device& device, const vk::Format& format, const vk::CommandPool& commandPool, const std::vector<vk::Image>& images);
+        void CreateDepthImages(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::Format& format, const QueueFamilyIndices& queueFamilyIndices, const std::vector<vk::Image>& images);
         
         SwapchainSupportDetails m_Details;
 
@@ -77,6 +79,7 @@ export namespace GuelderEngine::Vulkan
         vk::RenderPass m_RenderPass;
         vk::SwapchainKHR m_Swapchain;
         std::vector<SwapchainFrame> m_Frames;
+        std::vector<SwapchainDepthImage> m_DepthImages;
         vk::Format m_Format;
         vk::Format m_DepthFormat;
         vk::Extent2D m_Extent;

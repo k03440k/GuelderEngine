@@ -8,6 +8,7 @@ import :Swapchain;
 import :DeviceManager;
 import :QueueFamilyIndices;
 import :SwapchainFrame;
+import :SwapchainDepthImage;
 import :CommandPool;
 import :FrameBuffer;
 import :DebugManager;
@@ -27,8 +28,9 @@ namespace GuelderEngine::Vulkan
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
 
         CreateFrames(device, m_Format, commandPool, images);
-        m_RenderPass = CreateRenderPass(device, m_Format);
-        FrameBuffer::Make(device, m_RenderPass, m_Extent, m_Frames);
+        CreateDepthImages(device, physicalDevice, m_DepthFormat, queueFamilyIndices, images);
+        m_RenderPass = CreateRenderPass(device, physicalDevice, m_Format);
+        FrameBuffer::Make(device, m_RenderPass, m_Extent, m_Frames, m_DepthImages);
 
         m_MaxFramesInFlight = m_Frames.size();
         m_CurrentFrameNumber = 0;
@@ -53,6 +55,7 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_DepthFormat = other.m_DepthFormat;
         m_Frames = other.m_Frames;
+        m_DepthImages = other.m_DepthImages;
         m_Swapchain = other.m_Swapchain;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
@@ -86,6 +89,7 @@ namespace GuelderEngine::Vulkan
         m_Format = other.m_Format;
         m_DepthFormat = other.m_DepthFormat;
         m_Frames = other.m_Frames;
+        m_DepthImages = other.m_DepthImages;
         m_Swapchain = other.m_Swapchain;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
         m_CurrentFrameNumber = other.m_CurrentFrameNumber;
@@ -99,7 +103,7 @@ namespace GuelderEngine::Vulkan
 }
 namespace GuelderEngine::Vulkan
 {
-    vk::RenderPass Swapchain::CreateRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat)
+    vk::RenderPass Swapchain::CreateRenderPass(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::Format& swapchainImageFormat)
     {
         const vk::AttachmentDescription colorAttachment(
             vk::AttachmentDescriptionFlags(),
@@ -113,11 +117,22 @@ namespace GuelderEngine::Vulkan
             vk::ImageLayout::ePresentSrcKHR
         );
         //TODO: subpass dependencies SETUP THIS SHIT
-        //const vk::AttachmentDescription depthAttachment(
-
-        //);
+        const vk::AttachmentDescription depthAttachment{
+            vk::AttachmentDescriptionFlags(),
+            DeviceManager::FindSupportedFormat(physicalDevice, 
+                {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint}, vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment),
+            vk::SampleCountFlagBits::e1,
+            vk::AttachmentLoadOp::eClear,
+            vk::AttachmentStoreOp::eDontCare,
+            vk::AttachmentLoadOp::eDontCare,
+            vk::AttachmentStoreOp::eDontCare,
+            vk::ImageLayout::eUndefined,
+            vk::ImageLayout::eDepthStencilAttachmentOptimal
+        };
 
         const vk::AttachmentReference colorAttachmentRef(0, vk::ImageLayout::eColorAttachmentOptimal);
+        const vk::AttachmentReference depthAttachmentRef(1, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
         const vk::SubpassDescription subpassDescription(
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
@@ -125,16 +140,30 @@ namespace GuelderEngine::Vulkan
             nullptr,
             1,
             &colorAttachmentRef,
-            nullptr//,
-            //&depthAttachment
+            nullptr,
+            &depthAttachmentRef
         );
-        const vk::RenderPassCreateInfo info(
-            vk::RenderPassCreateFlags(),
+
+        const vk::SubpassDependency subpassDependency{
+            VK_SUBPASS_EXTERNAL,
+            0,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
+            {},
+            vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+        };
+
+        std::array attachments{ colorAttachment, depthAttachment };
+
+        const vk::RenderPassCreateInfo info{
+            vk::RenderPassCreateFlagBits(),
+            attachments.size(),
+            attachments.data(),
             1,
-            &colorAttachment,
+            &subpassDescription,
             1,
-            &subpassDescription
-        );
+            &subpassDependency
+        };
 
         return device.createRenderPass(info);
     }
@@ -230,10 +259,10 @@ namespace GuelderEngine::Vulkan
         m_RenderPass = nullptr;
         m_IsSwapchain = false;
 
-        for(auto&& frame : m_Frames)//idk
-            frame.Reset();
+        //I think that I lose here a bunch of memory, because I don't perform any .Cleanup's methods of images
 
         m_Frames.clear();
+        m_DepthImages.clear();
         m_MaxFramesInFlight = 0;
         m_CurrentFrameNumber = 0;
     }
@@ -243,6 +272,8 @@ namespace GuelderEngine::Vulkan
             frame.Cleanup(device, commandPool);
 
         device.destroySwapchainKHR(m_Swapchain);
+        for(auto&& frame : m_DepthImages)
+            frame.Cleanup(device);
         device.destroyRenderPass(m_RenderPass);
     }
 
@@ -269,7 +300,30 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.subresourceRange.layerCount = 1;
             imageViewInfo.format = format;
 
-            m_Frames[i] = Vulkan::SwapchainFrame(device, imageViewInfo, commandPool);
+            m_Frames[i] = SwapchainFrame(device, imageViewInfo, commandPool);
+        }
+    }
+    void Swapchain::CreateDepthImages(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::Format& format, const QueueFamilyIndices& queueFamilyIndices, const std::vector<vk::Image>& images)
+    {
+        m_DepthImages.resize(images.size());
+
+        uint queueFamilyIndexCount;
+        const uint* pQueueFamilyIndices = nullptr;
+        vk::SharingMode sharingMode;
+
+        if(queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetTransferFamily())
+        {
+            const uint uniqueIndices[] = { queueFamilyIndices.GetGraphicsFamily(), queueFamilyIndices.GetTransferFamily() };
+            queueFamilyIndexCount = 2;
+            pQueueFamilyIndices = uniqueIndices;
+            sharingMode = vk::SharingMode::eConcurrent;
+        }
+        else
+            sharingMode = vk::SharingMode::eExclusive;
+
+        for (uint i = 0; i < images.size(); ++i)
+        {
+            m_DepthImages[i] = SwapchainDepthImage(device, physicalDevice, m_Extent, format, sharingMode, queueFamilyIndexCount, pQueueFamilyIndices);
         }
     }
     SwapchainSupportDetails Swapchain::QuerySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
@@ -345,8 +399,11 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.subresourceRange.layerCount = 1;
             imageViewInfo.format = m_Format;
 
+            m_DepthImages[i].Cleanup(device);
+            CreateDepthImages(device, physicalDevice, m_DepthFormat, queueFamilyIndices, images);
+
             m_Frames[i].Recreate(device, m_RenderPass,
-                extent, imageViewInfo, commandPool);
+                extent, imageViewInfo, m_DepthImages[i].imageView, commandPool);
         }
     }
     bool Swapchain::CompareSwapchainFormats(const Swapchain& other) const noexcept
