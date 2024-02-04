@@ -14,9 +14,7 @@ namespace GuelderEngine::Vulkan
         m_Surface = cStyle;
 
         m_Capabilities = physicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
-
         m_Format = ChooseSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(m_Surface));
-
         m_PresentMode = ChoosePresentMode(physicalDevice.getSurfacePresentModesKHR(m_Surface));
     }
     void Surface::Reset() noexcept
@@ -28,6 +26,12 @@ namespace GuelderEngine::Vulkan
     void Surface::Cleanup(const vk::Instance& instance) const noexcept
     {
         instance.destroySurfaceKHR(m_Surface);
+    }
+    void Surface::Recreate(const vk::PhysicalDevice& physicalDevice)
+    {
+        m_Capabilities = physicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
+        m_Format = ChooseSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(m_Surface));
+        m_PresentMode = ChoosePresentMode(physicalDevice.getSurfacePresentModesKHR(m_Surface));
     }
     const vk::SurfaceKHR& Surface::GetSurface() const
     {

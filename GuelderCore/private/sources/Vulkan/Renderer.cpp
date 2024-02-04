@@ -90,6 +90,7 @@ namespace GuelderEngine::Vulkan
         }
         catch(const vk::OutOfDateKHRError&)
         {
+            m_Surface.Recreate(physicalDevice);
             m_Swapchain.Recreate(device, physicalDevice, m_Surface.GetSurface(), m_Surface.GetCapabilities(), m_Surface.GetFormat(), m_Surface.GetPresentMode(), extent, commandPool, queueFamilyIndices);
             return nullptr;
         }
@@ -160,6 +161,7 @@ namespace GuelderEngine::Vulkan
         if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR || wasWindowResized)
         {
             device.waitIdle();
+            m_Surface.Recreate(physicalDevice);
             m_Swapchain.Recreate(device, physicalDevice, m_Surface.GetSurface(), m_Surface.GetCapabilities(), m_Surface.GetFormat(), m_Surface.GetPresentMode(), extent, commandPool, queueFamilyIndices);
             wasWindowResized = false;
         }
