@@ -16,7 +16,7 @@ export namespace GuelderEngine::Vulkan
     class RenderSystem : public IVulkanObject
     {
     public:
-        DELETE_COPY_AND_MOVING(RenderSystem);
+        DELETE_COPYING_AND_MOVING(RenderSystem);
         DECLARE_DEFAULT_CTOR_AND_DTOR(RenderSystem);
 
         RenderSystem(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo)
@@ -44,7 +44,7 @@ export namespace GuelderEngine::Vulkan
             m_Pipeline.SetShaderInfo(device, renderPass, shaderInfo);
         }
         
-        void Render(const vk::CommandBuffer& commandBuffer, const SimplePushConstantData<dimension>& push, const Buffers::VertexBuffer<dimension>& vertexBuffer, const Buffers::IndexBuffer& indexBuffer) const
+        void Render(const vk::CommandBuffer& commandBuffer, const SimplePushConstantData<dimension>& push, const Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer, const uint& verticesCount) const
         {
             commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline.GetPipeline());
 
@@ -56,7 +56,7 @@ export namespace GuelderEngine::Vulkan
             if(indexBuffer.GetIndicesCount())
                 commandBuffer.drawIndexed(indexBuffer.GetIndicesCount(), 1, 0, 0, 0);
             else
-                commandBuffer.draw(vertexBuffer.GetVerticesCount(), 1, 0, 0);
+                commandBuffer.draw(verticesCount, 1, 0, 0);
         }
     private:
         Pipeline<dimension> m_Pipeline;

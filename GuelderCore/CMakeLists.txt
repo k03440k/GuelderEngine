@@ -36,12 +36,10 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Core/Window.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Layers/LayerStack.cpp
 	
-	${CORE_PRIVATE_SOURCES_PATH}Objects/World.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Objects/ObjectBase.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Objects/Object2D.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Objects/Object3D.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Objects/Actor.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Objects/ActorComponent.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Actors/World.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Actors/GObject.cpp
+	
+	${CORE_PRIVATE_SOURCES_PATH}ActorComponents/CameraComponent.cpp
 	
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Renderer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/RenderSystem.cpp
@@ -60,6 +58,7 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/VertexBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/StagingBuffer.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/IndexBuffer.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Surface.cpp
 )
 set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Core/Window.ixx
@@ -84,6 +83,7 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/IndexBuffer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Renderer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/RenderSystem.ixx
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/Surface.ixx
 )
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx
@@ -95,13 +95,18 @@ set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}Core/Utils.ixx
 	${CORE_PUBLIC_MODULES_PATH}Core/Application.ixx
 	
-	${CORE_PUBLIC_MODULES_PATH}Objects/Game.ixx
-	${CORE_PUBLIC_MODULES_PATH}Objects/World.ixx
-	${CORE_PUBLIC_MODULES_PATH}Objects/ObjectBase.ixx
-	${CORE_PUBLIC_MODULES_PATH}Objects/Object2D.ixx
-	${CORE_PUBLIC_MODULES_PATH}Objects/Object3D.ixx
-	${CORE_PUBLIC_MODULES_PATH}Objects/Actor.ixx
-	${CORE_PUBLIC_MODULES_PATH}Objects/ActorComponent.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/Actors.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/ActorTransform.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/World.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/GObject.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/Actor2D.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/Actor3D.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/Actor.ixx
+	
+	${CORE_PUBLIC_MODULES_PATH}ActorComponents/ActorComponent.ixx
+	${CORE_PUBLIC_MODULES_PATH}ActorComponents/CameraComponent.ixx
+	${CORE_PUBLIC_MODULES_PATH}ActorComponents/MeshComponent.ixx
+	${CORE_PUBLIC_MODULES_PATH}ActorComponents/RenderActorTransform.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Core/Types.ixx
 	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.ixx

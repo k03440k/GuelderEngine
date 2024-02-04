@@ -7,7 +7,7 @@ import GuelderEngine.Vulkan;
 import GuelderEngine.Events;
 import GuelderEngine.Debug;
 import GuelderEngine.Layers;
-import GuelderEngine.Game;
+import GuelderEngine.Actors;
 import GuelderEngine.Utils;
 import :Window;
 
@@ -34,7 +34,7 @@ export namespace GuelderEngine
     };
 
     //Guelder Engine Application
-    class GEApplication : public IApplication//, INHERIT_GClass(GEApplication)
+    class GEApplication : public IApplication
     {
     private:
         using RenderSystem3D = Vulkan::RenderSystem<3>;
@@ -66,7 +66,7 @@ export namespace GuelderEngine
         );
         virtual ~GEApplication();
 
-        DELETE_COPY_AND_MOVING(GEApplication);
+        DELETE_COPYING_AND_MOVING(GEApplication);
 
         void Run() override;
         void Run(const std::function<void()>& callOnUpdate);
@@ -86,15 +86,17 @@ export namespace GuelderEngine
 
         World& GetWorld();
 
-        void SpawnActor2D(const Object2DCreateInfo& renderActor);
-        void SpawnActor2D(SharedPtr<Object2D> renderActor);
-        void SpawnActor3D(const Object3DCreateInfo& renderActor);
-        void SpawnActor3D(SharedPtr<Object3D> renderActor);
+        void SpawnActor2D(const Actor2DCreateInfo& renderActor);
+        void SpawnActor2D(SharedPtr<Actor2D> renderActor);
+        void SpawnActor3D(const Actor3DCreateInfo& renderActor);
+        void SpawnActor3D(SharedPtr<Actor3D> renderActor);
+
+        static const std::unique_ptr<Vulkan::VulkanManager>& GetVulkanManager();
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;
     private:
-        std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;
+        static std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;
         std::unique_ptr<Vulkan::Renderer> m_Renderer;
         std::unique_ptr<RenderSystem3D> m_RenderSystem3D;
         std::unique_ptr<RenderSystem2D> m_RenderSystem2D;

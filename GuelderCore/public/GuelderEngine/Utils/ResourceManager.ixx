@@ -17,7 +17,7 @@ export namespace GuelderEngine
         class ResourcesHelper
         {
         public:
-            DELETE_COPY_AND_MOVING(ResourcesHelper);
+            DELETE_COPYING_AND_MOVING(ResourcesHelper);
             
             using vars = std::unordered_map<std::string, std::string>;
 
@@ -35,7 +35,7 @@ export namespace GuelderEngine
             ResourceManager(const std::string_view& executablePath);
             ~ResourceManager() = default;
 
-            DELETE_COPY_AND_MOVING(ResourceManager);
+            DELETE_COPYING_AND_MOVING(ResourceManager);
 
             //get file string
             std::string GetRelativeFileSource(const std::string_view& relativeFilePath) const;

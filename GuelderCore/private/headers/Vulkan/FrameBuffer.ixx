@@ -13,7 +13,7 @@ export namespace GuelderEngine::Vulkan
     class FrameBuffer
     {
     public:
-        DELETE_COPY_AND_MOVING(FrameBuffer);
+        DELETE_COPYING_AND_MOVING(FrameBuffer);
 
         static void Make(
             const vk::Device& device,

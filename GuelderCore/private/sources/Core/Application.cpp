@@ -9,7 +9,7 @@ import :Application;
 import GuelderEngine.Layers;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
-import GuelderEngine.Game;
+import GuelderEngine.Actors;
 import GuelderEngine.Utils;
 import :Window;
 
@@ -23,6 +23,7 @@ import <ranges>;
 
 namespace GuelderEngine
 {
+    //std::unique_ptr<Vulkan::VulkanManager> GEApplication::m_VulkanManager = std::make_unique<Vulkan::VulkanManager>("Guelder Engine Editor");
 #pragma region GEApplication
 #define BIND_EVENT_FUNC(x) std::bind(&x, this, std::placeholders::_1)
     GEApplication::GEApplication(
@@ -40,8 +41,10 @@ namespace GuelderEngine
         m_Window = std::make_unique<Window>(Window::WindowData(info.width, info.height, info.title.data()));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));
 
-        m_VulkanManager = std::make_unique<Vulkan::VulkanManager>(m_Window->GetGLFWWindow(), info.title);
+        //m_VulkanManager = std::make_unique<Vulkan::VulkanManager>(info.title);
         m_Renderer = std::make_unique<Vulkan::Renderer>(
+            m_Window->GetGLFWWindow(),
+            m_VulkanManager->GetInstance(),
             m_VulkanManager->GetDevice(),
             info.width, info.height
         );
@@ -71,10 +74,10 @@ namespace GuelderEngine
     }
     GEApplication::~GEApplication()
     {
-        m_VulkanManager->WaitDevice();
+        m_VulkanManager->GetDevice().WaitIdle();
         m_RenderSystem3D->Cleanup(m_VulkanManager->GetDevice().GetDevice());
         m_RenderSystem2D->Cleanup(m_VulkanManager->GetDevice().GetDevice());
-        m_Renderer->Cleanup(m_VulkanManager->GetDevice());
+        m_Renderer->Cleanup(m_VulkanManager->GetDevice(), m_VulkanManager->GetInstance());
         m_World->CleanupRenderActors(m_VulkanManager->GetDevice().GetDevice());
         //m_VulkanManager.reset();
     }
@@ -91,22 +94,22 @@ namespace GuelderEngine
                 {
                     m_Renderer->BeginSwapchainRenderPass(commandBuffer);
 
-                    std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer](const SharedPtr<Actor3D>& actor)
+                    std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer](const SharedPtr<RenderActor3D>& actor)
                         {
                             const Vulkan::SimplePushConstantData<3> push(
                                 MatFromRenderActorTransform<3, 4>(actor->transform),
                                 {}
                             );
-                            m_RenderSystem3D->Render(commandBuffer, push, actor->vertexBuffer, actor->indexBuffer);
+                            m_RenderSystem3D->Render(commandBuffer, push, actor->meshComponent.GetVertexBuffer(), actor->meshComponent.GetIndexBuffer(), actor->meshComponent.GetMesh().GetVertices().size());
                         });
-                    std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer](const SharedPtr<Actor2D>& actor)
+                    std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer](const SharedPtr<RenderActor2D>& actor)
                         {
                             const Vulkan::SimplePushConstantData<2> push(
                                 MatFromRenderActorTransform<2, 2>(actor->transform),
                                 { actor->transform.position.x, actor->transform.position.y },
                                 { (cos(glfwGetTime()) / 5.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f }
                             );
-                            m_RenderSystem2D->Render(commandBuffer, push, actor->vertexBuffer, actor->indexBuffer);
+                            m_RenderSystem2D->Render(commandBuffer, push, actor->meshComponent.GetVertexBuffer(), actor->meshComponent.GetIndexBuffer(), actor->meshComponent.GetMesh().GetVertices().size());
                         });
 
                     m_Renderer->EndSwapchainRenderPass(commandBuffer);
@@ -174,31 +177,27 @@ namespace GuelderEngine
     {
         return *m_World;
     }
-    void GEApplication::SpawnActor2D(const Object2DCreateInfo& renderActor)
+    void GEApplication::SpawnActor2D(const Actor2DCreateInfo& renderActor)
     {
-        Object2D obj{ m_VulkanManager->MakeVertexBuffer(renderActor.mesh), m_VulkanManager->MakeIndexBuffer(renderActor.mesh) };
-        obj.SetMesh(renderActor.mesh);
-        obj.transform = renderActor.transform;
+        Actor2D obj{ renderActor.mesh, renderActor.transform };
         m_World->SpawnActor2D(MakeActor(std::move(obj)));
     }
-    void GEApplication::SpawnActor2D(SharedPtr<Object2D> renderActor)
+    void GEApplication::SpawnActor2D(SharedPtr<Actor2D> renderActor)
     {
-        renderActor->vertexBuffer = m_VulkanManager->MakeVertexBuffer<2>(renderActor->GetMesh());
-        renderActor->indexBuffer = m_VulkanManager->MakeIndexBuffer(renderActor->GetMesh());
         m_World->SpawnActor2D(renderActor);
     }
-    void GEApplication::SpawnActor3D(const Object3DCreateInfo& renderActor)
+    void GEApplication::SpawnActor3D(const Actor3DCreateInfo& renderActor)
     {
-        Object3D obj{ m_VulkanManager->MakeVertexBuffer<3>(renderActor.mesh), m_VulkanManager->MakeIndexBuffer(renderActor.mesh) };
-        obj.SetMesh(renderActor.mesh);
-        obj.transform = renderActor.transform;
+        Actor3D obj{ renderActor.mesh, renderActor.transform };
         m_World->SpawnActor3D(MakeActor(std::move(obj)));
     }
-    void GEApplication::SpawnActor3D(SharedPtr<Object3D> renderActor)
+    void GEApplication::SpawnActor3D(SharedPtr<Actor3D> renderActor)
     {
-        renderActor->vertexBuffer = m_VulkanManager->MakeVertexBuffer(renderActor->GetMesh());
-        renderActor->indexBuffer = m_VulkanManager->MakeIndexBuffer(renderActor->GetMesh());
         m_World->SpawnActor3D(renderActor);
+    }
+    const std::unique_ptr<Vulkan::VulkanManager>& GEApplication::GetVulkanManager()
+    {
+        return m_VulkanManager;
     }
 #pragma endregion
 }

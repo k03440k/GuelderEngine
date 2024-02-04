@@ -19,11 +19,19 @@ import <functional>;
 //ctors and operator='s
 namespace GuelderEngine::Vulkan
 {
-    Swapchain::Swapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface,
-        const vk::Extent2D& extent, const vk::CommandPool& commandPool, const QueueFamilyIndices& queueFamilyIndices)
+    Swapchain::Swapchain(
+        const vk::Device& device,
+        const vk::PhysicalDevice& physicalDevice,
+        const vk::SurfaceKHR& surface,
+        const vk::SurfaceCapabilitiesKHR& surfaceCapabilities,
+        const vk::SurfaceFormatKHR& surfaceFormat,
+        const vk::PresentModeKHR& presentMode,
+        const vk::Extent2D& extent,
+        const vk::CommandPool& commandPool,
+        const QueueFamilyIndices& queueFamilyIndices)
     {
         m_IsSwapchain = false;
-        Create(device, physicalDevice, surface, extent, queueFamilyIndices);
+        Create(device, physicalDevice, surface, surfaceCapabilities, surfaceFormat, presentMode, extent, queueFamilyIndices);
 
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
 
@@ -35,22 +43,8 @@ namespace GuelderEngine::Vulkan
         m_MaxFramesInFlight = m_Frames.size();
         m_CurrentFrameNumber = 0;
     }
-    /*Swapchain::Swapchain(const Swapchain& other)
-    {
-        m_Details = other.m_Details;
-        m_Extent = other.m_Extent;
-        m_Format = other.m_Format;
-        m_DepthFormat = other.m_DepthFormat;
-        m_Frames = other.m_Frames;
-        m_Swapchain = other.m_Swapchain;
-        m_MaxFramesInFlight = other.m_MaxFramesInFlight;
-        m_CurrentFrameNumber = other.m_CurrentFrameNumber;
-        m_IsSwapchain = other.m_IsSwapchain;
-        m_RenderPass = other.m_RenderPass;
-    }*/
     Swapchain::Swapchain(Swapchain&& other) noexcept
     {
-        m_Details = other.m_Details;
         m_Extent = other.m_Extent;
         m_Format = other.m_Format;
         m_DepthFormat = other.m_DepthFormat;
@@ -64,27 +58,8 @@ namespace GuelderEngine::Vulkan
 
         other.Reset();
     }
-    /*Swapchain& Swapchain::operator=(const Swapchain& other)
-    {
-        if(this == &other)
-            return *this;
-
-        m_Details = other.m_Details;
-        m_Extent = other.m_Extent;
-        m_Format = other.m_Format;
-        m_DepthFormat = other.m_DepthFormat;
-        m_Frames = other.m_Frames;
-        m_Swapchain = other.m_Swapchain;
-        m_MaxFramesInFlight = other.m_MaxFramesInFlight;
-        m_CurrentFrameNumber = other.m_CurrentFrameNumber;
-        m_IsSwapchain = other.m_IsSwapchain;
-        m_RenderPass = other.m_RenderPass;
-
-        return *this;
-    }*/
     Swapchain& Swapchain::operator=(Swapchain&& other) noexcept
     {
-        m_Details = other.m_Details;
         m_Extent = other.m_Extent;
         m_Format = other.m_Format;
         m_DepthFormat = other.m_DepthFormat;
@@ -167,28 +142,35 @@ namespace GuelderEngine::Vulkan
 
         return device.createRenderPass(info);
     }
-    void Swapchain::Create(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent, const QueueFamilyIndices& queueFamilyIndices)
+    void Swapchain::Create
+    (
+        const vk::Device& device,
+        const vk::PhysicalDevice& physicalDevice,
+        const vk::SurfaceKHR& surface,
+        const vk::SurfaceCapabilitiesKHR& surfaceCapabilities,
+        const vk::SurfaceFormatKHR& surfaceFormat,
+        const vk::PresentModeKHR& presentMode,
+        const vk::Extent2D& extent,
+        const QueueFamilyIndices& queueFamilyIndices
+    )
     {
-        m_Details = QuerySwapChainSupport(physicalDevice, surface);
-        const auto format = ChooseSurfaceFormat(m_Details.formats);
-        const auto present = ChoosePresentMode(m_Details.presentModes);
-        const auto chosenExtent = ChooseExtent(extent, m_Details.capabilities);
+        const auto chosenExtent = ChooseExtent(extent, surfaceCapabilities);
 
-        const uint imageCount = std::min(m_Details.capabilities.maxImageCount, m_Details.capabilities.minImageCount+1);
+        const uint imageCount = std::min(surfaceCapabilities.maxImageCount, surfaceCapabilities.minImageCount+1);
 
         //GE_LOG(VulkanCore, Info, "max images count: ", m_Details.capabilities.maxImageCount, "; min images count: ", m_Details.capabilities.minImageCount);
 
         vk::SwapchainCreateInfoKHR createInfo {vk::SwapchainCreateFlagsKHR()};
         createInfo.minImageCount = imageCount;
         createInfo.surface = surface;
-        createInfo.imageFormat = format.format;
-        createInfo.imageColorSpace = format.colorSpace;
+        createInfo.imageFormat = surfaceFormat.format;
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;
         createInfo.imageExtent = chosenExtent;
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
-        createInfo.preTransform = m_Details.capabilities.currentTransform;
+        createInfo.preTransform = surfaceCapabilities.currentTransform;
         createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-        createInfo.presentMode = present;
+        createInfo.presentMode = presentMode;
         createInfo.clipped = VK_TRUE;
 
         if(!m_IsSwapchain)
@@ -236,7 +218,7 @@ namespace GuelderEngine::Vulkan
         const auto oldFormat = m_Format;
         const auto oldDepthFormat = m_DepthFormat;
 
-        m_Format = format.format;
+        m_Format = surfaceFormat.format;
         m_DepthFormat = DeviceManager::FindSupportedFormat(
             physicalDevice, {vk::Format::eD32Sfloat,vk::Format::eD32SfloatS8Uint,vk::Format::eD24UnormS8Uint},
             vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
@@ -251,7 +233,6 @@ namespace GuelderEngine::Vulkan
     }
     void Swapchain::Reset() noexcept
     {
-        m_Details = {};
         m_Extent = vk::Extent2D{};
         m_Format = vk::Format::eUndefined;
         m_DepthFormat = vk::Format::eUndefined;
@@ -326,43 +307,6 @@ namespace GuelderEngine::Vulkan
             m_DepthImages[i] = SwapchainDepthImage(device, physicalDevice, m_Extent, format, sharingMode, queueFamilyIndexCount, pQueueFamilyIndices);
         }
     }
-    SwapchainSupportDetails Swapchain::QuerySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
-    {
-        SwapchainSupportDetails support;
-        support.capabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
-        support.formats = physicalDevice.getSurfaceFormatsKHR(surface);
-        support.presentModes = physicalDevice.getSurfacePresentModesKHR(surface);
-
-#ifdef GE_DEBUG_VULKAN
-        /*GE_LOG(VulkanCore, Info, "The device can support following Present Modes:");
-        for(auto&& mode : support.presentModes)
-        {
-            DebugManager::LogPresentMode(mode);
-        }*/
-#endif
-
-        return support;
-    }
-    vk::SurfaceFormatKHR Swapchain::ChooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
-    {
-        for(auto&& format : formats)
-            if(format.format == vk::Format::eB8G8R8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
-                return format;
-
-        GE_LOG(VulkanCore, Warning, "the device doesn't support: vk::Format::eB8G8R8A8Unorm and vk::ColorSpaceKHR::eSrgbNonlinear");
-        return formats[0];
-    }
-    vk::PresentModeKHR Swapchain::ChoosePresentMode(const std::vector<vk::PresentModeKHR>& presentModes)
-    {
-        for(auto&& presentMode : presentModes)
-        {
-            if(presentMode == vk::PresentModeKHR::eMailbox)
-                return presentMode;
-        }
-
-        GE_LOG(VulkanCore, Warning, "the device doesn't support Mailbox present mode. Choosing Fifo");
-        return vk::PresentModeKHR::eFifo;
-    }
     vk::Extent2D Swapchain::ChooseExtent(const vk::Extent2D& extent, const vk::SurfaceCapabilitiesKHR& capabilities)
     {
         if(capabilities.currentExtent.width != UINT32_MAX)
@@ -376,10 +320,19 @@ namespace GuelderEngine::Vulkan
         return chosenExtent;
     }
 
-    void Swapchain::Recreate(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
-        const vk::CommandPool& commandPool, const QueueFamilyIndices& queueFamilyIndices)
+    void Swapchain::Recreate
+    (
+        const vk::Device& device,
+        const vk::PhysicalDevice& physicalDevice,
+        const vk::SurfaceKHR& surface,
+        const vk::SurfaceCapabilitiesKHR& surfaceCapabilities,
+        const vk::SurfaceFormatKHR& surfaceFormat,
+        const vk::PresentModeKHR& presentMode,
+        const vk::Extent2D& extent,
+        const vk::CommandPool& commandPool,
+        const QueueFamilyIndices& queueFamilyIndices)
     {
-        Create(device, physicalDevice, surface, extent, queueFamilyIndices);
+        Create(device, physicalDevice, surface, surfaceCapabilities, surfaceFormat, presentMode, extent, queueFamilyIndices);
 
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
 

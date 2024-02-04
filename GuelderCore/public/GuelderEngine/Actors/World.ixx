@@ -3,12 +3,11 @@ module;
 #include "../Utils/Debug.hpp"
 #include <vulkan/vulkan.hpp>
 #include <compare>//wtf?!
-export module GuelderEngine.Game:World;
+export module GuelderEngine.Actors:World;
 
 import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
 import :Actor;
-import :Object2D;
 
 import <vector>;
 
@@ -21,15 +20,15 @@ export namespace GuelderEngine
         World() = default;
 
         void SpawnActor(const SharedPtr<Actor>& actor);
-        void SpawnActor2D(const SharedPtr<Actor2D>& actor);
-        void SpawnActor3D(const SharedPtr<Actor3D>& actor);
+        void SpawnActor2D(const SharedPtr<RenderActor2D>& actor);
+        void SpawnActor3D(const SharedPtr<RenderActor3D>& actor);
 
         SharedPtr<Actor>& GetActor(const Actor::ID& id = 0);
         std::vector<SharedPtr<Actor>>& GetActors();
-        SharedPtr<Actor2D>& GetActor2D(const Actor::ID& id = 0);
-        SharedPtr<Actor3D>& GetActor3D(const Actor::ID& id = 0);
-        std::vector<SharedPtr<Actor2D>>& GetActors2D();
-        std::vector<SharedPtr<Actor3D>>& GetActors3D();
+        SharedPtr<RenderActor2D>& GetActor2D(const Actor::ID& id = 0);
+        SharedPtr<RenderActor3D>& GetActor3D(const Actor::ID& id = 0);
+        std::vector<SharedPtr<RenderActor2D>>& GetActors2D();
+        std::vector<SharedPtr<RenderActor3D>>& GetActors3D();
 
         void CleanupActors2D(const vk::Device& device) const;
         void CleanupActors3D(const vk::Device& device) const;
@@ -42,8 +41,8 @@ export namespace GuelderEngine
         void Begin();
 
         std::vector<SharedPtr<Actor>> m_Actors;
-        std::vector<SharedPtr<Actor2D>> m_Actors2D;
-        std::vector<SharedPtr<Actor3D>> m_Actors3D;
+        std::vector<SharedPtr<RenderActor2D>> m_Actors2D;
+        std::vector<SharedPtr<RenderActor3D>> m_Actors3D;
         //std::vector<Vulkan::Buffers::VertexBuffer> m_VertexBuffers;
     };
 }

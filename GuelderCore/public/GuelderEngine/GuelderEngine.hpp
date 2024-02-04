@@ -9,7 +9,7 @@ import GuelderEngine;
 //import GuelderEngine.Core.Types;
 //import GuelderEngine.Events;
 //import GuelderEngine.Vulkan;
-//import GuelderEngine.Game;
+//import GuelderEngine.Actors;
 
 #ifdef GE_USING_NAMESPACES
 using namespace GuelderEngine;

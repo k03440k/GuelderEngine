@@ -70,7 +70,7 @@ namespace GuelderEngine
 //ctors
 namespace GuelderEngine
 {
-    bool is_GLFW_init = false;
+    bool Window::is_GLFW_init = false;
 
     namespace Events
     {
@@ -144,17 +144,7 @@ namespace GuelderEngine
     {
         m_WasResized = false;
 
-        if(!is_GLFW_init)
-        {
-            if(!glfwInit())
-            {
-                glfwSetErrorCallback(Events::GLFWErrorCallback);
-                glfwTerminate();
-                GE_CLASS_THROW("cannot initialise glfw");
-            }
-
-            is_GLFW_init = true;
-        }
+        InitGLFW();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -271,6 +261,24 @@ namespace GuelderEngine
     bool& Window::WasWindowResized() noexcept
     {
         return m_WasResized;
+    }
+    bool Window::IsGLFWInit()
+    {
+        return is_GLFW_init;
+    }
+    void Window::InitGLFW()
+    {
+        if(!is_GLFW_init)
+        {
+            if(!glfwInit())
+            {
+                glfwSetErrorCallback(Events::GLFWErrorCallback);
+                glfwTerminate();
+                GE_CLASS_THROW("cannot initialise glfw");
+            }
+
+            is_GLFW_init = true;
+        }
     }
     void Window::OnUpdate()
     {

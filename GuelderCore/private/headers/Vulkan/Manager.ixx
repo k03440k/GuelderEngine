@@ -17,6 +17,7 @@ import GuelderEngine.Core.Types;
 import <string_view>;
 import <vector>;
 import <optional>;
+import <memory>;
 
 export namespace GuelderEngine::Vulkan
 {
@@ -26,11 +27,11 @@ export namespace GuelderEngine::Vulkan
     class VulkanManager : public IVulkanObject
     {
     public:
-        VulkanManager() = default;
-        VulkanManager(GLFWwindow* glfwWindow, const std::string_view& name = "Guelder Engine Editor");
+        VulkanManager(const std::string_view& name = "Guelder Engine Editor");
         virtual ~VulkanManager();
 
-        DECLARE_COPY_AND_MOVING(VulkanManager);
+        DECLARE_MOVING(VulkanManager);
+        DECLARE_DEFAULT_COPYING(VulkanManager);
 
         void Reset() noexcept override;
 
@@ -45,7 +46,7 @@ export namespace GuelderEngine::Vulkan
         //const Vulkan::Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push = {});
 
         template<uint dimension>
-        Buffers::VertexBuffer<dimension> MakeVertexBuffer(const Mesh<dimension>& mesh) const
+        Buffers::VertexBuffer MakeVertexBuffer(const Mesh<dimension>& mesh) const
         {
             return m_DeviceManager.MakeVertexBuffer<dimension>(mesh.GetVertices());
         }
@@ -55,8 +56,9 @@ export namespace GuelderEngine::Vulkan
             return m_DeviceManager.MakeIndexBuffer(mesh.GetIndices());
         }
 
-        const DeviceManager& GetDevice() const noexcept;
-        void WaitDevice() const;
+        static const std::unique_ptr<Vulkan::VulkanManager>& Get();
+
+        const DeviceManager& GetDevice() const;
         const vk::Instance& GetInstance() const;
     private:
         static vk::Instance CreateVkInstance(const char* name);

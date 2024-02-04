@@ -139,12 +139,12 @@ int main(int argc, char** argv)
     {
         const auto app = std::make_unique<GEApplication>(argv[0]);
 
-        class MyActor2D : public Object2D
+        class MyActor2D : public Actor2D
         {
         public:
             MyActor2D() = default;
-            MyActor2D(const Object2DCreateInfo& info)
-                : Object2D(info) {}
+            MyActor2D(const Vulkan::Mesh2D& mesh, const Actor2DTransform& transform)
+                : Actor2D(mesh, transform) {}
 
             void Update() override
             {
@@ -152,12 +152,12 @@ int main(int argc, char** argv)
                 transform.position.y = .2f * sin(GEApplication::GetTime());
             }
         };
-        class MyActor3D : public Object3D
+        class MyActor3D : public Actor3D
         {
         public:
             MyActor3D() = default;
-            MyActor3D(const Object3DCreateInfo& info)
-                : Object3D(info) {}
+            MyActor3D(const Vulkan::Mesh3D& mesh, const Actor3DTransform& transform)
+                : Actor3D(mesh, transform) {}
 
             void Update() override
             {
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
             }
         };
 
-        app->SpawnActor3D
+        /*app->SpawnActor3D
         (
             MakeActor
             (
@@ -188,25 +188,25 @@ int main(int argc, char** argv)
                     }
                 }
             )
-        );
+        );*/
 
         //pencil
-        /*app->SpawnActor3D
+        app->SpawnActor3D
 (
     MakeActor
     (
         MyActor3D
         {
-            {
+
+                CreateCube3DMesh({0, 0, 0}),
+
                 {
                     {0, 0, .5f},
                     {.4f, 1.5f, .4f},//scale
                     {1,1,1},//position
                     {0, 0, 0},//rotation
-                },
-
-                CreateCube3DMesh({0, 0, 0})
-            }
+                }
+            
         }
     )
 );
@@ -216,16 +216,15 @@ app->SpawnActor3D
     (
         MyActor3D
         {
-            {
+                CreateCube3DMesh({1.0f, 1.38f, 0}),
+            
                 {
                     {0, 0, .5f},
                     {.4f, .4f, .4f},//scale
                     {1,1,.5f},//position
                     {0, 0, 0},//rotation
-                },
-
-                CreateCube3DMesh({1.0f, 1.38f, 0})
-            }
+                }
+            
         }
     )
 );
@@ -235,19 +234,19 @@ app->SpawnActor3D
     (
         MyActor3D
         {
-            {
+
+                CreateCube3DMesh({-1.0f, 1.38f, 0}),
+
                 {
                     {0, 0, .5f},
                     {.4f, .4f, .4f},//scale
                     {1,1,.5f},//position
                     {0, 0, 0},//rotation
-                },
-
-                CreateCube3DMesh({-1.0f, 1.38f, 0})
-            }
+                }
+            
         }
     )
-);*/
+);
         /*app->SpawnActor2D
         (
             MakeActor

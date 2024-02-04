@@ -14,15 +14,15 @@ export namespace GuelderEngine::Vulkan
     {
     public:
         DECLARE_DEFAULT_CTOR_AND_DTOR(QueueFamilyIndices);
-        DECLARE_COPY(QueueFamilyIndices);
+        DECLARE_COPYING(QueueFamilyIndices);
 
-        QueueFamilyIndices(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
+        QueueFamilyIndices(const vk::PhysicalDevice& device/*, const vk::SurfaceKHR& surface*/);
 
-        bool IsComplete() const noexcept;
+        bool IsComplete() const;
 
-        uint GetGraphicsFamily() const noexcept;
-        uint GetPresentFamily() const noexcept;
-        uint GetTransferFamily() const noexcept;
+        uint GetGraphicsFamily() const;
+        uint GetPresentFamily() const;
+        uint GetTransferFamily() const;
     private:
         std::optional<uint> graphicsFamily;
         std::optional<uint> presentFamily;

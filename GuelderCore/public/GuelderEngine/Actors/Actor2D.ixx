@@ -2,7 +2,7 @@ module;
 #include <glm/glm.hpp>
 #include "../../../private/headers/Core/GObject/GClass.hpp"
 #include "../Utils/Debug.hpp"
-export module GuelderEngine.Game:Object2D;
+export module GuelderEngine.Actors:Actor2D;
 
 import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
@@ -10,9 +10,9 @@ import :Actor;
 
 export namespace GuelderEngine
 {
-    using Object2DTransform = RenderActorTransform<2>;
+    using Actor2DTransform = RenderActorTransform<2>;
     template<>
-    Mat<2> MatFromRenderActorTransform(const Object2DTransform& actorTransform)
+    Mat<2> MatFromRenderActorTransform(const Actor2DTransform& actorTransform)
     {
         const float _sin = glm::sin(actorTransform.rotation);
         const float _cos = glm::cos(actorTransform.rotation);
@@ -33,26 +33,27 @@ export namespace GuelderEngine
 
         Mat2 Mat() const noexcept override;
     };*/
-    struct Object2DCreateInfo
+    struct Actor2DCreateInfo
     {
-        const Object2DTransform& transform;
+        const Actor2DTransform& transform;
         const Vulkan::Mesh2D& mesh;
     };
-    class Object2D : public Actor2D
-    {
-    public:
-        Object2D() = default;
-        virtual ~Object2D() = default;
+    using Actor2D = RenderActor<2>;
+    //class Actor2D : public RenderActor2D
+    //{
+    //public:
+    //    Actor2D() = default;
+    //    virtual ~Actor2D() = default;
 
-        Object2D(const Vulkan::Buffers::VertexBuffer2D& vertexBuffer, const Vulkan::Buffers::IndexBuffer& indexBuffer);
-        Object2D(const Object2DCreateInfo& info);
+    //    Actor2D(const Vulkan::Buffers::VertexBuffer2D& vertexBuffer, const Vulkan::Buffers::IndexBuffer& indexBuffer);
+    //    Actor2D(const Actor2DCreateInfo& info);
 
-        void SetMesh(const Vulkan::Mesh2D& mesh);
+    //    void SetMesh(const Vulkan::Mesh2D& mesh);
 
-        //Object2DTransform transform;
+    //    //Object2DTransform transform;
 
-        const Vulkan::Mesh2D& GetMesh() const noexcept;
-    private:
-        Vulkan::Mesh2D mesh;
-    };
+    //    const Vulkan::Mesh2D& GetMesh() const noexcept;
+    //private:
+    //    Vulkan::Mesh2D mesh;
+    //};
 }

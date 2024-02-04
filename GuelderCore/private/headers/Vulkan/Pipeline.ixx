@@ -37,7 +37,7 @@ export namespace GuelderEngine::Vulkan
     public:
         DECLARE_DEFAULT_CTOR_AND_DTOR(Pipeline);
         //DECLARE_MOVING(Pipeline);
-        DECLARE_DEFAULT_COPY(Pipeline);
+        DECLARE_DEFAULT_COPYING(Pipeline);
 
         Pipeline(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo)
         {

@@ -5,22 +5,42 @@ module;
 module GuelderEngine.Vulkan;
 import :Renderer;
 
-import :Mesh;
-import :VertexBuffer;
-import :IndexBuffer;
 import :Swapchain;
 import :DeviceManager;
 import :QueueFamilyIndices;
+import :Surface;
+import GuelderEngine.Core.Types;
 
 namespace GuelderEngine::Vulkan
 {
-    Renderer::Renderer(const DeviceManager& deviceManager, uint width, uint height)
-        : Renderer(deviceManager.GetDevice(), deviceManager.GetPhysicalDevice(), deviceManager.GetSurface(), {width, height}, deviceManager.GetCommandPool().GetCommandPool(), deviceManager.GetQueueIndices()) {}
-    Renderer::Renderer(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface, const vk::Extent2D& extent,
-        const vk::CommandPool& commandPool, const QueueFamilyIndices& queueFamilyIndices)
-        : m_Swapchain(device, physicalDevice, surface, extent, commandPool, queueFamilyIndices), m_CurrentImageIndex(0), m_IsFrameStarted(false) {}
+    Renderer::Renderer(GLFWwindow* window, const vk::Instance& instance, const DeviceManager& deviceManager, uint width, uint height)
+        : Renderer(
+            window,
+            instance,
+            deviceManager.GetDevice(), 
+            deviceManager.GetPhysicalDevice(), 
+            {width, height}, 
+            deviceManager.GetCommandPool().GetCommandPool(), 
+            deviceManager.GetQueueIndices()
+        ) {}
+    Renderer::Renderer
+    (
+        GLFWwindow* window,
+        const vk::Instance& instance,
+        const vk::Device& device, 
+        const vk::PhysicalDevice& physicalDevice,
+        const vk::Extent2D& extent,
+        const vk::CommandPool& commandPool,
+        const QueueFamilyIndices& queueFamilyIndices
+    )
+        : m_Surface(window, instance, physicalDevice), m_CurrentImageIndex(0), m_IsFrameStarted(false)
+    {
+        m_Swapchain = Swapchain(device, physicalDevice, m_Surface.GetSurface(), m_Surface.GetCapabilities(), m_Surface.GetFormat(), m_Surface.GetPresentMode(), extent, commandPool, queueFamilyIndices);
+    }
+
     Renderer::Renderer(Renderer&& other) noexcept
     {
+        m_Surface = other.m_Surface;
         m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_IsFrameStarted = other.m_IsFrameStarted;
         m_CurrentImageIndex = other.m_CurrentImageIndex;
@@ -29,6 +49,7 @@ namespace GuelderEngine::Vulkan
     }
     Renderer& Renderer::operator=(Renderer&& other) noexcept
     {
+        m_Surface = other.m_Surface;
         m_Swapchain = std::forward<Swapchain>(other.m_Swapchain);
         m_IsFrameStarted = other.m_IsFrameStarted;
         m_CurrentImageIndex = other.m_CurrentImageIndex;
@@ -39,13 +60,15 @@ namespace GuelderEngine::Vulkan
     }
     void Renderer::Reset() noexcept
     {
+        m_Surface.Reset();
         m_Swapchain.Reset();
         m_CurrentImageIndex = 0;
         m_IsFrameStarted = false;
     }
-    void Renderer::Cleanup(const vk::Device& device, const vk::CommandPool& commandPool) const noexcept
+    void Renderer::Cleanup(const vk::Device& device,const vk::Instance& instance, const vk::CommandPool& commandPool) const noexcept
     {
         m_Swapchain.Cleanup(device, commandPool);
+        m_Surface.Cleanup(instance);
     }
 }
 namespace GuelderEngine::Vulkan
@@ -53,7 +76,6 @@ namespace GuelderEngine::Vulkan
     vk::CommandBuffer Renderer::BeginFrame(
         const vk::Device& device,
         const vk::PhysicalDevice& physicalDevice,
-        const vk::SurfaceKHR& surface, 
         const vk::CommandPool& commandPool, 
         const vk::Extent2D& extent, 
         const QueueFamilyIndices& queueFamilyIndices)
@@ -68,7 +90,7 @@ namespace GuelderEngine::Vulkan
         }
         catch(const vk::OutOfDateKHRError&)
         {
-            m_Swapchain.Recreate(device, physicalDevice, surface, extent, commandPool, queueFamilyIndices);
+            m_Swapchain.Recreate(device, physicalDevice, m_Surface.GetSurface(), m_Surface.GetCapabilities(), m_Surface.GetFormat(), m_Surface.GetPresentMode(), extent, commandPool, queueFamilyIndices);
             return nullptr;
         }
 
@@ -83,7 +105,6 @@ namespace GuelderEngine::Vulkan
     void Renderer::EndFrame(
         const vk::Device& device,
         const vk::PhysicalDevice& physicalDevice,
-        const vk::SurfaceKHR& surface,
         const vk::CommandPool& commandPool,
         const vk::Queue& graphicsQueue,
         const vk::Queue& presentQueue,
@@ -139,7 +160,7 @@ namespace GuelderEngine::Vulkan
         if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR || wasWindowResized)
         {
             device.waitIdle();
-            m_Swapchain.Recreate(device, physicalDevice, surface, extent, commandPool, queueFamilyIndices);
+            m_Swapchain.Recreate(device, physicalDevice, m_Surface.GetSurface(), m_Surface.GetCapabilities(), m_Surface.GetFormat(), m_Surface.GetPresentMode(), extent, commandPool, queueFamilyIndices);
             wasWindowResized = false;
         }
 
@@ -192,6 +213,10 @@ namespace GuelderEngine::Vulkan
     const Swapchain& Renderer::GetSwapchain() const
     {
         return m_Swapchain;
+    }
+    const Surface& Renderer::GetSurface() const
+    {
+        return m_Surface;
     }
     bool Renderer::IsFrameInProgress() const noexcept
     {

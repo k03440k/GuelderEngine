@@ -3,7 +3,7 @@ module;
 #include <glm/gtc/matrix_transform.hpp>
 #include "../../../private/headers/Core/GObject/GClass.hpp"
 #include "../Utils/Debug.hpp"
-export module GuelderEngine.Game:Object3D;
+export module GuelderEngine.Actors:Actor3D;
 
 import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
@@ -11,9 +11,9 @@ import :Actor;
 //TODO: start a video tutorial
 export namespace GuelderEngine
 {
-    using Object3DTransform = RenderActorTransform<3, Vector3>;
+    using Actor3DTransform = RenderActorTransform<3, Vector3>;
     template<>
-    Mat4 MatFromRenderActorTransform(const Object3DTransform& actorTransform)
+    Mat4 MatFromRenderActorTransform(const Actor3DTransform& actorTransform)
     {
         /*auto transform = glm::translate(Mat4{ 1.f }, actorTransform.translation);
 
@@ -51,26 +51,10 @@ export namespace GuelderEngine
             },
             {actorTransform.translation.x, actorTransform.translation.y, actorTransform.translation.z, 1.0f} };
     }
-    struct Object3DCreateInfo
+    struct Actor3DCreateInfo
     {
-        const Object3DTransform& transform;
+        const Actor3DTransform& transform;
         const Vulkan::Mesh3D& mesh;
     };
-    class Object3D : public RenderActor<3, Vector3>
-    {
-    public:
-        Object3D() = default;
-        virtual ~Object3D() = default;
-
-        Object3D(const Vulkan::Buffers::VertexBuffer3D& vertexBuffer, const Vulkan::Buffers::IndexBuffer& indexBuffer);
-        Object3D(const Object3DCreateInfo& info);
-
-        void SetMesh(const Vulkan::Mesh3D& mesh);
-
-        //Object3DTransform transform;
-
-        const Vulkan::Mesh3D& GetMesh() const noexcept;
-    private:
-        Vulkan::Mesh3D mesh;
-    };
+    using Actor3D = RenderActor<3, Vector3>;
 }

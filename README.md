@@ -1,8 +1,8 @@
 # GuelderEngine
 
-GuelderEngine is planned to be a simple game engine, however due to my school I don't have much time for it, but I try to maintain this project. It uses a Vulkan API to achieve rendering.
+GuelderEngine is planned to be a simple game engine, however due to my school I don't have much time for it, but I try to maintain this project. It uses a Vulkan API to achieve rendering. This engine supports 2D and 3D rendering.
 
-## Requirments 
+## Requirements 
 Vulkan 1.3.255, C++20, CMake 3.8 and greater
 
 ## How to build

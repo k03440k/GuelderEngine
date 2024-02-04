@@ -9,6 +9,8 @@ import :DeviceManager;
 import :DebugManager;
 import :Swapchain;
 import :Pipeline;
+import :Manager;
+import GuelderEngine.Core;
 import GuelderEngine.Core.Types;
 
 import <optional>;
@@ -17,15 +19,13 @@ import <ranges>;
 
 namespace GuelderEngine::Vulkan
 {
-    DeviceManager::DeviceManager(const vk::Instance& instance, GLFWwindow* glfwWindow, const std::vector<const char*>& extensions)
-    {
-        VkSurfaceKHR cStyle;
-        GE_CLASS_ASSERT(glfwCreateWindowSurface(instance, glfwWindow, nullptr, &cStyle) == VK_SUCCESS,
-            "cannot abstract GLFWwindow for vulkan surface");
-        m_Surface = cStyle;
+    //vk::PhysicalDevice DeviceManager::m_PhysicalDevice = DeviceManager::ChoosePhysicalDevice(VulkanManager::GetInstance());
+    //make device static by some way
 
+    DeviceManager::DeviceManager(const vk::Instance& instance, const std::vector<const char*>& extensions)
+    {
         m_PhysicalDevice = ChoosePhysicalDevice(instance, extensions);
-        m_QueueIndices = QueueFamilyIndices(m_PhysicalDevice, m_Surface);
+        m_QueueIndices = QueueFamilyIndices(m_PhysicalDevice/*, m_Surface*/);
         m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices, extensions);
 
         m_Queues.graphics = m_Device.getQueue(m_QueueIndices.GetGraphicsFamily(), 0);
@@ -35,49 +35,22 @@ namespace GuelderEngine::Vulkan
         m_CommandPool = CommandPool(m_Device, m_QueueIndices, vk::QueueFlagBits::eGraphics);
         m_CommandPoolTransfer = CommandPool(m_Device, m_QueueIndices, vk::QueueFlagBits::eTransfer);
     }
-    DeviceManager::DeviceManager(const DeviceManager& other)
-    {
-        m_PhysicalDevice = other.m_PhysicalDevice;
-        m_Device = other.m_Device;
-        m_QueueIndices = other.m_QueueIndices;
-        m_Surface = other.m_Surface;
-        m_CommandPool = other.m_CommandPool;
-        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
-        m_Queues = other.m_Queues;
-    }
     DeviceManager::DeviceManager(DeviceManager&& other) noexcept
     {
-        m_PhysicalDevice = other.m_PhysicalDevice;
         m_Device = other.m_Device;
+        m_PhysicalDevice = other.m_PhysicalDevice;
         m_QueueIndices = other.m_QueueIndices;
-        m_Surface = other.m_Surface;
         m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
         m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
         m_Queues = other.m_Queues;
 
         other.Reset();
     }
-    DeviceManager& DeviceManager::operator=(const DeviceManager& other)
-    {
-        if(this == &other)
-            return *this;
-
-        m_PhysicalDevice = other.m_PhysicalDevice;
-        m_Device = other.m_Device;
-        m_QueueIndices = other.m_QueueIndices;
-        m_Surface = other.m_Surface;
-        m_CommandPool = other.m_CommandPool;
-        m_CommandPoolTransfer = other.m_CommandPoolTransfer;
-        m_Queues = other.m_Queues;
-
-        return *this;
-    }
     DeviceManager& DeviceManager::operator=(DeviceManager&& other) noexcept
     {
-        m_PhysicalDevice = other.m_PhysicalDevice;
         m_Device = other.m_Device;
+        m_PhysicalDevice = other.m_PhysicalDevice;
         m_QueueIndices = other.m_QueueIndices;
-        m_Surface = other.m_Surface;
         m_CommandPool = std::forward<CommandPool>(other.m_CommandPool);
         m_CommandPoolTransfer = std::forward<CommandPool>(other.m_CommandPoolTransfer);
         m_Queues = other.m_Queues;
@@ -94,20 +67,18 @@ namespace GuelderEngine::Vulkan
         m_PhysicalDevice = nullptr;
         m_Device = nullptr;
         m_QueueIndices = {};
-        m_Surface = nullptr;
         m_Queues.transfer = nullptr;
         m_Queues.present = nullptr;
         m_Queues.graphics = nullptr;
         m_CommandPool.Reset();
         m_CommandPoolTransfer.Reset();
     }
-    void DeviceManager::Cleanup(const vk::Instance& instance) const noexcept
+    void DeviceManager::Cleanup() const noexcept
     {
-        //m_Device.waitIdle();
         m_CommandPool.Cleanup(m_Device);
         m_CommandPoolTransfer.Cleanup(m_Device);
         m_Device.destroy();
-        instance.destroySurfaceKHR(m_Surface);
+        //instance.destroySurfaceKHR(m_Surface);
     }
     /*uint DeviceManager::FindMemType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties)
     {
@@ -138,21 +109,17 @@ namespace GuelderEngine::Vulkan
     {
         return Buffers::IndexBuffer(m_Device, m_PhysicalDevice, m_QueueIndices, m_CommandPoolTransfer.GetCommandPool(), m_Queues.transfer, indices);
     }
-    const vk::Device& DeviceManager::GetDevice() const noexcept
+    const vk::Device& DeviceManager::GetDevice() const
     {
         return m_Device;
     }
-    const vk::PhysicalDevice& DeviceManager::GetPhysicalDevice() const noexcept
+    const vk::PhysicalDevice& DeviceManager::GetPhysicalDevice() const
     {
         return m_PhysicalDevice;
     }
-    const QueueFamilyIndices& DeviceManager::GetQueueIndices() const noexcept
+    const QueueFamilyIndices& DeviceManager::GetQueueIndices() const
     {
         return m_QueueIndices;
-    }
-    const vk::SurfaceKHR& DeviceManager::GetSurface() const noexcept
-    {
-        return m_Surface;
     }
     const CommandPool& DeviceManager::GetCommandPool() const
     {

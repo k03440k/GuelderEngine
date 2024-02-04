@@ -25,7 +25,7 @@ export namespace GuelderEngine::Vulkan
     class ShaderManager
     {
     public:
-        //DECLARE_DCAD_AND_CAM(ShaderManager);
+        //DECLARE_DEFAULT_CTOR_AND_DTOR_AND_COPYING_AND_MOVING(ShaderManager);
         DECLARE_DEFAULT_CTOR_AND_DTOR(ShaderManager);
 
         ShaderManager(const ShaderInfo& info);

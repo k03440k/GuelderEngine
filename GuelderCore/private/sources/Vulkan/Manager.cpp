@@ -11,6 +11,7 @@ import :DeviceManager;
 import :ShaderManager;
 import :Pipeline;
 import GuelderEngine.Debug;
+import GuelderEngine.Core;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Utils;
 
@@ -18,24 +19,28 @@ import <vector>;
 import <string_view>;
 import <set>;
 
+//namespace GuelderEngine
+//{
+//    const std::unique_ptr<Vulkan::VulkanManager>& GetVulkanManager()
+//    {
+//        return GEApplication::GetVulkanManager();
+//    }
+//}
+
 namespace GuelderEngine::Vulkan
 {
-    VulkanManager::VulkanManager(GLFWwindow* glfwWindow, const std::string_view& name)
+    //vk::Instance VulkanManager::instance = VulkanManager::CreateVkInstance("GuelderEngine");
+    //vk::PhysicalDevice DeviceManager::m_PhysicalDevice = DeviceManager::ChoosePhysicalDevice(VulkanManager::GetInstance());
+    //DeviceManager VulkanManager::m_DeviceManager = DeviceManager(instance);
+
+    VulkanManager::VulkanManager(const std::string_view& name)
+        : m_Instance(CreateVkInstance(name.data()))/*, m_DeviceManager(m_Instance)*/
     {
-        m_Instance = CreateVkInstance(name.data());
-        m_DeviceManager = DeviceManager(m_Instance, glfwWindow);
+        m_DeviceManager = DeviceManager(m_Instance);
 
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager = DebugManager(m_Instance);
 #endif // GE_DEBUG_VULKAN
-    }
-    VulkanManager::VulkanManager(const VulkanManager& other)
-    {
-        m_Instance = other.m_Instance;
-        m_DeviceManager = other.m_DeviceManager;
-#ifdef GE_DEBUG_VULKAN
-        m_DebugManager = other.m_DebugManager;
-#endif //GE_DEBUG_VULKAN
     }
     VulkanManager::VulkanManager(VulkanManager&& other) noexcept
     {
@@ -46,19 +51,6 @@ namespace GuelderEngine::Vulkan
 #endif //GE_DEBUG_VULKAN
 
         other.Reset();
-    }
-    VulkanManager& VulkanManager::operator=(const VulkanManager& other)
-    {
-        if(this == &other)
-            return *this;
-
-        m_Instance = other.m_Instance;
-        m_DeviceManager = other.m_DeviceManager;
-#ifdef GE_DEBUG_VULKAN
-        m_DebugManager = other.m_DebugManager;
-#endif //GE_DEBUG_VULKAN
-
-        return *this;
     }
     VulkanManager& VulkanManager::operator=(VulkanManager&& other) noexcept
     {
@@ -75,28 +67,13 @@ namespace GuelderEngine::Vulkan
     {
         VulkanManager::Cleanup();
     }
-    /*void VulkanManager::Render(uint width, uint height, bool& wasWindowResized, const Vulkan::Buffers::VertexBuffer& vertexBuffer,
-        const Vulkan::Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push)
+    const std::unique_ptr<Vulkan::VulkanManager>& VulkanManager::Get()
     {
-        m_Pipeline.Render(
-            m_DeviceManager.GetDevice(), 
-            m_DeviceManager.GetPhysicalDevice(),
-            m_DeviceManager.GetSurface(), 
-            {width, height},
-            wasWindowResized,
-            m_DeviceManager.GetQueueIndices(),
-            vertexBuffer,
-            indexBuffer,
-            push
-        );
-    }*/
-    const DeviceManager& VulkanManager::GetDevice() const noexcept
+        return GEApplication::GetVulkanManager();
+    }
+    const DeviceManager& VulkanManager::GetDevice() const
     {
         return m_DeviceManager;
-    }
-    void VulkanManager::WaitDevice() const
-    {
-        m_DeviceManager.WaitIdle();
     }
     const vk::Instance& VulkanManager::GetInstance() const
     {
@@ -114,6 +91,8 @@ namespace GuelderEngine::Vulkan
 
         vk::ApplicationInfo appInfo(name, VK_MAKE_VERSION(0, 0, 1),
             "Guelder Engine", VK_MAKE_VERSION(0, 0, 1), VK_API_VERSION_1_3);
+
+        Window::InitGLFW();
 
         uint glfwExtensionsCount{};
         const char** const glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
@@ -208,7 +187,7 @@ void VulkanManager::LoadFragmentShader(const std::string_view& name)
     void VulkanManager::Cleanup() const noexcept
     {
         m_DeviceManager.WaitIdle();
-        m_DeviceManager.Cleanup(m_Instance);
+        m_DeviceManager.Cleanup();
 #ifdef GE_DEBUG_VULKAN
         m_DebugManager.Cleanup(m_Instance);
 #endif // GE_DEBUG_VULKAN

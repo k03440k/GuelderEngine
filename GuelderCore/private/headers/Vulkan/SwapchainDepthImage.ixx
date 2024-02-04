@@ -13,7 +13,7 @@ export namespace GuelderEngine::Vulkan
     public:
         SwapchainDepthImage() = default;
         ~SwapchainDepthImage() override = default;
-        DECLARE_DEFAULT_COPY(SwapchainDepthImage);
+        DECLARE_DEFAULT_COPYING(SwapchainDepthImage);
         DECLARE_MOVING(SwapchainDepthImage);
 
         SwapchainDepthImage(

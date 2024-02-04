@@ -54,7 +54,7 @@ export namespace GuelderEngine::Vulkan::Buffers
             m_BufferMemory = device.allocateMemory(allocInfo);
             device.bindBufferMemory(m_Buffer, m_BufferMemory, 0);
 
-            const auto stagingBuffer = Buffers::StagingBuffer<uint>(device, physicalDevice, queueFamilyIndices, indices);
+            const auto stagingBuffer = Buffers::StagingBuffer(device, physicalDevice, queueFamilyIndices, indices.data(), sizeof(indices[0]) * indices.size());
             CopyBuffer(stagingBuffer.GetBuffer(), m_Buffer, m_Size, device, transferPool, transferQueue);
             stagingBuffer.Cleanup(device);
         }

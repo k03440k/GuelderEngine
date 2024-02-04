@@ -94,7 +94,7 @@ export namespace GuelderEngine::Vulkan
     public:
         
         DECLARE_DEFAULT_CTOR_AND_DTOR(Vertex);
-        DECLARE_DEFAULT_COPY(Vertex);
+        DECLARE_DEFAULT_COPYING(Vertex);
         DECLARE_DEFAULT_MOVING(Vertex);
 
         Vertex(const PositionVector& pos, const Vector3& color = {1.f, 1.f, 1.f})
@@ -148,7 +148,7 @@ export namespace GuelderEngine::Vulkan
         using Vertices = Vertices<_dimension>;
     public:
         DECLARE_DEFAULT_CTOR_AND_DTOR(Mesh);
-        DECLARE_DEFAULT_COPY(Mesh);
+        DECLARE_DEFAULT_COPYING(Mesh);
         DECLARE_DEFAULT_MOVING(Mesh);
 
         Mesh(const Vertices& vertices, const Indices& indices = {})

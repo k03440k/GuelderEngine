@@ -11,15 +11,14 @@ import :QueueFamilyIndices;
 
 export namespace GuelderEngine::Vulkan::Buffers
 {
-    template<typename T>
     class StagingBuffer : public IBuffer
     {
     public:
-        //DECLARE_DCAD_AND_CAM(StagingBuffer);
+        //DECLARE_DEFAULT_CTOR_AND_DTOR_AND_COPYING_AND_MOVING(StagingBuffer);
 
-        StagingBuffer(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& indices, const std::vector<T>& data)
+        StagingBuffer(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& indices, const void* data, const uint& sizeOfAllData)
         {
-            m_Size = sizeof(data[0]) * data.size();
+            m_Size = sizeOfAllData;
             if(m_Size)
             {
                 vk::BufferCreateInfo info{vk::BufferCreateFlagBits(),
@@ -54,7 +53,7 @@ export namespace GuelderEngine::Vulkan::Buffers
                 device.bindBufferMemory(m_Buffer, m_BufferMemory, 0);
 
                 void* memdata = device.mapMemory(m_BufferMemory, 0, info.size);
-                memcpy(memdata, data.data(), info.size);
+                memcpy(memdata, data, info.size);
                 device.unmapMemory(m_BufferMemory);
             }
         }

@@ -51,7 +51,7 @@ export namespace GuelderEngine
             int m_FrameRate;
         };
 
-        DECLARE_COPY_AND_MOVING(Window);
+        DECLARE_COPYING_AND_MOVING(Window);
         
         Window(const ushort& windowWidth = 640, const ushort& windowHeight = 480, const std::string& windowTitle = "Guelder Engine Window");
         Window(const WindowData& data);
@@ -73,9 +73,14 @@ export namespace GuelderEngine
 
         bool& WasWindowResized() noexcept;
 
+        static bool IsGLFWInit();
+        static void InitGLFW();
+
     private:
         void Init();
         void Shutdown();
+
+        static bool is_GLFW_init;
 
         bool m_WasResized;
 
