@@ -10,6 +10,7 @@ export module GuelderEngine.Actors:Actor;
 import :GObject;
 import :RenderActorTransform;
 import :MeshComponent;
+import :CameraComponent;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
 
@@ -17,17 +18,11 @@ import <memory>;
 
 export namespace GuelderEngine
 {
-    template<uint, typename = float>
-    class RenderActor;
-
-    using RenderActor2D = RenderActor<2>;
-    using RenderActor3D = RenderActor<3, Vector3>;
-
     //it is insufficient for memory, because we allocate a memory with pointer and then with vector. right now I don't know what to choose else
     template<class _Actor>
-    std::shared_ptr<_Actor> MakeActor(const _Actor&& actor)
+    std::shared_ptr<_Actor> MakeActor(_Actor&& actor)
     {
-        return std::make_shared<_Actor>(actor);
+        return std::make_shared<_Actor>(std::move(actor));
     }
     
     class Actor : public GObject
@@ -40,14 +35,18 @@ export namespace GuelderEngine
         virtual void Update() {}
     private:
     };
-
     
     template<uint dimension, uint matrix, typename RotateType = float>
     Mat<matrix> MatFromRenderActorTransform(const RenderActorTransform<dimension, RotateType>&)
     {
         GE_THROW("There is no a such dimension(", dimension, ')');
     }
-
+    template<uint dimension, typename RotationType = float>
+    struct RenderActorCreateInfo
+    {
+        const RenderActorTransform<dimension, RotationType>& transform;
+        const Vulkan::Mesh<dimension>& mesh;
+    };
     //with buffers
     template<uint dimension, typename RotationType = float>
     class RenderActor : public Actor
@@ -76,5 +75,18 @@ export namespace GuelderEngine
 
         Transform transform;
     private:
+    };
+    //not ready
+    template<uint dimension, typename RotationType = float>
+    class CameraActor : public RenderActor<dimension, RotationType>
+    {
+    public:
+        CameraActor() = default;
+        ~CameraActor() override = default;
+
+        CameraActor(const typename RenderActor<dimension, RotationType>::Mesh& mesh, const typename RenderActor<dimension, RotationType>::Transform& transform)
+            : RenderActor<dimension, RotationType>(mesh, transform) {}
+
+        CameraComponent camera;
     };
 }

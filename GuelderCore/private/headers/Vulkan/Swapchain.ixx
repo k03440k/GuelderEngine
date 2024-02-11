@@ -66,6 +66,7 @@ export namespace GuelderEngine::Vulkan
         uint& GetCurrentFrameNumber() noexcept;
         uint GetMaxFramesInFlight() const noexcept;
         const vk::RenderPass& GetRenderPass() const noexcept;
+        float GetAspectRatio() const;
 
     private:
         static vk::Extent2D ChooseExtent(const vk::Extent2D& extent, const vk::SurfaceCapabilitiesKHR& capabilities);

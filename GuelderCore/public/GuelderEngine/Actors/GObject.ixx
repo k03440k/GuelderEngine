@@ -6,14 +6,16 @@ export namespace GuelderEngine
 {
     class GObject
     {
+    private:
+        friend class World;
     public:
         using ID = size_t;
     public:
-        GObject();
+        GObject() = default;
         virtual ~GObject() = default;
 
-        DECLARE_COPYING(GObject);
-        DECLARE_DEFAULT_MOVING(GObject);
+        DECLARE_DEFAULT_COPYING_AND_MOVING(GObject);
+        //DECLARE_DEFAULT_MOVING(GObject);
 
         ID GetID() const noexcept { return m_ID; }
 

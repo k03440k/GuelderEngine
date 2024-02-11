@@ -13,9 +13,6 @@ import GuelderEngine.Debug;
 #define FUNC_NAME __func__
 
 #ifdef _MSC_VER
-/**
-* @brief Use this macro only in classes which inherited from GuelderEngine::Core::GClass
-*/
 #define METHOD_NAME __FUNCSIG__
 #elif __GNUC__ || __clang__
 #define METHOD_NAME __PRETTY_FUNCTION__

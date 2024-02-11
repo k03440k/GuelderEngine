@@ -26,7 +26,15 @@ export namespace GuelderEngine
     using Mat3 = Mat<3>;
     using Mat4 = Mat<4>;
 
-    //uses a std::shared_ptr<T>
+    //uses std::shared_ptr<T>
     template<class T>
     using SharedPtr = std::shared_ptr<T>;
+
+    //uses std::weak_ptr<T>
+    template<class T>
+    using WeakPtr = std::weak_ptr<T>;
+
+    //uses std::unique_ptr<T>
+    template<class T>
+    using UniquePtr = std::unique_ptr<T>;
 }

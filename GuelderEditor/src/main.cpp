@@ -85,9 +85,7 @@ Mesh3D CreateCube3DMesh(const Vector3& offset)
         v.pos += offset;
     }
 
-    Mesh3D toReturn{ vertices };
-
-    return toReturn;
+    return Mesh3D{vertices};
 }
 
 const Mesh2D cube =
@@ -132,6 +130,36 @@ const Mesh2D hexagon =
         3, 4, 5  // Triangle 4
     }
 };
+class MyActor2D : public Actor2D
+{
+public:
+    MyActor2D() = default;
+    MyActor2D(const Vulkan::Mesh2D& mesh, const Actor2DTransform& transform)
+        : Actor2D(mesh, transform) {}
+
+    void Update() override
+    {
+        transform.rotation = glm::mod(transform.rotation + .001f, glm::two_pi<float>());
+        transform.position.y = .2f * sin(GEApplication::GetTime());
+    }
+};
+class MyActor3D : public Actor3D
+{
+public:
+    MyActor3D() = default;
+    MyActor3D(const Vulkan::Mesh3D& mesh, const Actor3DTransform& transform)
+        : Actor3D(mesh, transform) {}
+
+    void Update() override
+    {
+        transform.rotation.y = glm::mod(transform.rotation.y + .0001f, glm::two_pi<float>());
+        transform.rotation.x = glm::mod(transform.rotation.x + .001f, glm::two_pi<float>());
+        transform.rotation.z = glm::mod(transform.rotation.z + .001f, glm::two_pi<float>());
+
+        transform.position.x = glm::mod(transform.position.x + .1f, glm::two_pi<float>());
+        transform.position.y = glm::mod(transform.position.y + .1f, glm::two_pi<float>());
+    }
+};
 
 int main(int argc, char** argv)
 {
@@ -139,162 +167,135 @@ int main(int argc, char** argv)
     {
         const auto app = std::make_unique<GEApplication>(argv[0]);
 
-        class MyActor2D : public Actor2D
-        {
-        public:
-            MyActor2D() = default;
-            MyActor2D(const Vulkan::Mesh2D& mesh, const Actor2DTransform& transform)
-                : Actor2D(mesh, transform) {}
+        auto world = app->GetWorld();
 
-            void Update() override
-            {
-                transform.rotation = glm::mod(transform.rotation + .001f, glm::two_pi<float>());
-                transform.position.y = .2f * sin(GEApplication::GetTime());
-            }
-        };
-        class MyActor3D : public Actor3D
-        {
-        public:
-            MyActor3D() = default;
-            MyActor3D(const Vulkan::Mesh3D& mesh, const Actor3DTransform& transform)
-                : Actor3D(mesh, transform) {}
-
-            void Update() override
-            {
-                transform.rotation.y = glm::mod(transform.rotation.y + .0001f, glm::two_pi<float>());
-                transform.rotation.x = glm::mod(transform.rotation.x + .001f, glm::two_pi<float>());
-                transform.rotation.z = glm::mod(transform.rotation.z + .001f, glm::two_pi<float>());
-
-                transform.position.x = glm::mod(transform.position.x + .1f, glm::two_pi<float>());
-                transform.position.y = glm::mod(transform.position.y + .1f, glm::two_pi<float>());
-            }
-        };
-
-        /*app->SpawnActor3D
+        world->SpawnActor3D
         (
             MakeActor
             (
                 MyActor3D
                 {
-                    {
+
+                        CreateCube3DMesh({0, 0, 0}),
+                        {
+                            {0, 0, .5f},
+                            {.1f, .1f, .1f},//scale
+                            {1,1,1},//position
+                            {0, 0, 0},//rotation
+                        }
+
+                    
+                }
+            )
+        );
+
+        //pencil
+        //world->SpawnActor3D
+        //(
+        //    MakeActor
+        //    (
+        //        MyActor3D
+        //        {
+
+
+        //                CreateCube3DMesh({0, 0, 0}),
+
+        //                {
+        //                    {0, 0, .5f},
+        //                    {.4f, 1.5f, .4f},//scale
+        //                    {1,1,1},//position
+        //                    {0, 0, 0},//rotation
+        //                }
+
+        //        }
+        //    )
+        //);
+        /*world->SpawnActor3D
+        (
+            MakeActor
+            (
+                MyActor3D
+                {
+                        CreateCube3DMesh({1.0f, 1.38f, 0}),
+
                         {
                             {0, 0, .5f},
                             {.4f, .4f, .4f},//scale
-                            {1,1,1},//position
+                            {1,1,.5f},//position
                             {0, 0, 0},//rotation
-                        },
+                        }
 
-                        CreateCube3DMesh({0, 0, 0})
-                    }
                 }
             )
-        );*/
 
-        //pencil
-        app->SpawnActor3D
-(
-    MakeActor
-    (
-        MyActor3D
-        {
-
-                CreateCube3DMesh({0, 0, 0}),
-
+        );
+        world->SpawnActor3D
+        (
+            MakeActor
+            (
+                MyActor3D
                 {
-                    {0, 0, .5f},
-                    {.4f, 1.5f, .4f},//scale
-                    {1,1,1},//position
-                    {0, 0, 0},//rotation
-                }
-            
-        }
-    )
-);
-app->SpawnActor3D
-(
-    MakeActor
-    (
-        MyActor3D
-        {
-                CreateCube3DMesh({1.0f, 1.38f, 0}),
-            
-                {
-                    {0, 0, .5f},
-                    {.4f, .4f, .4f},//scale
-                    {1,1,.5f},//position
-                    {0, 0, 0},//rotation
-                }
-            
-        }
-    )
-);
-app->SpawnActor3D
-(
-    MakeActor
-    (
-        MyActor3D
-        {
 
-                CreateCube3DMesh({-1.0f, 1.38f, 0}),
+                        CreateCube3DMesh({-1.0f, 1.38f, 0}),
 
-                {
-                    {0, 0, .5f},
-                    {.4f, .4f, .4f},//scale
-                    {1,1,.5f},//position
-                    {0, 0, 0},//rotation
+                        {
+                            {0, 0, .5f},
+                            {.4f, .4f, .4f},//scale
+                            {1,1,.5f},//position
+                            {0, 0, 0},//rotation
+                        }
+
                 }
-            
-        }
-    )
-);
-        /*app->SpawnActor2D
+            )
+
+        );
+        world->SpawnActor2D
         (
             MakeActor
             (
                 MyActor2D
                 {
-                    {
+
+                        triangle,
+
                         {
                             {},
                             {.2f, .2f},//scale
                             {.5f, 1.f},//position
                             0.f//rotation
-                        },
+                        }
 
-                        triangle
-                    }
                 }
             )
         );
-        app->SpawnActor2D
+        world->SpawnActor2D
         (
             MakeActor
             (
                 MyActor2D
                 {
-                    {
+                        cube,
+
                         {
                             {},
                             {.2f, .2f},//scale
                             {-.5f, 1.f},//position
                             0.f//rotation
-                        },
+                        }
 
-                        cube
-                    }
                 }
             )
         );*/
 
         app->Run();
     }
-    catch (const std::exception& e)
+    catch(const std::exception& e)
     {
         GE_LOG(Editor, Error, e.what());
     }
 
     GE_LOG(Editor, Warning, "Guelder Engine Editor has just closed successfully");
-    
+
 #ifdef ENABLE_MEMORY_LEAKS_CHECKING
 
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);

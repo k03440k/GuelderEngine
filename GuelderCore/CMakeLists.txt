@@ -96,7 +96,6 @@ set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}Core/Application.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Actors/Actors.ixx
-	${CORE_PUBLIC_MODULES_PATH}Actors/ActorTransform.ixx
 	${CORE_PUBLIC_MODULES_PATH}Actors/World.ixx
 	${CORE_PUBLIC_MODULES_PATH}Actors/GObject.ixx
 	${CORE_PUBLIC_MODULES_PATH}Actors/Actor2D.ixx

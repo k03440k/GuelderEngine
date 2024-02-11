@@ -10,6 +10,7 @@ import :DebugManager;
 import :Swapchain;
 import :Pipeline;
 import :Manager;
+import :IVulkanObject;
 import GuelderEngine.Core;
 import GuelderEngine.Core.Types;
 

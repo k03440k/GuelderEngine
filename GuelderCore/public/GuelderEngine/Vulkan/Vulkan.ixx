@@ -15,3 +15,4 @@ export import :StagingBuffer;
 export import :VertexBuffer;
 export import :IndexBuffer;
 export import :Surface;
+export import :IVulkanObject;

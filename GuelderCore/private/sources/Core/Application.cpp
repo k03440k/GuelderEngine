@@ -3,6 +3,9 @@ module;
 #include <compare>
 #include <vulkan/vulkan.hpp>
 #include <glfw/glfw3.h>
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
 module GuelderEngine.Core;
 import :Application;
 
@@ -36,7 +39,7 @@ namespace GuelderEngine
         const std::string_view& fragmentShaderVarName2D,
         const Vulkan::VertexAttributeDescriptionsInfo& shaderInfo2D
     )
-        : resourceManager(executablePath), m_OnUpdate([] {})
+        : resourceManager(executablePath)
     {
         m_Window = std::make_unique<Window>(Window::WindowData(info.width, info.height, info.title.data()));
         m_Window->SetCallback(BIND_EVENT_FUNC(GEApplication::OnEvent));
@@ -49,15 +52,15 @@ namespace GuelderEngine
             info.width, info.height
         );
         m_RenderSystem3D = std::make_unique<RenderSystem3D>
-        (
-            m_VulkanManager->GetDevice().GetDevice(), 
-            m_Renderer->GetSwapchain().GetRenderPass(), 
-            Vulkan::ShaderInfo
-            {
-                resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName3D),
-                resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName3D),
-                shaderInfo3D
-            }
+            (
+                m_VulkanManager->GetDevice().GetDevice(),
+                m_Renderer->GetSwapchain().GetRenderPass(),
+                Vulkan::ShaderInfo
+                {
+                    resourceManager.GetFullPathToRelativeFileViaVar(vertexShaderVarName3D),
+                    resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName3D),
+                    shaderInfo3D
+                }
         );
         m_RenderSystem2D = std::make_unique<RenderSystem2D>
             (
@@ -85,52 +88,55 @@ namespace GuelderEngine
     {
         m_World->Begin();
 
+        CameraActor3D tempCameraActor{};
+        auto& camera = tempCameraActor.camera;
+
         while(!m_CloseWindow)
         {
             m_Window->OnUpdate();
 
             if(m_Window->GetData().width != 0 && m_Window->GetData().height != 0)
-                if(const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height}))
+                if(const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }))
                 {
+                    auto ratio = m_Renderer->GetSwapchain().GetAspectRatio();
+                    //camera.SetOrthographicProjection(-ratio, ratio, -1, 1, -1, 1);
+                    camera.SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 10.f);
+
                     m_Renderer->BeginSwapchainRenderPass(commandBuffer);
 
-                    std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer](const SharedPtr<RenderActor3D>& actor)
+                    std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer, &camera](const SharedPtr<Actor3D>& actor)
                         {
-                            const Vulkan::SimplePushConstantData<3> push(
+                            m_RenderSystem3D->Render
+                            (
+                                commandBuffer, 
+                                actor->meshComponent.GetVertexBuffer(), 
+                                actor->meshComponent.GetIndexBuffer(), 
+                                actor->meshComponent.GetMesh().GetVertices().size(),
                                 MatFromRenderActorTransform<3, 4>(actor->transform),
-                                {}
+                                camera.GetProjection()
                             );
-                            m_RenderSystem3D->Render(commandBuffer, push, actor->meshComponent.GetVertexBuffer(), actor->meshComponent.GetIndexBuffer(), actor->meshComponent.GetMesh().GetVertices().size());
                         });
-                    std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer](const SharedPtr<RenderActor2D>& actor)
+                    std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer, &camera](const SharedPtr<Actor2D>& actor)
                         {
-                            const Vulkan::SimplePushConstantData<2> push(
-                                MatFromRenderActorTransform<2, 2>(actor->transform),
-                                { actor->transform.position.x, actor->transform.position.y },
-                                { (cos(glfwGetTime()) / 5.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f, (sin(glfwGetTime()) / 2.0f) + 0.5f }
+                            m_RenderSystem2D->Render
+                            (
+                                commandBuffer,
+                                actor->meshComponent.GetVertexBuffer(),
+                                actor->meshComponent.GetIndexBuffer(),
+                                actor->meshComponent.GetMesh().GetVertices().size(),
+                                MatFromRenderActorTransform<2, 2>(actor->transform)
                             );
-                            m_RenderSystem2D->Render(commandBuffer, push, actor->meshComponent.GetVertexBuffer(), actor->meshComponent.GetIndexBuffer(), actor->meshComponent.GetMesh().GetVertices().size());
                         });
 
                     m_Renderer->EndSwapchainRenderPass(commandBuffer);
                     m_Renderer->EndFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }, m_Window->WasWindowResized());
                 }
 
-            m_OnUpdate();
+            m_World->UpdateActors();
 
-           m_World->UpdateActors();
-
-            if(!m_LayerStack.IsEmpty())
-            {
-                for(Layers::Layer* layer : m_LayerStack)
-                    layer->OnUpdate();
-            }
+            //for(Layers::Layer* layer : m_LayerStack)
+            //    layer->OnUpdate();
         }
-    }
-    void GEApplication::Run(const std::function<void()>& callOnUpdate)
-    {
-        SetOnUpdateFunc(callOnUpdate);
-        Run();
     }
     void GEApplication::OnEvent(Events::BaseEvent& event)
     {
@@ -155,7 +161,10 @@ namespace GuelderEngine
     {
         m_LayerStack.PushOverlay(overlay);
     }
-    void GEApplication::SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept { m_OnUpdate = onUpdate; }
+    int GEApplication::GetFrameRate() const noexcept
+    {
+        return m_Window->GetData().GetFrameRate();
+    }
     double GEApplication::GetTime()
     {
         return glfwGetTime();
@@ -173,29 +182,11 @@ namespace GuelderEngine
     {
         m_RenderSystem2D->SetShaderInfo(m_VulkanManager->GetDevice().GetDevice(), m_Renderer->GetSwapchain().GetRenderPass(), shaderInfo);
     }
-    World& GEApplication::GetWorld()
+    World* const GEApplication::GetWorld()
     {
-        return *m_World;
+        return m_World.get();
     }
-    void GEApplication::SpawnActor2D(const Actor2DCreateInfo& renderActor)
-    {
-        Actor2D obj{ renderActor.mesh, renderActor.transform };
-        m_World->SpawnActor2D(MakeActor(std::move(obj)));
-    }
-    void GEApplication::SpawnActor2D(SharedPtr<Actor2D> renderActor)
-    {
-        m_World->SpawnActor2D(renderActor);
-    }
-    void GEApplication::SpawnActor3D(const Actor3DCreateInfo& renderActor)
-    {
-        Actor3D obj{ renderActor.mesh, renderActor.transform };
-        m_World->SpawnActor3D(MakeActor(std::move(obj)));
-    }
-    void GEApplication::SpawnActor3D(SharedPtr<Actor3D> renderActor)
-    {
-        m_World->SpawnActor3D(renderActor);
-    }
-    const std::unique_ptr<Vulkan::VulkanManager>& GEApplication::GetVulkanManager()
+    const UniquePtr<Vulkan::VulkanManager>& GEApplication::GetVulkanManager()
     {
         return m_VulkanManager;
     }

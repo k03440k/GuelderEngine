@@ -11,7 +11,7 @@ import <vector>;
 
 namespace GuelderEngine::Vulkan
 {
-    DEFINE_LOG_CATEGORY(VulkanCore);
+    //DEFINE_LOG_CATEGORY(VulkanCore);
 
 #pragma region operators_and_ctors
     DebugManager::DebugManager(const vk::Instance& instance)

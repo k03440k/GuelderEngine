@@ -37,10 +37,9 @@ export namespace GuelderEngine
     class GEApplication : public IApplication
     {
     private:
-        using RenderSystem3D = Vulkan::RenderSystem<3>;
-        using RenderSystem2D = Vulkan::RenderSystem<2>;
+        using RenderSystem3D = Vulkan::RenderSystem<3, 4>;
+        using RenderSystem2D = Vulkan::RenderSystem<2, 2>;
     public:
-        using UpdateFunc = std::function<void()>;
         /**
          *@param executablePath - path where .exe file stores, can be found in main
          *@param info - info about size of window, its name, etc
@@ -69,14 +68,12 @@ export namespace GuelderEngine
         DELETE_COPYING_AND_MOVING(GEApplication);
 
         void Run() override;
-        void Run(const std::function<void()>& callOnUpdate);
         void OnEvent(Events::BaseEvent& event) override;
 
         void PushLayer(Layers::Layer* layer);
         void PushOverlay(Layers::Layer* overlay);
-
-        void SetOnUpdateFunc(const UpdateFunc& onUpdate) noexcept;
-        int GetFrameRate() const noexcept { return m_Window->GetData().GetFrameRate(); }
+        
+        int GetFrameRate() const noexcept;
 
         static double GetTime();
 
@@ -84,27 +81,20 @@ export namespace GuelderEngine
         void SetShaderInfo3D(const Vulkan::ShaderInfo& shaderInfo);
         void SetShaderInfo2D(const Vulkan::ShaderInfo& shaderInfo);
 
-        World& GetWorld();
+        World* const GetWorld();
 
-        void SpawnActor2D(const Actor2DCreateInfo& renderActor);
-        void SpawnActor2D(SharedPtr<Actor2D> renderActor);
-        void SpawnActor3D(const Actor3DCreateInfo& renderActor);
-        void SpawnActor3D(SharedPtr<Actor3D> renderActor);
-
-        static const std::unique_ptr<Vulkan::VulkanManager>& GetVulkanManager();
+        static const UniquePtr<Vulkan::VulkanManager>& GetVulkanManager();
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;
     private:
-        static std::unique_ptr<Vulkan::VulkanManager> m_VulkanManager;
-        std::unique_ptr<Vulkan::Renderer> m_Renderer;
-        std::unique_ptr<RenderSystem3D> m_RenderSystem3D;
-        std::unique_ptr<RenderSystem2D> m_RenderSystem2D;
-        std::unique_ptr<World> m_World;
-
         bool OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept;
-        
-        UpdateFunc m_OnUpdate;
+
+        static UniquePtr<Vulkan::VulkanManager> m_VulkanManager;
+        UniquePtr<Vulkan::Renderer> m_Renderer;
+        UniquePtr<RenderSystem3D> m_RenderSystem3D;
+        UniquePtr<RenderSystem2D> m_RenderSystem2D;
+        UniquePtr<World> m_World;
 
         Layers::LayerStack m_LayerStack;
 

@@ -1,4 +1,3 @@
-//TODO: move this file to vulkan folder
 module;
 #include <vulkan/vulkan.hpp>
 #include <glfw/glfw3.h>

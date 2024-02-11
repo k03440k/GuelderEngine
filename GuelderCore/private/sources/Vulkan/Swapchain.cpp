@@ -404,4 +404,8 @@ namespace GuelderEngine::Vulkan
     {
         return m_RenderPass;
     }
+    float Swapchain::GetAspectRatio() const
+    {
+        return static_cast<float>(m_Extent.width) / static_cast<float>(m_Extent.height);
+    }
 }

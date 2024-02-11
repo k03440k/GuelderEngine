@@ -8,6 +8,8 @@ export module GuelderEngine.Actors:World;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
 import :Actor;
+import :Actor2D;
+import :Actor3D;
 
 import <vector>;
 
@@ -19,30 +21,39 @@ export namespace GuelderEngine
     public:
         World() = default;
 
-        void SpawnActor(const SharedPtr<Actor>& actor);
-        void SpawnActor2D(const SharedPtr<RenderActor2D>& actor);
-        void SpawnActor3D(const SharedPtr<RenderActor3D>& actor);
+        void SpawnActor(SharedPtr<Actor>& actor);
+        void SpawnActor2D(SharedPtr<Actor2D>& actor);
+        void SpawnActor3D(SharedPtr<Actor3D>& actor);
 
+        void SpawnActor(SharedPtr<Actor>&& actor);
+        void SpawnActor2D(SharedPtr<Actor2D>&& actor);
+        void SpawnActor3D(SharedPtr<Actor3D>&& actor);
+
+        SharedPtr<Actor> GetGeneralActor(const Actor::ID& id);
         SharedPtr<Actor>& GetActor(const Actor::ID& id = 0);
-        std::vector<SharedPtr<Actor>>& GetActors();
-        SharedPtr<RenderActor2D>& GetActor2D(const Actor::ID& id = 0);
-        SharedPtr<RenderActor3D>& GetActor3D(const Actor::ID& id = 0);
-        std::vector<SharedPtr<RenderActor2D>>& GetActors2D();
-        std::vector<SharedPtr<RenderActor3D>>& GetActors3D();
+        SharedPtr<Actor2D>& GetActor2D(const Actor::ID& id = 0);
+        SharedPtr<Actor3D>& GetActor3D(const Actor::ID& id = 0);
+
+        const std::vector<WeakPtr<Actor>>& GetAllActors() const;
+        const std::vector<SharedPtr<Actor>>& GetActors() const;
+        const std::vector<SharedPtr<Actor2D>>& GetActors2D() const;
+        const std::vector<SharedPtr<Actor3D>>& GetActors3D() const;
+
+        void DeleteActor(const uint& id);
 
         void CleanupActors2D(const vk::Device& device) const;
         void CleanupActors3D(const vk::Device& device) const;
         void CleanupRenderActors(const vk::Device& device) const;
-
-        //const std::vector<Vulkan::Buffers::VertexBuffer>& GetVertexBuffers() const noexcept;
     private:
         friend class GEApplication;
+
         void UpdateActors();
         void Begin();
 
+        std::vector<WeakPtr<Actor>> m_AllActors;
+
         std::vector<SharedPtr<Actor>> m_Actors;
-        std::vector<SharedPtr<RenderActor2D>> m_Actors2D;
-        std::vector<SharedPtr<RenderActor3D>> m_Actors3D;
-        //std::vector<Vulkan::Buffers::VertexBuffer> m_VertexBuffers;
+        std::vector<SharedPtr<Actor2D>> m_Actors2D;
+        std::vector<SharedPtr<Actor3D>> m_Actors3D;
     };
 }

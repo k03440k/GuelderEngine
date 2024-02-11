@@ -1,5 +1,6 @@
 module;
 #include <Windows.h>
+#include "Utils/Debug.hpp"
 export module GuelderEngine;
 
 import <mutex>;
@@ -15,4 +16,5 @@ export import GuelderEngine.Events;
 
 std::mutex GuelderEngine::Debug::Logger::logMutex;
 HANDLE GuelderEngine::Debug::Logger::console = GetStdHandle(STD_OUTPUT_HANDLE);
+namespace GuelderEngine::Vulkan { DEFINE_LOG_CATEGORY(VulkanCore); }
 std::unique_ptr<GuelderEngine::Vulkan::VulkanManager> GuelderEngine::GEApplication::m_VulkanManager = std::make_unique<GuelderEngine::Vulkan::VulkanManager>("Guelder Engine Editor");
