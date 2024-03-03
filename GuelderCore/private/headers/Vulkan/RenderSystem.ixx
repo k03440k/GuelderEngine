@@ -49,12 +49,12 @@ export namespace GuelderEngine::Vulkan
             const Buffers::IndexBuffer& indexBuffer,
             const uint& verticesCount,
             const Mat<4>& actorTransform,
-            const Mat<4>& cameraProjection
+            const Mat<4>& viewProjection
         ) const
         {
             commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline.GetPipeline());
 
-            const PushData push(cameraProjection * actorTransform);
+            const PushData push(viewProjection * actorTransform);
 
             vertexBuffer.Bind(commandBuffer, { 0 });
             if(indexBuffer.GetIndicesCount())

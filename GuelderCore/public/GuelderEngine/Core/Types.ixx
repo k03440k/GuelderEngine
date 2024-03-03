@@ -4,7 +4,6 @@ export module GuelderEngine.Core.Types;
 
 //export import :GClass;
 
-import <vector>;
 import <memory>;
 
 export namespace GuelderEngine

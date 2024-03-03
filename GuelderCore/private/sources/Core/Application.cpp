@@ -73,6 +73,7 @@ namespace GuelderEngine
                     shaderInfo2D
                 }
         );
+        m_GameMode = std::make_unique<GameMode>();
         m_World = std::make_unique<World>();
     }
     GEApplication::~GEApplication()
@@ -86,10 +87,14 @@ namespace GuelderEngine
     }
     void GEApplication::Run()
     {
-        m_World->Begin();
+        m_GameMode->BeginPlay();
+        m_World->BeginPlay();
 
-        CameraActor3D tempCameraActor{};
-        auto& camera = tempCameraActor.camera;
+        //TODO: come up with role of camera and its position
+        //TODO: come up with transforming of object rendering and color
+        //TODO: make PlayerController which will be responsible for camera
+        //CameraActor3D tempCameraActor{};
+        //auto& camera = tempCameraActor.camera;
 
         while(!m_CloseWindow)
         {
@@ -99,31 +104,37 @@ namespace GuelderEngine
                 if(const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }))
                 {
                     auto ratio = m_Renderer->GetSwapchain().GetAspectRatio();
-                    //camera.SetOrthographicProjection(-ratio, ratio, -1, 1, -1, 1);
-                    camera.SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 10.f);
+                    //camera->SetOrthographicProjection(-ratio, ratio, -1, 1, -1, 1);
+                    //camera.SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 10.f);
+
+                    CameraComponent* cameraComponent = m_GameMode->GetPlayerController()->camera;
+                    cameraComponent->SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 10.f);
+
+                    auto projectionView = cameraComponent->GetProjection() * cameraComponent->GetViewMatrix();
 
                     m_Renderer->BeginSwapchainRenderPass(commandBuffer);
 
-                    std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer, &camera](const SharedPtr<Actor3D>& actor)
+                    std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer, &projectionView](const SharedPtr<Actor3D>& actor)
                         {
+
                             m_RenderSystem3D->Render
                             (
                                 commandBuffer, 
-                                actor->meshComponent.GetVertexBuffer(), 
-                                actor->meshComponent.GetIndexBuffer(), 
-                                actor->meshComponent.GetMesh().GetVertices().size(),
+                                actor->meshComponent->GetVertexBuffer(),
+                                actor->meshComponent->GetIndexBuffer(),
+                                actor->meshComponent->GetMesh().GetVertices().size(),
                                 MatFromRenderActorTransform<3, 4>(actor->transform),
-                                camera.GetProjection()
+                                projectionView
                             );
                         });
-                    std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer, &camera](const SharedPtr<Actor2D>& actor)
+                    std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer](const SharedPtr<Actor2D>& actor)
                         {
                             m_RenderSystem2D->Render
                             (
                                 commandBuffer,
-                                actor->meshComponent.GetVertexBuffer(),
-                                actor->meshComponent.GetIndexBuffer(),
-                                actor->meshComponent.GetMesh().GetVertices().size(),
+                                actor->meshComponent->GetVertexBuffer(),
+                                actor->meshComponent->GetIndexBuffer(),
+                                actor->meshComponent->GetMesh().GetVertices().size(),
                                 MatFromRenderActorTransform<2, 2>(actor->transform)
                             );
                         });
@@ -185,6 +196,10 @@ namespace GuelderEngine
     World* const GEApplication::GetWorld()
     {
         return m_World.get();
+    }
+    GameMode* const GEApplication::GetGameMode()
+    {
+        return m_GameMode.get();
     }
     const UniquePtr<Vulkan::VulkanManager>& GEApplication::GetVulkanManager()
     {

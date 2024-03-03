@@ -28,8 +28,6 @@ export namespace GuelderEngine
     public:
         ~MeshComponent() override = default;
 
-        MeshComponent(const Vulkan::Buffers::VertexBuffer& vertexBuffer, const Vulkan::Buffers::IndexBuffer& indexBuffer, const Mesh& mesh = {})
-            : m_VertexBuffer(vertexBuffer), m_IndexBuffer(indexBuffer), m_Mesh(mesh) {}
         MeshComponent(const Mesh& mesh = {})
         {
             SetMesh(mesh);

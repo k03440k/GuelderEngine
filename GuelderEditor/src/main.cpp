@@ -130,6 +130,7 @@ const Mesh2D hexagon =
         3, 4, 5  // Triangle 4
     }
 };
+
 class MyActor2D : public Actor2D
 {
 public:
@@ -160,6 +161,19 @@ public:
         transform.position.y = glm::mod(transform.position.y + .1f, glm::two_pi<float>());
     }
 };
+class CameraActor : public Actor3D
+{
+public:
+    CameraActor(const CameraComponent& cameraComponent = CameraComponent{})//it cannot find CameraActor
+    : cameraComponent(cameraComponent) {}
+
+    void Update() override
+    {
+        
+    }
+
+    CameraComponent cameraComponent;
+};
 
 int main(int argc, char** argv)
 {
@@ -169,27 +183,12 @@ int main(int argc, char** argv)
 
         auto world = app->GetWorld();
 
-        world->SpawnActor3D
-        (
-            MakeActor
-            (
-                MyActor3D
-                {
+        auto cameraActor = CameraActor{};
+        auto& cameraComponent = cameraActor.cameraComponent;
+        cameraComponent.SetViewTarget(Vector3{-1.f, -2.f, 2.f}, Vector3{0.f, 0.f, .5f});
+        //TODO: add checking that if the camera is from an actor which exists in world vector
+        app->GetGameMode()->GetPlayerController()->camera = &cameraComponent;
 
-                        CreateCube3DMesh({0, 0, 0}),
-                        {
-                            {0, 0, .5f},
-                            {.1f, .1f, .1f},//scale
-                            {1,1,1},//position
-                            {0, 0, 0},//rotation
-                        }
-
-                    
-                }
-            )
-        );
-
-        //pencil
         //world->SpawnActor3D
         //(
         //    MakeActor
@@ -197,20 +196,41 @@ int main(int argc, char** argv)
         //        MyActor3D
         //        {
 
-
         //                CreateCube3DMesh({0, 0, 0}),
-
         //                {
         //                    {0, 0, .5f},
-        //                    {.4f, 1.5f, .4f},//scale
+        //                    {.1f, .1f, .1f},//scale
         //                    {1,1,1},//position
         //                    {0, 0, 0},//rotation
         //                }
 
+        //            
         //        }
         //    )
         //);
-        /*world->SpawnActor3D
+
+        //pencil
+        world->SpawnActor3D
+        (
+            MakeActor
+            (
+                MyActor3D
+                {
+
+
+                        CreateCube3DMesh({0, 0, 0}),
+
+                        {
+                            {0, 0, .5f},
+                            {.4f, 1.5f, .4f},//scale
+                            {1,1,1},//position
+                            {0, 0, 0},//rotation
+                        }
+
+                }
+            )
+        );
+        world->SpawnActor3D
         (
             MakeActor
             (
@@ -249,43 +269,43 @@ int main(int argc, char** argv)
             )
 
         );
-        world->SpawnActor2D
-        (
-            MakeActor
-            (
-                MyActor2D
-                {
+        //world->SpawnActor2D
+        //(
+        //    MakeActor
+        //    (
+        //        MyActor2D
+        //        {
 
-                        triangle,
+        //                triangle,
 
-                        {
-                            {},
-                            {.2f, .2f},//scale
-                            {.5f, 1.f},//position
-                            0.f//rotation
-                        }
+        //                {
+        //                    {},
+        //                    {.2f, .2f},//scale
+        //                    {.5f, 1.f},//position
+        //                    0.f//rotation
+        //                }
 
-                }
-            )
-        );
-        world->SpawnActor2D
-        (
-            MakeActor
-            (
-                MyActor2D
-                {
-                        cube,
+        //        }
+        //    )
+        //);
+        //world->SpawnActor2D
+        //(
+        //    MakeActor
+        //    (
+        //        MyActor2D
+        //        {
+        //                cube,
 
-                        {
-                            {},
-                            {.2f, .2f},//scale
-                            {-.5f, 1.f},//position
-                            0.f//rotation
-                        }
+        //                {
+        //                    {},
+        //                    {.2f, .2f},//scale
+        //                    {-.5f, 1.f},//position
+        //                    0.f//rotation
+        //                }
 
-                }
-            )
-        );*/
+        //        }
+        //    )
+        //);
 
         app->Run();
     }

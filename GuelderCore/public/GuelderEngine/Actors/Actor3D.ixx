@@ -12,7 +12,6 @@ export namespace GuelderEngine
     using Actor3DTransform = RenderActorTransform<3, Vector3>;
     using Actor3DCreateInfo = RenderActorCreateInfo<3, Vector3>;
     using Actor3D = RenderActor<3, Vector3>;
-    using CameraActor3D = CameraActor<3, Vector3>;
 
     template<>
     Mat4 MatFromRenderActorTransform(const Actor3DTransform& actorTransform)

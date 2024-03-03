@@ -59,34 +59,21 @@ export namespace GuelderEngine
         RenderActor() = default;
         ~RenderActor() override = default;
 
-        RenderActor(const Vulkan::Buffers::VertexBuffer& vertexBuffer, const Vulkan::Buffers::IndexBuffer& indexBuffer)
-            : meshComponent(vertexBuffer, indexBuffer) {}
-        RenderActor(const Mesh& mesh, const Transform& transform)
-            : meshComponent(mesh), transform(transform) {}
+        DECLARE_DEFAULT_COPYING_AND_MOVING(RenderActor);
 
-        void Cleanup(const vk::Device& device) const noexcept
+        RenderActor(const Mesh& mesh, const Transform& transform)
+            : meshComponent(std::make_unique<MeshComponent>(mesh)), transform(transform) {}
+
+        virtual void Cleanup(const vk::Device& device) const noexcept
         {
-            meshComponent.Cleanup(device);
+            meshComponent->Cleanup(device);
         }
 
-        virtual bool IsComplete() const noexcept { return meshComponent.GetMesh().GetVertices().size() && meshComponent.GetVertexBuffer().GetSize() || !meshComponent.GetMesh().GetVertices().size() && !meshComponent.GetVertexBuffer().GetSize(); }
+        virtual bool IsComplete() const noexcept { return meshComponent->GetMesh().GetVertices().size() && meshComponent->GetVertexBuffer().GetSize() || !meshComponent->GetMesh().GetVertices().size() && !meshComponent->GetVertexBuffer().GetSize(); }
 
-        MeshComponent meshComponent;
+        UniquePtr<MeshComponent> meshComponent;
 
         Transform transform;
     private:
-    };
-    //not ready
-    template<uint dimension, typename RotationType = float>
-    class CameraActor : public RenderActor<dimension, RotationType>
-    {
-    public:
-        CameraActor() = default;
-        ~CameraActor() override = default;
-
-        CameraActor(const typename RenderActor<dimension, RotationType>::Mesh& mesh, const typename RenderActor<dimension, RotationType>::Transform& transform)
-            : RenderActor<dimension, RotationType>(mesh, transform) {}
-
-        CameraComponent camera;
     };
 }

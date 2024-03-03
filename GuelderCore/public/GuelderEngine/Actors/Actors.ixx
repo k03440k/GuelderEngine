@@ -11,3 +11,6 @@ export import :Actor3D;
 export import :ActorComponent;
 export import :MeshComponent;
 export import :CameraComponent;
+//export import :CameraManager;
+export import :GameMode;
+export import :PlayerController;

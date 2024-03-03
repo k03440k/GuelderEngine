@@ -20,6 +20,7 @@ export namespace GuelderEngine
     {
     public:
         World() = default;
+        DECLARE_DEFAULT_MOVING(World);
 
         void SpawnActor(SharedPtr<Actor>& actor);
         void SpawnActor2D(SharedPtr<Actor2D>& actor);
@@ -40,15 +41,15 @@ export namespace GuelderEngine
         const std::vector<SharedPtr<Actor3D>>& GetActors3D() const;
 
         void DeleteActor(const uint& id);
+    private:
+        friend class GEApplication;
 
         void CleanupActors2D(const vk::Device& device) const;
         void CleanupActors3D(const vk::Device& device) const;
         void CleanupRenderActors(const vk::Device& device) const;
-    private:
-        friend class GEApplication;
 
         void UpdateActors();
-        void Begin();
+        void BeginPlay();
 
         std::vector<WeakPtr<Actor>> m_AllActors;
 

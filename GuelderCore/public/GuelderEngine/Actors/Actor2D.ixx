@@ -11,7 +11,6 @@ export namespace GuelderEngine
     using Actor2DTransform = RenderActorTransform<2>;
     using Actor2DCreateInfo = RenderActorCreateInfo<2>;
     using Actor2D = RenderActor<2>;
-    using CameraActor2D = CameraActor<2>;
 
     template<>
     Mat<2> MatFromRenderActorTransform(const Actor2DTransform& actorTransform)

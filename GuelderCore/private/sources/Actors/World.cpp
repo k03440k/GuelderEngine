@@ -32,7 +32,7 @@ namespace GuelderEngine
             }
         );
     }
-    void World::Begin()
+    void World::BeginPlay()
     {
         std::for_each(std::execution::par, m_AllActors.begin(), m_AllActors.end(), []
         (WeakPtr<Actor>& actor)

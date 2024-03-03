@@ -38,11 +38,13 @@ set(CORE_PRIVATE_SOURCES
 	
 	${CORE_PRIVATE_SOURCES_PATH}Actors/World.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Actors/GObject.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Actors/PlayerController.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Actors/GameMode.cpp
 	
 	${CORE_PRIVATE_SOURCES_PATH}ActorComponents/CameraComponent.cpp
 	
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Renderer.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/RenderSystem.cpp
+	#${CORE_PRIVATE_SOURCES_PATH}Vulkan/RenderSystem.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Manager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/DebugManager.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Vulkan/DeviceManager.cpp
@@ -96,6 +98,8 @@ set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}Core/Application.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}Actors/Actors.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/PlayerController.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/GameMode.ixx
 	${CORE_PUBLIC_MODULES_PATH}Actors/World.ixx
 	${CORE_PUBLIC_MODULES_PATH}Actors/GObject.ixx
 	${CORE_PUBLIC_MODULES_PATH}Actors/Actor2D.ixx
