@@ -30,62 +30,51 @@ Mesh3D CreateCube3DMesh(const Vector3& offset)
 {
     Vertices3D vertices
     {
+        // left face (white)
+        {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+        {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+        {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+        {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
 
-      {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-      {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-      {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-      {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-      {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
-      {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+        // right face (yellow)
+        {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+        {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+        {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+        {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
 
-      // right face (yellow)
-      {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-      {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-      {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-      {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-      {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
-      {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+        // top face (orange, remember y axis points down)
+        {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+        {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+        {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+        {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
 
-      // top face (orange, remember y axis points down)
-      {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-      {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-      {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-      {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+        // bottom face (red)
+        {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+        {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+        {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+        {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
 
-      // bottom face (red)
-      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-      {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-      {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+        // nose face (blue)
+        {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+        {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+        {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+        {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
 
-      // nose face (blue)
-      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-      {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-      {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-
-      // tail face (green)
-      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-      {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-      {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-
+        // tail face (green)
+        {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+        {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+        {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+        {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
     };
-
 
     for(auto& v : vertices) {
         v.pos += offset;
     }
 
-    return Mesh3D{vertices};
+    Indices indices = { 0,  1,  2,  0,  3,  1,  4,  5,  6,  4,  7,  5,  8,  9,  10, 8,  11, 9,
+                          12, 13, 14, 12, 15, 13, 16, 17, 18, 16, 19, 17, 20, 21, 22, 20, 23, 21 };
+
+    return Mesh3D{vertices, indices };
 }
 
 const Mesh2D cube =
@@ -167,12 +156,71 @@ public:
     CameraActor(const CameraComponent& cameraComponent = CameraComponent{})//it cannot find CameraActor
     : cameraComponent(cameraComponent) {}
 
+    bool IsComplete() const noexcept override { return false; }
+
     void Update() override
     {
         
     }
 
     CameraComponent cameraComponent;
+};
+class MyPlayerController : public PlayerController
+{
+public:
+    DECLARE_DEFAULT_COPYING_AND_MOVING(MyPlayerController);
+    MyPlayerController() = default;
+    ~MyPlayerController() override = default;
+
+    void Update(GLFWwindow* window, float deltaTime) override
+    {
+        Vector3 rotate{ 0 };
+        if(KeyboardController::IsKeyPressed(window, Keys::Up))
+            rotate.x += 1.f;
+        if(KeyboardController::IsKeyPressed(window, Keys::Down))
+            rotate.x -= 1.f;
+        if(KeyboardController::IsKeyPressed(window, Keys::Right))
+            rotate.y += 1.f;
+        if(KeyboardController::IsKeyPressed(window, Keys::Left))
+            rotate.y -= 1.f;
+
+        if(glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) 
+            camera->transform.rotation += lookSpeed * deltaTime * glm::normalize(rotate);
+        
+        camera->transform.rotation.x = glm::clamp(camera->transform.rotation.x, -1.5f, 1.5f);
+        camera->transform.rotation.y = glm::mod(camera->transform.rotation.y, glm::two_pi<float>());
+
+        float yaw = camera->transform.rotation.y;
+        const Vector3 forwardDir{ sin(yaw), 0.f, cos(yaw) };
+        const Vector3 rightDir{ forwardDir.z, 0.f, -forwardDir.x };
+        const Vector3 upDir{ 0.f, -1.f, 0.f };
+
+        Vector3 moveDir{ 0.f };
+        if(KeyboardController::IsKeyPressed(window, Keys::W)) moveDir += forwardDir;
+        if(KeyboardController::IsKeyPressed(window, Keys::S)) moveDir -= forwardDir;
+        if(KeyboardController::IsKeyPressed(window, Keys::D)) moveDir += rightDir;
+        if(KeyboardController::IsKeyPressed(window, Keys::A)) moveDir -= rightDir;
+        if(KeyboardController::IsKeyPressed(window, Keys::Z)) moveDir += upDir;
+        if(KeyboardController::IsKeyPressed(window, Keys::X)) moveDir -= upDir;
+
+        if(glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())
+            camera->transform.translation += moveSpeed * deltaTime * glm::normalize(moveDir);
+    }
+    float moveSpeed = 1.f;
+    float lookSpeed = 1.f;
+};
+class MyGameMode : public GameMode
+{
+public:
+    DECLARE_DEFAULT_COPYING_AND_MOVING(MyGameMode);
+    MyGameMode(CameraComponent& cameraComponent)
+    {
+        m_PlayerController = std::move(std::make_unique<MyPlayerController>(MyPlayerController{}));
+        cameraComponent.SetViewTarget(Vector3{ -1.f, -5.f, 2.f }, Vector3{ 0.f, 0.f, .5f });
+        //TODO: add checking that if the camera is from an actor which exists in world vector
+        m_PlayerController->camera = &cameraComponent;
+    }
+    ~MyGameMode() override = default;
 };
 
 int main(int argc, char** argv)
@@ -181,13 +229,13 @@ int main(int argc, char** argv)
     {
         const auto app = std::make_unique<GEApplication>(argv[0]);
 
-        auto world = app->GetWorld();
+        auto& world = app->GetWorld();
 
-        auto cameraActor = CameraActor{};
-        auto& cameraComponent = cameraActor.cameraComponent;
-        cameraComponent.SetViewTarget(Vector3{-1.f, -2.f, 2.f}, Vector3{0.f, 0.f, .5f});
-        //TODO: add checking that if the camera is from an actor which exists in world vector
-        app->GetGameMode()->GetPlayerController()->camera = &cameraComponent;
+        auto cameraActor = MakeActor(CameraActor{});
+        world->SpawnActor3D(cameraActor);
+        auto& cameraComponent = cameraActor->cameraComponent;
+
+        app->gameMode = std::move(std::make_unique<MyGameMode>(MyGameMode{ cameraComponent }));
 
         //world->SpawnActor3D
         //(
@@ -218,12 +266,12 @@ int main(int argc, char** argv)
                 {
 
 
-                        CreateCube3DMesh({0, 0, 0}),
+                        CreateCube3DMesh({0, 0.f, 0}),
 
                         {
                             {0, 0, .5f},
                             {.4f, 1.5f, .4f},//scale
-                            {1,1,1},//position
+                            {2,1,1},//position
                             {0, 0, 0},//rotation
                         }
 
@@ -241,7 +289,7 @@ int main(int argc, char** argv)
                         {
                             {0, 0, .5f},
                             {.4f, .4f, .4f},//scale
-                            {1,1,.5f},//position
+                            {2,1,.5f},//position
                             {0, 0, 0},//rotation
                         }
 
@@ -261,7 +309,7 @@ int main(int argc, char** argv)
                         {
                             {0, 0, .5f},
                             {.4f, .4f, .4f},//scale
-                            {1,1,.5f},//position
+                            {2,1,.5f},//position
                             {0, 0, 0},//rotation
                         }
 

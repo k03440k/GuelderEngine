@@ -47,7 +47,7 @@ export namespace GuelderEngine
 
             bool isHandled : 1 = false;
         };
-        class EventDispatcher// : INHERIT_GClass(EventDispatcher)
+        class EventDispatcher
         {
         public:
             /*

@@ -81,10 +81,11 @@ export namespace GuelderEngine
         void SetShaderInfo3D(const Vulkan::ShaderInfo& shaderInfo);
         void SetShaderInfo2D(const Vulkan::ShaderInfo& shaderInfo);
 
-        World* const GetWorld();
-        GameMode* const GetGameMode();
+        const UniquePtr<World>& GetWorld();
 
         static const UniquePtr<Vulkan::VulkanManager>& GetVulkanManager();
+
+        UniquePtr<GameMode> gameMode;
 
         Events::EventDispatcher eventDispatcher;
         Utils::ResourceManager resourceManager;
@@ -96,7 +97,6 @@ export namespace GuelderEngine
         UniquePtr<RenderSystem3D> m_RenderSystem3D;
         UniquePtr<RenderSystem2D> m_RenderSystem2D;
         UniquePtr<World> m_World;
-        UniquePtr<GameMode> m_GameMode;
 
         Layers::LayerStack m_LayerStack;
 

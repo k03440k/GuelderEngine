@@ -12,15 +12,17 @@ export namespace GuelderEngine
     class GameMode
     {
     public:
+        DECLARE_DEFAULT_COPYING_AND_MOVING(GameMode);
+
         GameMode(const PlayerController& playerController = {});
         virtual ~GameMode() = default;
-        DECLARE_DEFAULT_COPYING_AND_MOVING(GameMode);
 		
 		virtual void BeginPlay();
-		
+
+        void SetPlayerController(UniquePtr<PlayerController>&& playerController);
         const UniquePtr<PlayerController>& GetPlayerController() const;
 
-    private:
+    protected:
         UniquePtr<PlayerController> m_PlayerController;
     };
 }

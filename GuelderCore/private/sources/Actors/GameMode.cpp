@@ -11,6 +11,10 @@ import :PlayerController;
 
 namespace GuelderEngine
 {
+    void GameMode::SetPlayerController(UniquePtr<PlayerController>&& playerController)
+    {
+        m_PlayerController = std::move(playerController);
+    }
     const UniquePtr<PlayerController>& GameMode::GetPlayerController() const
     {
         return m_PlayerController;

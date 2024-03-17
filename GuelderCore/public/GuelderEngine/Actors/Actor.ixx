@@ -69,7 +69,12 @@ export namespace GuelderEngine
             meshComponent->Cleanup(device);
         }
 
-        virtual bool IsComplete() const noexcept { return meshComponent->GetMesh().GetVertices().size() && meshComponent->GetVertexBuffer().GetSize() || !meshComponent->GetMesh().GetVertices().size() && !meshComponent->GetVertexBuffer().GetSize(); }
+        virtual bool IsComplete() const noexcept 
+        { 
+            if(meshComponent == nullptr)
+                return false;
+            return meshComponent->GetMesh().GetVertices().size() && meshComponent->GetVertexBuffer().GetSize() || !meshComponent->GetMesh().GetVertices().size() && !meshComponent->GetVertexBuffer().GetSize();
+        }
 
         UniquePtr<MeshComponent> meshComponent;
 

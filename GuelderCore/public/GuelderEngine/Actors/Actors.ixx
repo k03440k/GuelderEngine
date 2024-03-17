@@ -14,3 +14,4 @@ export import :CameraComponent;
 //export import :CameraManager;
 export import :GameMode;
 export import :PlayerController;
+export import :KeyboardController;

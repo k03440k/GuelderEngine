@@ -40,6 +40,7 @@ set(CORE_PRIVATE_SOURCES
 	${CORE_PRIVATE_SOURCES_PATH}Actors/GObject.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Actors/PlayerController.cpp
 	${CORE_PRIVATE_SOURCES_PATH}Actors/GameMode.cpp
+	${CORE_PRIVATE_SOURCES_PATH}Actors/KeyboardController.cpp
 	
 	${CORE_PRIVATE_SOURCES_PATH}ActorComponents/CameraComponent.cpp
 	
@@ -105,6 +106,7 @@ set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}Actors/Actor2D.ixx
 	${CORE_PUBLIC_MODULES_PATH}Actors/Actor3D.ixx
 	${CORE_PUBLIC_MODULES_PATH}Actors/Actor.ixx
+	${CORE_PUBLIC_MODULES_PATH}Actors/KeyboardController.ixx
 	
 	${CORE_PUBLIC_MODULES_PATH}ActorComponents/ActorComponent.ixx
 	${CORE_PUBLIC_MODULES_PATH}ActorComponents/CameraComponent.ixx

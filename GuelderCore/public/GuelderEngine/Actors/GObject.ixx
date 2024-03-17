@@ -19,11 +19,12 @@ export namespace GuelderEngine
 
         ID GetID() const noexcept { return m_ID; }
 
-    protected:
+    private:
         static ID currentID;
 
         ID m_ID;
     };
+    //TODO: do something with ids in components(probably delete)
     class GObjectComponent
     {
     public:

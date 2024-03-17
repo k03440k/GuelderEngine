@@ -16,9 +16,8 @@ export namespace GuelderEngine
     public:
         DECLARE_DEFAULT_COPYING_AND_MOVING(RenderActorTransform);
 
-        RenderActorTransform() = default;
-        RenderActorTransform(const Vec& translation, const Vec& scale, const Vec& position, const RotationType& rotation)
-            : translation(translation), scale(scale), position(position), rotation(rotation) {}
+        RenderActorTransform(const Vec& translation = {}, const Vec& scale = {}, const Vec& position = {}, const RotationType& rotation = {}, const Vec& localPosition = {})
+            : translation(translation), scale(scale), position(position), rotation(rotation), localPosition(localPosition) {}
         ~RenderActorTransform() = default;
 
         Vec translation;

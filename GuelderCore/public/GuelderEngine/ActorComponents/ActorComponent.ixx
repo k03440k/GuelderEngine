@@ -9,11 +9,11 @@ import :RenderActorTransform;
 
 export namespace GuelderEngine
 {
-    template<uint>
+    template<uint, typename RotationType = float>
     class SceneComponent;
 
     using SceneComponent2D = SceneComponent<2>;
-    using SceneComponent3D = SceneComponent<3>;
+    using SceneComponent3D = SceneComponent<3, Vector3>;
 
     class ActorComponent : public GObjectComponent
     {
@@ -24,11 +24,11 @@ export namespace GuelderEngine
         virtual void BeginPlay() {}
         virtual void Update() {}//make some sort of primitive component without update method
     };
-    template<uint dimension>
+    template<uint dimension, typename RotationType = float>
     class SceneComponent : public ActorComponent
     {
     public:
-        using Transform = RenderActorTransform<dimension>;
+        using Transform = RenderActorTransform<dimension, RotationType>;
     public:
         SceneComponent() = default;
         ~SceneComponent() override = default;

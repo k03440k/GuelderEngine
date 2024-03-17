@@ -10,7 +10,7 @@ import GuelderEngine.Core.Types;
 
 export namespace GuelderEngine
 {
-    class CameraComponent : public SceneComponent<3>
+    class CameraComponent : public SceneComponent3D
     {
     public:
         CameraComponent();

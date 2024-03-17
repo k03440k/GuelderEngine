@@ -23,6 +23,7 @@ import <memory>;
 import <functional>;
 import <thread>;
 import <ranges>;
+import <chrono>;
 
 namespace GuelderEngine
 {
@@ -73,7 +74,7 @@ namespace GuelderEngine
                     shaderInfo2D
                 }
         );
-        m_GameMode = std::make_unique<GameMode>();
+        gameMode = std::make_unique<GameMode>();
         m_World = std::make_unique<World>();
     }
     GEApplication::~GEApplication()
@@ -87,7 +88,7 @@ namespace GuelderEngine
     }
     void GEApplication::Run()
     {
-        m_GameMode->BeginPlay();
+        gameMode->BeginPlay();
         m_World->BeginPlay();
 
         //TODO: come up with role of camera and its position
@@ -96,9 +97,23 @@ namespace GuelderEngine
         //CameraActor3D tempCameraActor{};
         //auto& camera = tempCameraActor.camera;
 
+        auto currentTime = std::chrono::high_resolution_clock::now();
+
         while(!m_CloseWindow)
         {
             m_Window->OnUpdate();
+
+            auto newTime = std::chrono::high_resolution_clock::now();
+            float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            currentTime = newTime;
+
+            /*for(auto& [key, func] : gameMode->GetPlayerController()->m_KeyActionsMap)
+            {
+                if(key is pressed)
+                {
+                    func();
+                }
+            }*/
 
             if(m_Window->GetData().width != 0 && m_Window->GetData().height != 0)
                 if(const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }))
@@ -107,7 +122,14 @@ namespace GuelderEngine
                     //camera->SetOrthographicProjection(-ratio, ratio, -1, 1, -1, 1);
                     //camera.SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 10.f);
 
-                    CameraComponent* cameraComponent = m_GameMode->GetPlayerController()->camera;
+                    gameMode->GetPlayerController()->Update(m_Window->GetGLFWWindow(), frameTime);
+
+                    CameraComponent* cameraComponent = gameMode->GetPlayerController()->camera;
+
+                    auto projectionView1 = cameraComponent->GetProjection() * cameraComponent->GetViewMatrix();
+
+                    cameraComponent->SetViewYXZ(cameraComponent->transform.translation, cameraComponent->transform.rotation);
+
                     cameraComponent->SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 10.f);
 
                     auto projectionView = cameraComponent->GetProjection() * cameraComponent->GetViewMatrix();
@@ -116,16 +138,16 @@ namespace GuelderEngine
 
                     std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer, &projectionView](const SharedPtr<Actor3D>& actor)
                         {
-
-                            m_RenderSystem3D->Render
-                            (
-                                commandBuffer, 
-                                actor->meshComponent->GetVertexBuffer(),
-                                actor->meshComponent->GetIndexBuffer(),
-                                actor->meshComponent->GetMesh().GetVertices().size(),
-                                MatFromRenderActorTransform<3, 4>(actor->transform),
-                                projectionView
-                            );
+                            if(actor->IsComplete())
+                                m_RenderSystem3D->Render
+                                (
+                                    commandBuffer, 
+                                    actor->meshComponent->GetVertexBuffer(),
+                                    actor->meshComponent->GetIndexBuffer(),
+                                    actor->meshComponent->GetMesh().GetVertices().size(),
+                                    MatFromRenderActorTransform<3, 4>(actor->transform),
+                                    projectionView
+                                );
                         });
                     std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer](const SharedPtr<Actor2D>& actor)
                         {
@@ -193,13 +215,9 @@ namespace GuelderEngine
     {
         m_RenderSystem2D->SetShaderInfo(m_VulkanManager->GetDevice().GetDevice(), m_Renderer->GetSwapchain().GetRenderPass(), shaderInfo);
     }
-    World* const GEApplication::GetWorld()
+    const UniquePtr<World>& GEApplication::GetWorld()
     {
-        return m_World.get();
-    }
-    GameMode* const GEApplication::GetGameMode()
-    {
-        return m_GameMode.get();
+        return m_World;
     }
     const UniquePtr<Vulkan::VulkanManager>& GEApplication::GetVulkanManager()
     {

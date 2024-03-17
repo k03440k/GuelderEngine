@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utils/Debug.hpp"
+#include "../private/headers/Core/GObject/GClass.hpp"
 #include <glm/glm.hpp>
 
 import GuelderEngine;
