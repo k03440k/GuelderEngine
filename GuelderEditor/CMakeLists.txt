@@ -19,7 +19,8 @@ project (${ENGINE_EDITOR_NAME})
 #add sources
 set(EDITOR_SOURCE_PATH "src/")
 add_executable(${ENGINE_EDITOR_NAME}
-${EDITOR_SOURCE_PATH}main.cpp
+	${EDITOR_SOURCE_PATH}main.cpp
+	${EDITOR_SOURCE_PATH}CustomGame.hpp
 )
 target_sources(
         ${ENGINE_EDITOR_NAME}

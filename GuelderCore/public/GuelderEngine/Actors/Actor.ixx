@@ -14,14 +14,18 @@ import :CameraComponent;
 import GuelderEngine.Core.Types;
 import GuelderEngine.Vulkan;
 
+import :GObject;
+
 import <memory>;
 
 export namespace GuelderEngine
 {
     //it is insufficient for memory, because we allocate a memory with pointer and then with vector. right now I don't know what to choose else
     template<class _Actor>
-    std::shared_ptr<_Actor> MakeActor(_Actor&& actor)
+    std::shared_ptr<_Actor> MakeActor(_Actor&& actor, const Tag& tag = "")
     {
+        if(tag.size() > 0)
+            actor.tag = tag;
         return std::make_shared<_Actor>(std::move(actor));
     }
     
@@ -66,7 +70,7 @@ export namespace GuelderEngine
 
         virtual void Cleanup(const vk::Device& device) const noexcept
         {
-            meshComponent->Cleanup(device);
+            //meshComponent->Cleanup(device);
         }
 
         virtual bool IsComplete() const noexcept 

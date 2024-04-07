@@ -25,6 +25,6 @@ namespace GuelderEngine
     }
     void GameMode::BeginPlay()
     {
-
+        m_PlayerController->BeginPlay();
     }
 }

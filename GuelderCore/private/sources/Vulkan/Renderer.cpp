@@ -11,6 +11,8 @@ import :QueueFamilyIndices;
 import :Surface;
 import GuelderEngine.Core.Types;
 
+import <functional>;
+
 namespace GuelderEngine::Vulkan
 {
     Renderer::Renderer(GLFWwindow* window, const vk::Instance& instance, const DeviceManager& deviceManager, uint width, uint height)
@@ -78,12 +80,13 @@ namespace GuelderEngine::Vulkan
         const vk::PhysicalDevice& physicalDevice,
         const vk::CommandPool& commandPool, 
         const vk::Extent2D& extent, 
-        const QueueFamilyIndices& queueFamilyIndices)
+        const QueueFamilyIndices& queueFamilyIndices
+    )
     {
         GE_CLASS_ASSERT(!m_IsFrameStarted, "Cannot start rendering while frame is already in progress");
 
         m_Swapchain.GetCurrentFrame().WaitForImage(device);
-        
+
         try
         {
             m_CurrentImageIndex = device.acquireNextImageKHR(m_Swapchain.GetSwapchain(), std::numeric_limits<uint64_t>::max(), m_Swapchain.GetCurrentFrame().sync.GetImageAvailableSemaphore(), nullptr).value;

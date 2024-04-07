@@ -30,10 +30,11 @@ export namespace GuelderEngine
         void SpawnActor2D(SharedPtr<Actor2D>&& actor);
         void SpawnActor3D(SharedPtr<Actor3D>&& actor);
 
-        SharedPtr<Actor> GetGeneralActor(const Actor::ID& id);
-        SharedPtr<Actor>& GetActor(const Actor::ID& id = 0);
+        SharedPtr<Actor> GetActor(const Actor::ID& id);
+        SharedPtr<Actor> GetActor(const Tag& tag);
+        /*SharedPtr<Actor>& GetActor(const Actor::ID& id = 0);
         SharedPtr<Actor2D>& GetActor2D(const Actor::ID& id = 0);
-        SharedPtr<Actor3D>& GetActor3D(const Actor::ID& id = 0);
+        SharedPtr<Actor3D>& GetActor3D(const Actor::ID& id = 0);*/
 
         const std::vector<WeakPtr<Actor>>& GetAllActors() const;
         const std::vector<SharedPtr<Actor>>& GetActors() const;

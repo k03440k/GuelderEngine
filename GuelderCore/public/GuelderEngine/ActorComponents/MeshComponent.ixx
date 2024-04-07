@@ -1,5 +1,6 @@
 module;
 #include <vulkan/vulkan.hpp>
+#include "../Utils/Debug.hpp"
 export module GuelderEngine.Actors:MeshComponent;
 
 import <functional>;
@@ -26,11 +27,26 @@ export namespace GuelderEngine
         using IndexBuffer = Vulkan::Buffers::IndexBuffer;
         using Mesh = Vulkan::Mesh<dimension>;
     public:
-        ~MeshComponent() override = default;
-
         MeshComponent(const Mesh& mesh = {})
         {
             SetMesh(mesh);
+        }
+        /*MeshComponent(MeshComponent&& other)
+        {
+            m_VertexBuffer = std::move(other.m_VertexBuffer);
+            m_IndexBuffer = std::move(other.m_IndexBuffer);
+            m_Mesh = std::move(other.m_Mesh);
+        }
+        MeshComponent& operator=(MeshComponent&& other)
+        {
+
+        }*/
+        ~MeshComponent()
+        {
+            Vulkan::VulkanManager::Get()->GetDevice().WaitIdle();
+                m_VertexBuffer.Cleanup(Vulkan::VulkanManager::Get()->GetDevice().GetDevice());
+
+                m_IndexBuffer.Cleanup(Vulkan::VulkanManager::Get()->GetDevice().GetDevice());
         }
 
         void Reset()
@@ -45,16 +61,14 @@ export namespace GuelderEngine
             m_IndexBuffer.Cleanup(device);
         }
 
+        //TODO: make only one vertex buffer to boost fps
         void SetMesh(const Mesh& mesh)
         {
+            auto pastVB = m_VertexBuffer;
+            auto pastIB = m_IndexBuffer;
+
             m_Mesh = mesh;
-            /*const vk::Device& device,
-                const vk::PhysicalDevice& physicalDevice,
-                const QueueFamilyIndices& queueFamilyIndices,
-                const vk::CommandPool& transferPool,
-                const vk::Queue& transferQueue,
-                const void* data,
-                const uint& sizeOfAllData*/
+
             m_VertexBuffer = VertexBuffer
             (
                 Vulkan::VulkanManager::Get()->GetDevice().GetDevice(),
@@ -65,14 +79,7 @@ export namespace GuelderEngine
                 mesh.GetVertices().data(),
                 sizeof(mesh.GetVertices()[0]) * mesh.GetVertices().size()
             );
-            /*
-             const vk::Device& device,
-            const vk::PhysicalDevice& physicalDevice,
-            const QueueFamilyIndices& queueFamilyIndices,
-            const vk::CommandPool& transferPool,
-            const vk::Queue& transferQueue,
-            const Indices& indices
-            */
+            
             m_IndexBuffer = IndexBuffer
             (
                 Vulkan::VulkanManager::Get()->GetDevice().GetDevice(),
@@ -82,6 +89,9 @@ export namespace GuelderEngine
                 Vulkan::VulkanManager::Get()->GetDevice().GetQueues().transfer,
                 mesh.GetIndices()
             );
+
+            pastVB.Cleanup(Vulkan::VulkanManager::Get()->GetDevice().GetDevice());
+            pastIB.Cleanup(Vulkan::VulkanManager::Get()->GetDevice().GetDevice());
         }
 
         const Mesh& GetMesh() const { return m_Mesh; }

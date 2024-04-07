@@ -100,12 +100,14 @@ export namespace GuelderEngine::Vulkan
             const Buffers::VertexBuffer& vertexBuffer,
             const Buffers::IndexBuffer& indexBuffer,
             const uint& verticesCount,
-            const Mat<2>& actorTransform
+            const Mat<2>& actorTransform,
+            const Vector2& positionOffset = {},
+            const Vector3& color = {}
         ) const
         {
             commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline.GetPipeline());
 
-            const PushData push(actorTransform);
+            const PushData push(actorTransform, positionOffset, color);
 
             vertexBuffer.Bind(commandBuffer, { 0 });
             if(indexBuffer.GetIndicesCount())

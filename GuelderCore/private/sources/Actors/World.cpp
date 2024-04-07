@@ -102,16 +102,31 @@ namespace GuelderEngine
         m_AllActors.push_back(m_Actors3D[m_Actors3D.size()-1]);
     }
     //TODO: make Getting actors via real ID(std::find_if()) and finish fucking ID system
-    SharedPtr<Actor> World::GetGeneralActor(const Actor::ID& id)
+    SharedPtr<Actor> World::GetActor(const Actor::ID& id)
     {
-        return std::ranges::find_if(m_AllActors, [&id]
-                                (const WeakPtr<Actor>& actor)
-                                    {
-                                        return actor.lock()->GetID() == id;
-                                    }
-        )->lock();
+        auto tmp = std::ranges::find_if(m_AllActors, [&id]
+        (const WeakPtr<Actor>& actor)
+            {
+                return actor.lock()->GetID() == id;
+            }
+        );
+        if(tmp != m_AllActors.end())
+            return tmp->lock();
+        return nullptr;
     }
-    SharedPtr<Actor>& World::GetActor(const Actor::ID& id)
+    SharedPtr<Actor> World::GetActor(const Tag& tag)
+    {
+        auto tmp = std::ranges::find_if(m_AllActors, [&tag]
+        (const WeakPtr<Actor>& actor)
+            {
+                return actor.lock()->tag == tag;
+            }
+        );
+        if(tmp != m_AllActors.end())
+            return tmp->lock();
+        return nullptr;
+    }
+    /*SharedPtr<Actor>& World::GetActor(const Actor::ID& id)
     {
         return *std::ranges::find_if(m_Actors, [&id]
         (const SharedPtr<Actor>& actor)
@@ -137,7 +152,7 @@ namespace GuelderEngine
                 return actor->GetID() == id;
             }
         );
-    }
+    }*/
     const std::vector<WeakPtr<Actor>>& World::GetAllActors() const
     {
         return m_AllActors;
@@ -188,7 +203,10 @@ namespace GuelderEngine
     }
     void World::CleanupActors3D(const vk::Device& device) const
     {
-        std::ranges::for_each(m_Actors3D, [&device](const SharedPtr<Actor3D>& actor) { if(actor->IsComplete())actor->Cleanup(device); });
+        //std::ranges::for_each(m_Actors3D, [&device](const SharedPtr<Actor3D>& actor) { if(actor->IsComplete())actor->Cleanup(device); });
+        for(auto& a : m_Actors3D)
+            if(a->IsComplete())
+                a->Cleanup(device);
     }
     void World::CleanupRenderActors(const vk::Device& device) const
     {

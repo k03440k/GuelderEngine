@@ -44,7 +44,7 @@ export namespace GuelderEngine::Vulkan
     {
         glm::mat4 transform{1.0f};
         //glm::vec3 offset;
-        alignas(16) glm::vec3 color;//I guess that the alignas must be different
+        alignas(16) glm::vec3 color;
     };
     using SimplePushConstantData2D = SimplePushConstantData<2>;
     using SimplePushConstantData3D = SimplePushConstantData<3>;
@@ -162,7 +162,7 @@ export namespace GuelderEngine::Vulkan
 
         const Vertices& GetVertices() const noexcept { return m_Vertices; }
         const Indices& GetIndices() const noexcept { return m_Indices; }
-    private:
+    //private:
         Vertices m_Vertices;
         Indices m_Indices;
     };

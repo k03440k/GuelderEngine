@@ -9,6 +9,8 @@ import :Swapchain;
 import :DeviceManager;
 import :Surface;
 
+import <functional>;
+
 export namespace GuelderEngine::Vulkan
 {
     //class DeviceManager;

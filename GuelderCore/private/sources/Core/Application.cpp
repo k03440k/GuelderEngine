@@ -88,6 +88,7 @@ namespace GuelderEngine
     }
     void GEApplication::Run()
     {
+        gameMode->GetPlayerController()->SetupInput();
         gameMode->BeginPlay();
         m_World->BeginPlay();
 
@@ -107,14 +108,6 @@ namespace GuelderEngine
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
             currentTime = newTime;
 
-            /*for(auto& [key, func] : gameMode->GetPlayerController()->m_KeyActionsMap)
-            {
-                if(key is pressed)
-                {
-                    func();
-                }
-            }*/
-
             if(m_Window->GetData().width != 0 && m_Window->GetData().height != 0)
                 if(const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }))
                 {
@@ -130,7 +123,7 @@ namespace GuelderEngine
 
                     cameraComponent->SetViewYXZ(cameraComponent->transform.translation, cameraComponent->transform.rotation);
 
-                    cameraComponent->SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 10.f);
+                    cameraComponent->SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 100.0f);
 
                     auto projectionView = cameraComponent->GetProjection() * cameraComponent->GetViewMatrix();
 
@@ -157,7 +150,8 @@ namespace GuelderEngine
                                 actor->meshComponent->GetVertexBuffer(),
                                 actor->meshComponent->GetIndexBuffer(),
                                 actor->meshComponent->GetMesh().GetVertices().size(),
-                                MatFromRenderActorTransform<2, 2>(actor->transform)
+                                MatFromRenderActorTransform<2, 2>(actor->transform),
+                                actor->transform.position
                             );
                         });
 

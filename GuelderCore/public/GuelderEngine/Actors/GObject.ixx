@@ -2,8 +2,11 @@ module;
 #include "../../../private/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Actors:GObject;
 
+import <string>;
+
 export namespace GuelderEngine
 {
+    using Tag = std::string;
     class GObject
     {
     private:
@@ -11,7 +14,8 @@ export namespace GuelderEngine
     public:
         using ID = size_t;
     public:
-        GObject() = default;
+        GObject(const Tag& tag = "")
+            : tag(tag) {}
         virtual ~GObject() = default;
 
         DECLARE_DEFAULT_COPYING_AND_MOVING(GObject);
@@ -19,6 +23,7 @@ export namespace GuelderEngine
 
         ID GetID() const noexcept { return m_ID; }
 
+        /*const*/ Tag tag;
     private:
         static ID currentID;
 

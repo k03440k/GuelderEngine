@@ -17,7 +17,6 @@ namespace GuelderEngine::Vulkan::Buffers
         const vk::Queue& transferQueue
     )
     {
-        //TODO: maybe make class CommandBuffer
         const vk::CommandBufferAllocateInfo allocInfo(
             transferPool,
             vk::CommandBufferLevel::ePrimary,
