@@ -49,10 +49,11 @@ export namespace GuelderEngine::Vulkan
         FORCE_INLINE vk::CommandBuffer BeginFrame(const DeviceManager& deviceManager, const vk::Extent2D& extent)
         {
             return BeginFrame(
-                deviceManager.GetDevice(), 
+                deviceManager.GetDevice(),
                 deviceManager.GetPhysicalDevice(),
-                deviceManager.GetCommandPool().GetCommandPool(), 
-                extent, deviceManager.GetQueueIndices()
+                deviceManager.GetCommandPool().GetCommandPool(),
+                extent,
+                deviceManager.GetQueueIndices()
             );
         }
         void EndFrame(

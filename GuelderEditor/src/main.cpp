@@ -22,6 +22,7 @@
 
 import <memory>;
 import <unordered_set>;
+import <iostream>;
 #include <random>
 
 DECLARE_LOG_CATEGORY_EXTERN(Editor, All, true);
@@ -53,7 +54,7 @@ int main(int argc, char** argv)
                         CreateCube3DMesh({0, 0, 0}),
                         {
                             {0, 0, .5f},
-                            {.1f, .1f, .1f},//scale
+                            {.1f, .3f, .1f},//scale
                             {1,1,1},//position
                             {0, 0, 0},//rotation
                         }
@@ -63,7 +64,15 @@ int main(int argc, char** argv)
                 "cube"
             )
         );
-        SpawnALotOfStuff(world.get());
+
+        //GE_LOG(Editor, Info, "Input number of 3D cubes to be spawned");
+        uint countOfNewActors = 50;
+        //std::cin >> countOfNewActors;
+
+        SpawnALotOfStuff(world.get(), countOfNewActors);
+        //Spawn2Ds(world.get());
+
+        GE_LOG(Editor, Info, "Threre are ", world->GetAllActors().size(), " actors on the scene.");
 
         app->Run();
     }

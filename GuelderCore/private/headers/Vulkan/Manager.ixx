@@ -56,7 +56,7 @@ export namespace GuelderEngine::Vulkan
             return m_DeviceManager.MakeIndexBuffer(mesh.GetIndices());
         }
 
-        static const std::unique_ptr<Vulkan::VulkanManager>& Get();
+        static const Vulkan::VulkanManager& Get();
 
         const DeviceManager& GetDevice() const;
         const vk::Instance& GetInstance() const;

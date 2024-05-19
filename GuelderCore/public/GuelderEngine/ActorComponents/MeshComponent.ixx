@@ -11,6 +11,8 @@ import GuelderEngine.Core.Types;
 
 import <memory>;
 
+//TODO: possibility of allocating huge chunk of vertices in one method, so to save time on allocation of all actors and their meshes
+
 export namespace GuelderEngine
 {
     template<uint>
@@ -27,80 +29,89 @@ export namespace GuelderEngine
         using IndexBuffer = Vulkan::Buffers::IndexBuffer;
         using Mesh = Vulkan::Mesh<dimension>;
     public:
-        MeshComponent(const Mesh& mesh = {})
+        MeshComponent() = default;
+        MeshComponent(const Mesh& mesh)
         {
-            SetMesh(mesh);
-        }
-        /*MeshComponent(MeshComponent&& other)
-        {
-            m_VertexBuffer = std::move(other.m_VertexBuffer);
-            m_IndexBuffer = std::move(other.m_IndexBuffer);
-            m_Mesh = std::move(other.m_Mesh);
-        }
-        MeshComponent& operator=(MeshComponent&& other)
-        {
-
-        }*/
-        ~MeshComponent()
-        {
-            Vulkan::VulkanManager::Get()->GetDevice().WaitIdle();
-                m_VertexBuffer.Cleanup(Vulkan::VulkanManager::Get()->GetDevice().GetDevice());
-
-                m_IndexBuffer.Cleanup(Vulkan::VulkanManager::Get()->GetDevice().GetDevice());
+            m_Vertex = std::make_shared<Vulkan::MeshSector>(0, 0);
+            m_Index = std::make_shared<Vulkan::MeshSector>(0, 0);
+            AllocateNewMesh(mesh);
         }
 
         void Reset()
         {
-            m_Mesh.Reset();
-            m_VertexBuffer.Reset();
-            m_IndexBuffer.Reset();
-        }
-        void Cleanup(const vk::Device& device) const noexcept
-        {
-            m_VertexBuffer.Cleanup(device);
-            m_IndexBuffer.Cleanup(device);
+            m_Vertex.Reset();
+            m_Index.Reset();
         }
 
-        //TODO: make only one vertex buffer to boost fps
         void SetMesh(const Mesh& mesh)
         {
-            auto pastVB = m_VertexBuffer;
-            auto pastIB = m_IndexBuffer;
-
-            m_Mesh = mesh;
-
-            m_VertexBuffer = VertexBuffer
-            (
-                Vulkan::VulkanManager::Get()->GetDevice().GetDevice(),
-                Vulkan::VulkanManager::Get()->GetDevice().GetPhysicalDevice(),
-                Vulkan::VulkanManager::Get()->GetDevice().GetQueueIndices(),
-                Vulkan::VulkanManager::Get()->GetDevice().GetCommandPoolTransfer().GetCommandPool(),
-                Vulkan::VulkanManager::Get()->GetDevice().GetQueues().transfer,
-                mesh.GetVertices().data(),
-                sizeof(mesh.GetVertices()[0]) * mesh.GetVertices().size()
-            );
-            
-            m_IndexBuffer = IndexBuffer
-            (
-                Vulkan::VulkanManager::Get()->GetDevice().GetDevice(),
-                Vulkan::VulkanManager::Get()->GetDevice().GetPhysicalDevice(),
-                Vulkan::VulkanManager::Get()->GetDevice().GetQueueIndices(),
-                Vulkan::VulkanManager::Get()->GetDevice().GetCommandPoolTransfer().GetCommandPool(),
-                Vulkan::VulkanManager::Get()->GetDevice().GetQueues().transfer,
+            m_MeshAllocator.SetMesh(
+                Vulkan::VulkanManager::Get().GetDevice().GetDevice(),
+                Vulkan::VulkanManager::Get().GetDevice().GetPhysicalDevice(),
+                Vulkan::VulkanManager::Get().GetDevice().GetQueueIndices(),
+                Vulkan::VulkanManager::Get().GetDevice().GetCommandPoolTransfer().GetCommandPool(),
+                Vulkan::VulkanManager::Get().GetDevice().GetQueues().transfer,
+                m_Vertex,
+                mesh.GetVertices(),
+                m_Index,
                 mesh.GetIndices()
             );
-
-            pastVB.Cleanup(Vulkan::VulkanManager::Get()->GetDevice().GetDevice());
-            pastIB.Cleanup(Vulkan::VulkanManager::Get()->GetDevice().GetDevice());
         }
 
-        const Mesh& GetMesh() const { return m_Mesh; }
-        const VertexBuffer& GetVertexBuffer() const { return m_VertexBuffer; }
-        const IndexBuffer& GetIndexBuffer() const { return m_IndexBuffer; }
+        Mesh GetMesh() const
+        {
+            return m_MeshAllocator.GetMesh(m_Vertex, m_Index);
+        }
+
+        bool IsComplete() const 
+        { 
+            return m_Vertex->IsComplete();
+        }
+
+        static const VertexBuffer& GetVertexBuffer() { return m_MeshAllocator.GetVertexBuffer(); }
+        static const IndexBuffer& GetIndexBuffer() { return m_MeshAllocator.GetIndexBuffer(); }
+
+        const SharedPtr<Vulkan::MeshSector>& GetVertexSector() const { return m_Vertex; }
+        const SharedPtr<Vulkan::MeshSector>& GetIndexSector() const { return m_Index; }
+
+        static const Vulkan::MeshAllocator<dimension>& GetMeshAllocator() { return m_MeshAllocator; }
     private:
-        VertexBuffer m_VertexBuffer;
-        IndexBuffer m_IndexBuffer;
-        
-        Mesh m_Mesh;
+        friend class GEApplication;
+        static Vulkan::MeshAllocator<dimension> m_MeshAllocator;
+
+        void AllocateNewMesh(const Mesh& mesh)
+        {
+            m_MeshAllocator.AllocateMesh
+            (
+                Vulkan::VulkanManager::Get().GetDevice().GetDevice(),
+                Vulkan::VulkanManager::Get().GetDevice().GetPhysicalDevice(),
+                Vulkan::VulkanManager::Get().GetDevice().GetQueueIndices(),
+                Vulkan::VulkanManager::Get().GetDevice().GetCommandPoolTransfer().GetCommandPool(),
+                Vulkan::VulkanManager::Get().GetDevice().GetQueues().transfer,
+                m_Vertex,
+                mesh.GetVertices(),
+                m_Index,
+                mesh.GetIndices()
+            );
+        }
+        void DeleteMesh()
+        {
+            m_MeshAllocator.DeleteMesh
+            (
+                Vulkan::VulkanManager::Get().GetDevice().GetDevice(),
+                Vulkan::VulkanManager::Get().GetDevice().GetPhysicalDevice(),
+                Vulkan::VulkanManager::Get().GetDevice().GetQueueIndices(),
+                Vulkan::VulkanManager::Get().GetDevice().GetCommandPoolTransfer().GetCommandPool(),
+                Vulkan::VulkanManager::Get().GetDevice().GetQueues().transfer,
+                m_Vertex,
+                m_Index
+            );
+        }
+
+        SharedPtr<Vulkan::MeshSector> m_Vertex;
+        SharedPtr<Vulkan::MeshSector> m_Index;
     };
+
+    Vulkan::MeshAllocator<2> MeshComponent<2>::m_MeshAllocator = Vulkan::MeshAllocator<2>{};
+    Vulkan::MeshAllocator<3> MeshComponent<3>::m_MeshAllocator = Vulkan::MeshAllocator<3>{};
 }

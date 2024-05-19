@@ -9,9 +9,10 @@ import :Swapchain;
 import :DeviceManager;
 import :QueueFamilyIndices;
 import :Surface;
+import :IVulkanObject;
 import GuelderEngine.Core.Types;
 
-import <functional>;
+import GuelderEngine.Layers;
 
 namespace GuelderEngine::Vulkan
 {
@@ -168,6 +169,12 @@ namespace GuelderEngine::Vulkan
             m_Swapchain.Recreate(device, physicalDevice, m_Surface.GetSurface(), m_Surface.GetCapabilities(), m_Surface.GetFormat(), m_Surface.GetPresentMode(), extent, commandPool, queueFamilyIndices);
             wasWindowResized = false;
         }
+
+        //for(auto& frame : m_Swapchain.GetFrames())
+        //{
+        //    //if(device.getFenceStatus(frame.sync.GetFlightFence()) != vk::Result::eSuccess)
+        //        //GE_LOG(VulkanCore, Info, device.getFenceStatus(frame.sync.GetFlightFence()));
+        //}
 
         m_IsFrameStarted = false;
 

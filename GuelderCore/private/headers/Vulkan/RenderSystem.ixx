@@ -13,6 +13,8 @@ import :IndexBuffer;
 import :StagingBuffer;
 import :Pipeline;
 
+import <functional>;
+
 export namespace GuelderEngine::Vulkan
 {
     template<uint dimension, uint matDimension>
@@ -48,6 +50,9 @@ export namespace GuelderEngine::Vulkan
             const Buffers::VertexBuffer& vertexBuffer,
             const Buffers::IndexBuffer& indexBuffer,
             const uint& verticesCount,
+            const uint& indicesCount,
+            uint firstVertexIndex,
+            uint firstIndex,
             const Mat<4>& actorTransform,
             const Mat<4>& viewProjection
         ) const
@@ -57,12 +62,12 @@ export namespace GuelderEngine::Vulkan
             const PushData push(viewProjection * actorTransform);
 
             vertexBuffer.Bind(commandBuffer, { 0 });
-            if(indexBuffer.GetIndicesCount())
+            if(indicesCount)
                 indexBuffer.Bind(commandBuffer, { 0 });
             commandBuffer.pushConstants(m_Pipeline.GetPipelineLayout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(push), &push);
 
-            if(indexBuffer.GetIndicesCount())
-                commandBuffer.drawIndexed(indexBuffer.GetIndicesCount(), 1, 0, 0, 0);
+            if(indicesCount)
+                commandBuffer.drawIndexed(indicesCount, 1, firstIndex, firstVertexIndex, 0);
             else
                 commandBuffer.draw(verticesCount, 1, 0, 0);
         }
@@ -95,11 +100,15 @@ export namespace GuelderEngine::Vulkan
             m_Pipeline.SetShaderInfo(device, renderPass, shaderInfo);
         }
 
+        //TODO: remake 2D render method
         void Render(
             const vk::CommandBuffer& commandBuffer,
             const Buffers::VertexBuffer& vertexBuffer,
             const Buffers::IndexBuffer& indexBuffer,
             const uint& verticesCount,
+            const uint& indicesCount,
+            uint firstVertexIndex,
+            uint firstIndex,
             const Mat<2>& actorTransform,
             const Vector2& positionOffset = {},
             const Vector3& color = {}
@@ -110,12 +119,12 @@ export namespace GuelderEngine::Vulkan
             const PushData push(actorTransform, positionOffset, color);
 
             vertexBuffer.Bind(commandBuffer, { 0 });
-            if(indexBuffer.GetIndicesCount())
+            if(indicesCount)
                 indexBuffer.Bind(commandBuffer, { 0 });
             commandBuffer.pushConstants(m_Pipeline.GetPipelineLayout(), vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(push), &push);
 
-            if(indexBuffer.GetIndicesCount())
-                commandBuffer.drawIndexed(indexBuffer.GetIndicesCount(), 1, 0, 0, 0);
+            if(indicesCount)
+                commandBuffer.drawIndexed(indicesCount, 1, firstIndex, firstVertexIndex, 0);
             else
                 commandBuffer.draw(verticesCount, 1, 0, 0);
         }

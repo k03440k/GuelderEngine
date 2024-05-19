@@ -4,7 +4,7 @@ module;
 #include "../../../private/headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Actors:ActorComponent;
 
-import :GObject;
+export import :GObject;
 import :RenderActorTransform;
 
 export namespace GuelderEngine
@@ -22,7 +22,7 @@ export namespace GuelderEngine
         ~ActorComponent() override = default;
 
         virtual void BeginPlay() {}
-        virtual void Update() {}//make some sort of primitive component without update method
+        virtual void Update(float deltaTime) {}//make some sort of primitive component without update method
     };
     template<uint dimension, typename RotationType = float>
     class SceneComponent : public ActorComponent

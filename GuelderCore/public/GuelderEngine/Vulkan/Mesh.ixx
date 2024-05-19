@@ -10,6 +10,7 @@ import :IVulkanObject;
 
 import <array>;
 import <vector>;
+import <memory>;
 
 export namespace GuelderEngine::Vulkan
 {
@@ -98,11 +99,11 @@ export namespace GuelderEngine::Vulkan
         DECLARE_DEFAULT_MOVING(Vertex);
 
         Vertex(const PositionVector& pos, const Vector3& color = {1.f, 1.f, 1.f})
-            : pos(pos), color(color) {}
+            : position(pos), color(color) {}
 
         void Reset() noexcept override
         {
-            pos = PositionVector();
+            position = PositionVector();
             color = Vector3();
         }
 
@@ -127,7 +128,7 @@ export namespace GuelderEngine::Vulkan
             descriptions[0].binding = 0;
             descriptions[0].location = info.position.location;
             descriptions[0].format = ConvertVkFormat(info.position.format);
-            descriptions[0].offset = offsetof(Vertex, pos);
+            descriptions[0].offset = offsetof(Vertex, position);
 
             //color
             descriptions[1].binding = 0;
@@ -138,7 +139,7 @@ export namespace GuelderEngine::Vulkan
             return descriptions;
         }
 
-        PositionVector pos;
+        PositionVector position;
         Vector3 color;
     };
     template<uint _dimension>

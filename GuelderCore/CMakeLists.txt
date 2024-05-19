@@ -87,6 +87,8 @@ set(CORE_PRIVATE_MODULES
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Renderer.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/RenderSystem.ixx
 	${CORE_PRIVATE_MODULES_PATH}Vulkan/Surface.ixx
+	
+	${CORE_PRIVATE_MODULES_PATH}Vulkan/MeshAllocator.ixx
 )
 set(CORE_PUBLIC_MODULES
 	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx

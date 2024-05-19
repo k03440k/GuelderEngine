@@ -67,7 +67,7 @@ namespace GuelderEngine::Vulkan
     {
         VulkanManager::Cleanup();
     }
-    const std::unique_ptr<Vulkan::VulkanManager>& VulkanManager::Get()
+    const Vulkan::VulkanManager& VulkanManager::Get()
     {
         return GEApplication::GetVulkanManager();
     }

@@ -36,7 +36,7 @@ export namespace GuelderEngine
         ~Actor() override = default;
 
         virtual void BeginPlay() {}
-        virtual void Update() {}
+        virtual void Update(float deltaTime) {}
     private:
     };
     
@@ -77,7 +77,7 @@ export namespace GuelderEngine
         { 
             if(meshComponent == nullptr)
                 return false;
-            return meshComponent->GetMesh().GetVertices().size() && meshComponent->GetVertexBuffer().GetSize() || !meshComponent->GetMesh().GetVertices().size() && !meshComponent->GetVertexBuffer().GetSize();
+            return meshComponent->IsComplete();
         }
 
         UniquePtr<MeshComponent> meshComponent;

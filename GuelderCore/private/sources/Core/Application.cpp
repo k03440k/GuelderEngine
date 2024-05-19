@@ -27,6 +27,8 @@ import <chrono>;
 
 namespace GuelderEngine
 {
+    //UniquePtr<Vulkan::MeshAllocator2D> GEApplication::m_MeshAllocator2D = std::make_unique<Vulkan::MeshAllocator2D>();
+    //UniquePtr<Vulkan::MeshAllocator3D> GEApplication::m_MeshAllocator3D = std::make_unique<Vulkan::MeshAllocator3D>();
     //std::unique_ptr<Vulkan::VulkanManager> GEApplication::m_VulkanManager = std::make_unique<Vulkan::VulkanManager>("Guelder Engine Editor");
 #pragma region GEApplication
 #define BIND_EVENT_FUNC(x) std::bind(&x, this, std::placeholders::_1)
@@ -48,13 +50,13 @@ namespace GuelderEngine
         //m_VulkanManager = std::make_unique<Vulkan::VulkanManager>(info.title);
         m_Renderer = std::make_unique<Vulkan::Renderer>(
             m_Window->GetGLFWWindow(),
-            m_VulkanManager->GetInstance(),
-            m_VulkanManager->GetDevice(),
+            m_VulkanManager.GetInstance(),
+            m_VulkanManager.GetDevice(),
             info.width, info.height
         );
         m_RenderSystem3D = std::make_unique<RenderSystem3D>
             (
-                m_VulkanManager->GetDevice().GetDevice(),
+                m_VulkanManager.GetDevice().GetDevice(),
                 m_Renderer->GetSwapchain().GetRenderPass(),
                 Vulkan::ShaderInfo
                 {
@@ -65,7 +67,7 @@ namespace GuelderEngine
         );
         m_RenderSystem2D = std::make_unique<RenderSystem2D>
             (
-                m_VulkanManager->GetDevice().GetDevice(),
+                m_VulkanManager.GetDevice().GetDevice(),
                 m_Renderer->GetSwapchain().GetRenderPass(),
                 Vulkan::ShaderInfo
                 {
@@ -79,11 +81,13 @@ namespace GuelderEngine
     }
     GEApplication::~GEApplication()
     {
-        m_VulkanManager->GetDevice().WaitIdle();
-        m_RenderSystem3D->Cleanup(m_VulkanManager->GetDevice().GetDevice());
-        m_RenderSystem2D->Cleanup(m_VulkanManager->GetDevice().GetDevice());
-        m_Renderer->Cleanup(m_VulkanManager->GetDevice(), m_VulkanManager->GetInstance());
-        m_World->CleanupRenderActors(m_VulkanManager->GetDevice().GetDevice());
+        m_VulkanManager.GetDevice().WaitIdle();
+        m_RenderSystem3D->Cleanup(m_VulkanManager.GetDevice().GetDevice());
+        m_RenderSystem2D->Cleanup(m_VulkanManager.GetDevice().GetDevice());
+        m_Renderer->Cleanup(m_VulkanManager.GetDevice(), m_VulkanManager.GetInstance());
+        m_World->CleanupRenderActors(m_VulkanManager.GetDevice().GetDevice());
+        MeshComponent<2>::GetMeshAllocator().Cleanup(m_VulkanManager.GetDevice().GetDevice());
+        MeshComponent<3>::GetMeshAllocator().Cleanup(m_VulkanManager.GetDevice().GetDevice());
         //m_VulkanManager.reset();
     }
     void GEApplication::Run()
@@ -108,14 +112,17 @@ namespace GuelderEngine
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
             currentTime = newTime;
 
+            m_World->UpdateActors(frameTime);
+
             if(m_Window->GetData().width != 0 && m_Window->GetData().height != 0)
-                if(const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }))
+            {
+                gameMode->GetPlayerController()->Update(m_Window->GetGLFWWindow(), frameTime);
+
+                if(const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager.GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }))
                 {
                     auto ratio = m_Renderer->GetSwapchain().GetAspectRatio();
                     //camera->SetOrthographicProjection(-ratio, ratio, -1, 1, -1, 1);
                     //camera.SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 10.f);
-
-                    gameMode->GetPlayerController()->Update(m_Window->GetGLFWWindow(), frameTime);
 
                     CameraComponent* cameraComponent = gameMode->GetPlayerController()->camera;
 
@@ -132,34 +139,39 @@ namespace GuelderEngine
                     std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer, &projectionView](const SharedPtr<Actor3D>& actor)
                         {
                             if(actor->IsComplete())
-                                m_RenderSystem3D->Render
-                                (
-                                    commandBuffer, 
-                                    actor->meshComponent->GetVertexBuffer(),
-                                    actor->meshComponent->GetIndexBuffer(),
-                                    actor->meshComponent->GetMesh().GetVertices().size(),
-                                    MatFromRenderActorTransform<3, 4>(actor->transform),
-                                    projectionView
-                                );
+                            m_RenderSystem3D->Render
+                            (
+                                commandBuffer,
+                                MeshComponent3D::GetVertexBuffer(),
+                                MeshComponent3D::GetIndexBuffer(),
+                                actor->meshComponent->GetVertexSector() ? actor->meshComponent->GetVertexSector()->GetSize() : 0,
+                                actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetIndexSector()->GetSize() : 0,
+                                actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetVertexSector()->starts : 0,
+                                actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetIndexSector()->starts : 0,
+                                MatFromRenderActorTransform<3, 4>(actor->transform),
+                                projectionView
+                            );
                         });
                     std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer](const SharedPtr<Actor2D>& actor)
                         {
                             m_RenderSystem2D->Render
                             (
                                 commandBuffer,
-                                actor->meshComponent->GetVertexBuffer(),
-                                actor->meshComponent->GetIndexBuffer(),
-                                actor->meshComponent->GetMesh().GetVertices().size(),
+                                MeshComponent2D::GetVertexBuffer(),
+                                MeshComponent2D::GetIndexBuffer(),
+                                actor->meshComponent->GetVertexSector() ? actor->meshComponent->GetVertexSector()->GetSize() : 0,
+                                actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetIndexSector()->GetSize() : 0,
+                                actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetVertexSector()->starts : 0,
+                                actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetIndexSector()->starts : 0,
                                 MatFromRenderActorTransform<2, 2>(actor->transform),
                                 actor->transform.position
                             );
                         });
 
                     m_Renderer->EndSwapchainRenderPass(commandBuffer);
-                    m_Renderer->EndFrame(m_VulkanManager->GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }, m_Window->WasWindowResized());
+                    m_Renderer->EndFrame(m_VulkanManager.GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }, m_Window->WasWindowResized());
                 }
-
-            m_World->UpdateActors();
+            }
 
             //for(Layers::Layer* layer : m_LayerStack)
             //    layer->OnUpdate();
@@ -203,17 +215,17 @@ namespace GuelderEngine
     }
     void GEApplication::SetShaderInfo3D(const Vulkan::ShaderInfo& shaderInfo)
     {
-        m_RenderSystem3D->SetShaderInfo(m_VulkanManager->GetDevice().GetDevice(), m_Renderer->GetSwapchain().GetRenderPass(), shaderInfo);
+        m_RenderSystem3D->SetShaderInfo(m_VulkanManager.GetDevice().GetDevice(), m_Renderer->GetSwapchain().GetRenderPass(), shaderInfo);
     }
     void GEApplication::SetShaderInfo2D(const Vulkan::ShaderInfo& shaderInfo)
     {
-        m_RenderSystem2D->SetShaderInfo(m_VulkanManager->GetDevice().GetDevice(), m_Renderer->GetSwapchain().GetRenderPass(), shaderInfo);
+        m_RenderSystem2D->SetShaderInfo(m_VulkanManager.GetDevice().GetDevice(), m_Renderer->GetSwapchain().GetRenderPass(), shaderInfo);
     }
     const UniquePtr<World>& GEApplication::GetWorld()
     {
         return m_World;
     }
-    const UniquePtr<Vulkan::VulkanManager>& GEApplication::GetVulkanManager()
+    const Vulkan::VulkanManager& GEApplication::GetVulkanManager()
     {
         return m_VulkanManager;
     }

@@ -52,6 +52,13 @@ namespace GuelderEngine::Vulkan::Buffers
         device.freeMemory(m_BufferMemory);
         device.destroyBuffer(m_Buffer);
     }
+    void IBuffer::Cleanup(const vk::Device& device, const std::vector<vk::Queue> queuesToWait) const noexcept
+    {
+        for(auto& queue : queuesToWait)
+            queue.waitIdle();
+        device.freeMemory(m_BufferMemory);
+        device.destroyBuffer(m_Buffer);
+    }
     const vk::Buffer& IBuffer::GetBuffer() const noexcept
     {
         return m_Buffer;
@@ -80,33 +87,4 @@ namespace GuelderEngine::Vulkan::Buffers
 
         GE_CLASS_THROW("Failed to find suitable memory type");
     }
-
-    //void CopyBuffer(const Buffer& srcBuffer, Buffer& dstBuffer, const vk::Device& device, const vk::CommandPool& transferPool, const vk::Queue& transferQueue)
-    //{
-    //    GE_ASSERT_FN(srcBuffer.GetSize() == dstBuffer.GetSize(), "different buffers sizes");
-    //    //TODO: maybe make class CommandBuffer
-    //    vk::CommandBufferAllocateInfo allocInfo{
-    //        transferPool,
-    //        vk::CommandBufferLevel::ePrimary,
-    //        1
-    //    };
-
-    //    vk::CommandBuffer cBuffer = device.allocateCommandBuffers(allocInfo, &cBuffer)[0];
-
-    //    vk::CommandBufferBeginInfo beginInfo{vk::CommandBufferUsageFlagBits::eOneTimeSubmit};
-    //    GE_ASSERT_FN(cBuffer.begin(&beginInfo) == vk::Result::eSuccess, "cannot begin command buffer when copying buffer");
-
-    //    vk::BufferCopy copy{0, 0, dstBuffer.GetSize()};
-    //    cBuffer.copyBuffer(srcBuffer.GetBuffer(), dstBuffer.GetBuffer(), 1, &copy);
-    //    cBuffer.end();
-
-    //    vk::SubmitInfo submitInfo{};
-    //    submitInfo.commandBufferCount = 1;
-    //    submitInfo.pCommandBuffers = &cBuffer;
-
-    //    GE_ASSERT_FN(transferQueue.submit(1, &submitInfo, nullptr) == vk::Result::eSuccess, "cannot submit on transfer queue");
-    //    transferQueue.waitIdle();
-
-    //    device.freeCommandBuffers(transferPool, 1, &cBuffer);
-    //}
 }

@@ -49,7 +49,7 @@ export namespace GuelderEngine
         void CleanupActors3D(const vk::Device& device) const;
         void CleanupRenderActors(const vk::Device& device) const;
 
-        void UpdateActors();
+        void UpdateActors(float deltaTime);
         void BeginPlay();
 
         std::vector<WeakPtr<Actor>> m_AllActors;

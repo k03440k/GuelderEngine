@@ -3,6 +3,7 @@ Mesh3D CreateCube3DMesh(const Vector3& offset)
 {
     Vertices3D vertices
     {
+        //indices
         // left face (white)
         {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
         {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
@@ -38,10 +39,57 @@ Mesh3D CreateCube3DMesh(const Vector3& offset)
         {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
         {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
         {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+        
+      //  {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+      //{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+      //{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+      //{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+      //{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+      //{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+
+      //// right face (yellow)
+      //{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+      //{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+      //{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+      //{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+      //{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+      //{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+
+      //// top face (orange, remember y axis points down)
+      //{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      //{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+      //{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+      //{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      //{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      //{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+
+      //// bottom face (red)
+      //{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      //{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+      //{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+      //{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      //{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      //{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+
+      //// nose face (blue)
+      //{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      //{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+      //{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+      //{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      //{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      //{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+
+      //// tail face (green)
+      //{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      //{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+      //{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+      //{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      //{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      //{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
     };
 
     for(auto& v : vertices) {
-        v.pos += offset;
+        v.position += offset;
     }
 
     Indices indices = { 0,  1,  2,  0,  3,  1,  4,  5,  6,  4,  7,  5,  8,  9,  10, 8,  11, 9,
@@ -105,10 +153,10 @@ public:
     MyActor2D(const Vulkan::Mesh2D& mesh, const Actor2DTransform& transform)
         : Actor2D(mesh, transform) {}
 
-    void Update() override
+    void Update(float deltaTime) override
     {
-        transform.rotation = glm::mod(transform.rotation + .001f, glm::two_pi<float>());
-        transform.position.y = .2f * sin(GEApplication::GetTime());
+        transform.rotation = glm::mod(transform.rotation + .1f * deltaTime, glm::two_pi<float>());
+        transform.position.y = .2f * sin(GEApplication::GetTime()) * deltaTime;
     }
 };
 class MyActor3D : public Actor3D
@@ -118,14 +166,14 @@ public:
     MyActor3D(const Vulkan::Mesh3D& mesh, const Actor3DTransform& transform)
         : Actor3D(mesh, transform) {}
 
-    void Update() override
+    void Update(float deltaTime) override
     {
-        //transform.rotation.y = glm::mod(transform.rotation.y + .0001f, glm::two_pi<float>());
-        //transform.rotation.x = glm::mod(transform.rotation.x + .0001f, glm::two_pi<float>());
-        //transform.rotation.z = glm::mod(transform.rotation.z + .0001f, glm::two_pi<float>());
+        transform.rotation.y = glm::mod(transform.rotation.y + .05f * deltaTime, glm::two_pi<float>());
+        transform.rotation.x = glm::mod(transform.rotation.x + .05f * deltaTime, glm::two_pi<float>());
+        transform.rotation.z = glm::mod(transform.rotation.z + .05f * deltaTime, glm::two_pi<float>());
 
-        transform.position.x = glm::mod(transform.position.x + .1f, glm::two_pi<float>());
-        transform.position.y = glm::mod(transform.position.y + .1f, glm::two_pi<float>());
+        //transform.position.x = glm::mod(transform.position.x + .1f * deltaTime, glm::two_pi<float>());
+        //transform.position.y = glm::mod(transform.position.y + .1f * deltaTime, glm::two_pi<float>());
     }
 };
 class CameraActor : public Actor3D
@@ -136,7 +184,7 @@ public:
 
     bool IsComplete() const noexcept override { return false; }
 
-    void Update() override
+    void Update(float deltaTime) override
     {
 
     }
@@ -208,24 +256,25 @@ public:
 
             auto newMesh = cube->meshComponent->GetMesh();
             ::ChangeCubeColor(newMesh, { dist(gen), dist(gen), dist(gen) });
-            cube->meshComponent->SetMesh(newMesh);
+
+            cube->meshComponent->SetMesh(/*CreateCube3DMesh({ 0, 0, 0 })*/newMesh);
         }
     }
 
-    void RotateCubeByX(float)
+    void RotateCubeByX(float deltaTime)
     {
         if(cube)
-            cube->transform.rotation.x = glm::mod(cube->transform.rotation.x + .001f * rotateMultimplier, glm::two_pi<float>());
+            cube->transform.rotation.x = glm::mod(cube->transform.rotation.x + 1.f * rotateMultimplier * deltaTime, glm::two_pi<float>());
     }
-    void RotateCubeByY(float)
+    void RotateCubeByY(float deltaTime)
     {
         if(cube)
-            cube->transform.rotation.y = glm::mod(cube->transform.rotation.y + .001f * rotateMultimplier, glm::two_pi<float>());
+            cube->transform.rotation.y = glm::mod(cube->transform.rotation.y + 1.f * rotateMultimplier * deltaTime, glm::two_pi<float>());
     }
-    void RotateCubeByZ(float)
+    void RotateCubeByZ(float deltaTime)
     {
         if(cube)
-            cube->transform.rotation.z = glm::mod(cube->transform.rotation.z + .001f * rotateMultimplier, glm::two_pi<float>());
+            cube->transform.rotation.z = glm::mod(cube->transform.rotation.z + 1.f * rotateMultimplier * deltaTime, glm::two_pi<float>());
     }
 
     void MoveForward(float deltaTime)
@@ -425,13 +474,13 @@ void Spawn2Ds(World* world)
         )
     );
 }
-void SpawnALotOfStuff(World* world)
+void SpawnALotOfStuff(World* world, int numberOfCubes)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
 
     std::uniform_real_distribution<float> dist(-100.f, 100.f);
-    for(size_t i = 0; i < 2000; i++)
+    for(size_t i = 0; i < numberOfCubes; i++)
     {
         world->SpawnActor3D
         (

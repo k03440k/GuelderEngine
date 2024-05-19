@@ -21,13 +21,14 @@ export namespace GuelderEngine::Vulkan::Buffers
         const vk::Queue& transferQueue
     );
 
-    class IBuffer : public IVulkanObject//, INHERIT_GClass(IBuffer)
+    class IBuffer : public IVulkanObject
     {
     public:
         DEFINE_INTERFACE(IBuffer);
 
         void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
+        void Cleanup(const vk::Device& device, const std::vector<vk::Queue> queuesToWait) const noexcept;
 
         const vk::Buffer& GetBuffer() const noexcept;
         const vk::DeviceMemory& GetBufferMemory() const noexcept;

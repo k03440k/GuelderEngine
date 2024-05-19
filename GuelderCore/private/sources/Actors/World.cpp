@@ -22,13 +22,12 @@ import <memory>;
 namespace GuelderEngine
 {
     DEFINE_LOG_CATEGORY(World);
-    void World::UpdateActors()
+    void World::UpdateActors(float deltaTime)
     {
-        std::for_each(std::execution::par, m_AllActors.begin(), m_AllActors.end(), []
+        std::for_each(std::execution::par, m_AllActors.begin(), m_AllActors.end(), [&deltaTime]
         (WeakPtr<Actor>& actor)
             {
-                actor.lock()->Update();
-
+                actor.lock()->Update(deltaTime);
             }
         );
     }
@@ -50,11 +49,9 @@ namespace GuelderEngine
     void World::SpawnActor2D(SharedPtr<Actor2D>& actor)
     {
         actor->m_ID = GObject::currentID++;
+
         if(!actor->IsComplete())
-        {
             GE_LOG(World, Warning, "the actor with id ", actor->GetID(), " is incomplete");
-            //return;
-        }
 
         m_Actors2D.push_back(actor);
         m_AllActors.push_back(actor);
@@ -62,11 +59,9 @@ namespace GuelderEngine
     void World::SpawnActor3D(SharedPtr<Actor3D>& actor)
     {
         actor->m_ID = GObject::currentID++;
+
         if(!actor->IsComplete())
-        {
             GE_LOG(World, Warning, "the actor with id ", actor->GetID(), " is incomplete");
-            //return;
-        }
 
         m_Actors3D.push_back(actor);
         m_AllActors.push_back(actor);
@@ -80,11 +75,9 @@ namespace GuelderEngine
     void World::SpawnActor2D(SharedPtr<Actor2D>&& actor)
     {
         actor->m_ID = GObject::currentID++;
+
         if(!actor->IsComplete())
-        {
             GE_LOG(World, Warning, "the actor with id ", actor->GetID(), " is incomplete");
-            //return;
-        }
 
         m_Actors2D.push_back(std::move(actor));
         m_AllActors.push_back(m_Actors2D[m_Actors2D.size()-1]);
@@ -92,16 +85,13 @@ namespace GuelderEngine
     void World::SpawnActor3D(SharedPtr<Actor3D>&& actor)
     {
         actor->m_ID = GObject::currentID++;
+
         if(!actor->IsComplete())
-        {
             GE_LOG(World, Warning, "the actor with id ", actor->GetID(), " is incomplete");
-            //return;
-        }
 
         m_Actors3D.push_back(std::move(actor));
         m_AllActors.push_back(m_Actors3D[m_Actors3D.size()-1]);
     }
-    //TODO: make Getting actors via real ID(std::find_if()) and finish fucking ID system
     SharedPtr<Actor> World::GetActor(const Actor::ID& id)
     {
         auto tmp = std::ranges::find_if(m_AllActors, [&id]

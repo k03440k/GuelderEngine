@@ -1,5 +1,6 @@
 module;
 #include "../private/headers/Core/GObject/GClass.hpp"
+#include "../Utils/Debug.hpp"
 export module GuelderEngine.Core:Application;
 
 import GuelderEngine.Core.Types;
@@ -77,13 +78,14 @@ export namespace GuelderEngine
 
         static double GetTime();
 
-        //void SetMesh(const Vulkan::Mesh2D& mesh);
         void SetShaderInfo3D(const Vulkan::ShaderInfo& shaderInfo);
         void SetShaderInfo2D(const Vulkan::ShaderInfo& shaderInfo);
 
         const UniquePtr<World>& GetWorld();
 
-        static const UniquePtr<Vulkan::VulkanManager>& GetVulkanManager();
+        static const Vulkan::VulkanManager& GetVulkanManager();
+        static const UniquePtr<Vulkan::MeshAllocator2D>& GetMeshAllocator2D();
+        static const UniquePtr<Vulkan::MeshAllocator3D>& GetMeshAllocator3D();
 
         UniquePtr<GameMode> gameMode;
 
@@ -92,7 +94,7 @@ export namespace GuelderEngine
     private:
         bool OnWindowCloseEvent(const Events::WindowCloseEvent& event) noexcept;
 
-        static UniquePtr<Vulkan::VulkanManager> m_VulkanManager;
+        static const Vulkan::VulkanManager m_VulkanManager;
         UniquePtr<Vulkan::Renderer> m_Renderer;
         UniquePtr<RenderSystem3D> m_RenderSystem3D;
         UniquePtr<RenderSystem2D> m_RenderSystem2D;
