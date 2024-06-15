@@ -50,7 +50,6 @@ int main(int argc, char** argv)
             (
                 MyActor3D
                 {
-
                         CreateCube3DMesh({0, 0, 0}),
                         {
                             {0, 0, .5f},
@@ -58,18 +57,16 @@ int main(int argc, char** argv)
                             {1,1,1},//position
                             {0, 0, 0},//rotation
                         }
-
-
                 },
                 "cube"
             )
         );
 
         //GE_LOG(Editor, Info, "Input number of 3D cubes to be spawned");
-        uint countOfNewActors = 50;
+        //uint countOfNewActors = 50;
         //std::cin >> countOfNewActors;
 
-        SpawnALotOfStuff(world.get(), countOfNewActors);
+        //SpawnALotOfStuff(world.get(), countOfNewActors);
         //Spawn2Ds(world.get());
 
         GE_LOG(Editor, Info, "Threre are ", world->GetAllActors().size(), " actors on the scene.");

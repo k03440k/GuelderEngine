@@ -306,9 +306,9 @@ add_custom_target(Shaders ALL DEPENDS ${SPIRV_BINARY_FILES})
 add_dependencies(${ECN} Shaders)
 
 add_custom_command(TARGET ${ECN} POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${ECN}>/Resources/Shaders/Compiled/"
+	COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${ECN}>/Resources/Shaders/Compiled/"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
-        $<TARGET_FILE_DIR:${ECN}>/Resources/Shaders/Compiled/
-        )
+	"${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
+	$<TARGET_FILE_DIR:${ECN}>/Resources/Shaders/Compiled/
+	)
 #end compile .glsl shaders

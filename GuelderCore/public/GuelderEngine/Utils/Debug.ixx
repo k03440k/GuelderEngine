@@ -70,7 +70,7 @@ export namespace GuelderEngine::Debug
         Error,
         RendererError,
         VulkanError,
-        All = Info | Warning | Error | RendererError | RendererError | VulkanError
+        All = Info | Warning | Error | RendererError | VulkanError
     };
 
     ///*template<typename... Attributes>
