@@ -161,26 +161,35 @@ namespace GuelderEngine
     }
     void World::DeleteActor(const uint& id)
     {
-        /*auto found = std::ranges::find_if(m_AllActors, []
-        (const std::shared_ptr<Actor>& actor)
-        {
-                if(actor->GetID() == id)
-                    return actor;
-        }
-        );
-
-        auto found2D = std::ranges::find_if(m_Actors2D, []
-        (const std::shared_ptr<Actor2D>& actor)
+        auto removePredicate = [&](const auto& actor)
             {
-                if(actor->GetID() == id)
-                    return actor;
+                return actor->GetID() == id;
+            };
+        auto weakRemovePredicate = [&](const auto& actor)
+            {
+                return actor.lock()->GetID() == id;
+            };
+
+        m_AllActors.erase(std::remove_if(m_AllActors.begin(), m_AllActors.end(), weakRemovePredicate), m_AllActors.end());
+
+        m_Actors.erase(std::remove_if(m_Actors.begin(), m_Actors.end(), removePredicate), m_Actors.end());
+        m_Actors2D.erase(std::remove_if(m_Actors2D.begin(), m_Actors2D.end(), removePredicate), m_Actors2D.end());
+        m_Actors3D.erase(std::remove_if(m_Actors3D.begin(), m_Actors3D.end(), removePredicate), m_Actors3D.end());
+        /*auto found = std::ranges::find_if(m_AllActors, [&id]
+            {
+                return actor->GetID() == id;
+            }
+        );*/
+        /*auto found2D = std::ranges::find_if(m_Actors2D, [&id]
+            (const std::shared_ptr<Actor2D>& actor)
+            {
+                return actor->GetID() == id;
             }
         );
-        auto found3D = std::ranges::find_if(m_Actors3D, []
-        (const std::shared_ptr<Actor3D>& actor)
+        auto found3D = std::ranges::find_if(m_Actors3D, [&id]
+            (const std::shared_ptr<Actor3D>& actor)
             {
-                if(actor->GetID() == id)
-                    return actor;
+                return actor->GetID() == id;
             }
         );
         m_AllActors.erase(found);

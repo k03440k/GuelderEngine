@@ -63,10 +63,12 @@ int main(int argc, char** argv)
         );
 
         //GE_LOG(Editor, Info, "Input number of 3D cubes to be spawned");
-        //uint countOfNewActors = 50;
-        //std::cin >> countOfNewActors;
+        uint countOfNewActors = 500;
 
-        //SpawnALotOfStuff(world.get(), countOfNewActors);
+#ifndef GE_DEBUG
+        std::cin >> countOfNewActors;
+#endif
+        SpawnALotOfStuff(world.get(), countOfNewActors);
         //Spawn2Ds(world.get());
 
         GE_LOG(Editor, Info, "Threre are ", world->GetAllActors().size(), " actors on the scene.");

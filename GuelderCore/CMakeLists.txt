@@ -14,7 +14,7 @@ set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP ON)
 set(CXX_SCAN_FOR_MODULES ON)
 
-project (${ECN})
+project(${ECN})
 
 set(CORE_PRIVATE_MODULES_PATH private/headers/)
 set(CORE_PRIVATE_SOURCES_PATH private/sources/)
@@ -274,7 +274,7 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
 find_program(GLSLC_EXECUTABLE NAMES glslc HINTS Vulkan::glslc)
 
 foreach(SHADER ${GLSL_SOURCE_FILES})
-
+	#TODO: remake this loop
     get_filename_component(FILE_NAME ${SHADER} NAME)
 	#Debug
 	set(DEBUG_SHADER_BIN "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/${FILE_NAME}.spv")

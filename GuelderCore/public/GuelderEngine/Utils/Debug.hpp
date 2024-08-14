@@ -2,7 +2,11 @@
 
 import GuelderEngine.Debug;
 
+#ifdef _DEBUG
+
 #define GE_DEBUG
+
+#endif
 
 #ifdef GE_DEBUG
 

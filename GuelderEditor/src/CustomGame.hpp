@@ -218,9 +218,10 @@ public:
         BindKey(Keys::Right, InputKeyState::Pressed, "look_right", this, &MyPlayerController::RotateRight);
         BindKey(Keys::Left, InputKeyState::Pressed, "look_left", this, &MyPlayerController::RotateLeft);
 
-        BindKey(Keys::None, InputKeyState::Pressed, "rotation_clamp", this, &MyPlayerController::ClampRotation);
+        //BindKey(Keys::None, InputKeyState::Pressed, "rotation_clamp", this, &MyPlayerController::ClampRotation);
 
         BindKey(Keys::F, InputKeyState::Down, "cube_color", this, &MyPlayerController::ChangeCubeColor);
+        BindKey(Keys::G, InputKeyState::Down, "delete_actor", this, &MyPlayerController::DeleteActor);
 
         BindKey(Keys::_1, InputKeyState::Pressed, "cube_rotate_x", this, &MyPlayerController::RotateCubeByX);
         BindKey(Keys::_2, InputKeyState::Pressed, "cube_rotate_y", this, &MyPlayerController::RotateCubeByY);
@@ -228,6 +229,24 @@ public:
 
         BindKey(Keys::LeftShift, InputKeyState::Down, "left_shift_down", this, &MyPlayerController::IsLeftShiftDown);
         BindKey(Keys::LeftShift, InputKeyState::Released, "left_shift_released", this, &MyPlayerController::IsLeftShiftReleased);
+    }
+
+    void Update(float deltaTime) override
+    {
+        ClampRotation(deltaTime);
+
+        auto found = world->GetActor("cube");
+        cube = dynamic_cast<MyActor3D*>(found.get());
+    }
+    void DeleteActor(float)
+    {
+        constexpr auto ID = 1;
+
+        if(cube)
+        {
+            world->DeleteActor(ID);
+            GE_LOG(Editor, Info, "Deleted ", ID, " actor");
+        }
     }
 
     void ClampRotation(float)
@@ -238,10 +257,12 @@ public:
 
     void IsLeftShiftDown(float)
     {
+        moveSpeed = 3.f;
         rotateMultimplier = -1.f;
     }
     void IsLeftShiftReleased(float)
     {
+        moveSpeed = 1.f;
         rotateMultimplier = 1.f;
     }
 

@@ -59,6 +59,7 @@ export namespace GuelderEngine
         virtual void SetupInput() {}
         virtual void BeginPlay() {}
         /*virtual*/ void Update(GLFWwindow* window, float deltaTime);
+        virtual void Update(float deltaTime) {}
 
         CameraComponent* camera;
     private:

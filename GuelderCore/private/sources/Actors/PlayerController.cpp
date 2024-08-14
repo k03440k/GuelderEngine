@@ -37,6 +37,7 @@ namespace GuelderEngine
                 if(GetKeyCombinationValue(window, action.second.keyCombination, action.second.state))
                     action.second.callback(deltaTime);
             });*/
+        Update(deltaTime);
         for(const auto& action : m_KeyActionsMap)
         {
             if(GetKeyValue(window, action.second.key, action.second.state))
