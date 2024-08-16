@@ -7,127 +7,127 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-set(ECN "GuelderEngineCore")#ENGINE_CORE_NAME
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP ON)
 set(CXX_SCAN_FOR_MODULES ON)
 
-project(${ECN})
+set(ENGINE_CORE_NAME "GuelderEngineCore")
 
-set(CORE_PRIVATE_MODULES_PATH private/headers/)
-set(CORE_PRIVATE_SOURCES_PATH private/sources/)
-set(CORE_PUBLIC_MODULES_PATH public/GuelderEngine/)
+project(${ENGINE_CORE_NAME})
+
+set(CORE_PRIVATE_MODULES_PATH private/headers)
+set(CORE_PRIVATE_SOURCES_PATH private/sources)
+set(CORE_PUBLIC_MODULES_PATH public/GuelderEngine)
 
 set(CORE_PRIVATE_HEADERS
-	${CORE_PRIVATE_MODULES_PATH}Core/GObject/GClass.hpp
-	${CORE_PRIVATE_MODULES_PATH}Events/Event.hpp
+	"${CORE_PRIVATE_MODULES_PATH}/Core/GObject/GClass.hpp"
+	"${CORE_PRIVATE_MODULES_PATH}/Events/Event.hpp"
 )
 set(CORE_PUBLIC_HEADERS
-	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.hpp
-	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.hpp
+	"${CORE_PUBLIC_MODULES_PATH}/Utils/Debug.hpp"
+	"${CORE_PUBLIC_MODULES_PATH}/GuelderEngine.hpp"
 )
 set(CORE_PRIVATE_SOURCES
-	${CORE_PRIVATE_SOURCES_PATH}Utils/Debug.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Utils/ResourceManager.cpp
+	"${CORE_PRIVATE_SOURCES_PATH}/Utils/Debug.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Utils/ResourceManager.cpp"
 	
-	${CORE_PRIVATE_SOURCES_PATH}Core/Application.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Core/Window.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Layers/LayerStack.cpp
+	"${CORE_PRIVATE_SOURCES_PATH}/Core/Application.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Core/Window.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Layers/LayerStack.cpp"
 	
-	${CORE_PRIVATE_SOURCES_PATH}Actors/World.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Actors/GObject.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Actors/PlayerController.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Actors/GameMode.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Actors/KeyboardController.cpp
+	"${CORE_PRIVATE_SOURCES_PATH}/Actors/World.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Actors/GObject.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Actors/PlayerController.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Actors/GameMode.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Actors/KeyboardController.cpp"
 	
-	${CORE_PRIVATE_SOURCES_PATH}ActorComponents/CameraComponent.cpp
+	"${CORE_PRIVATE_SOURCES_PATH}/ActorComponents/CameraComponent.cpp"
 	
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Renderer.cpp
-	#${CORE_PRIVATE_SOURCES_PATH}Vulkan/RenderSystem.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Manager.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/DebugManager.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/DeviceManager.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Swapchain.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/ShaderManager.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainFrameSync.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/QueueFamilyIndices.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/CommandPool.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/FrameBuffer.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainFrame.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/SwapchainDepthImage.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/IBuffer.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/VertexBuffer.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/StagingBuffer.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Buffers/IndexBuffer.cpp
-	${CORE_PRIVATE_SOURCES_PATH}Vulkan/Surface.cpp
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Renderer.cpp"
+	#"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/RenderSystem.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Manager.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/DebugManager.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/DeviceManager.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Swapchain.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/ShaderManager.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/SwapchainFrameSync.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/QueueFamilyIndices.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/CommandPool.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/FrameBuffer.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/SwapchainFrame.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/SwapchainDepthImage.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/IBuffer.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/VertexBuffer.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/StagingBuffer.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/IndexBuffer.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Surface.cpp"
 )
 set(CORE_PRIVATE_MODULES
-	${CORE_PRIVATE_MODULES_PATH}Core/Window.ixx
+	"${CORE_PRIVATE_MODULES_PATH}/Core/Window.ixx"
 	
-	#${CORE_PRIVATE_MODULES_PATH}Vulkan/Vulkan.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Manager.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/DebugManager.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/DeviceManager.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/IVulkanObject.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Swapchain.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/ShaderManager.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Pipeline.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainFrameSync.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/QueueFamilyIndices.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/CommandPool.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/FrameBuffer.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainFrame.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/SwapchainDepthImage.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/IBuffer.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/VertexBuffer.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/StagingBuffer.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Buffers/IndexBuffer.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Renderer.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/RenderSystem.ixx
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/Surface.ixx
+	#"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Vulkan.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Manager.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/DebugManager.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/DeviceManager.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/IVulkanObject.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Swapchain.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/ShaderManager.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Pipeline.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/SwapchainFrameSync.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/QueueFamilyIndices.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/CommandPool.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/FrameBuffer.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/SwapchainFrame.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/SwapchainDepthImage.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/IBuffer.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/VertexBuffer.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/StagingBuffer.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/IndexBuffer.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Renderer.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/RenderSystem.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Surface.ixx"
 	
-	${CORE_PRIVATE_MODULES_PATH}Vulkan/MeshAllocator.ixx
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/MeshAllocator.ixx"
 )
 set(CORE_PUBLIC_MODULES
-	${CORE_PUBLIC_MODULES_PATH}GuelderEngine.ixx
+	"${CORE_PUBLIC_MODULES_PATH}/GuelderEngine.ixx"
 	
-	${CORE_PUBLIC_MODULES_PATH}Vulkan/Mesh.ixx
-	${CORE_PUBLIC_MODULES_PATH}Vulkan/Vulkan.ixx
+	"${CORE_PUBLIC_MODULES_PATH}/Vulkan/Mesh.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Vulkan/Vulkan.ixx"
 	
-	${CORE_PUBLIC_MODULES_PATH}Core/Core.ixx
-	${CORE_PUBLIC_MODULES_PATH}Core/Utils.ixx
-	${CORE_PUBLIC_MODULES_PATH}Core/Application.ixx
+	"${CORE_PUBLIC_MODULES_PATH}/Core/Core.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Core/Utils.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Core/Application.ixx"
 	
-	${CORE_PUBLIC_MODULES_PATH}Actors/Actors.ixx
-	${CORE_PUBLIC_MODULES_PATH}Actors/PlayerController.ixx
-	${CORE_PUBLIC_MODULES_PATH}Actors/GameMode.ixx
-	${CORE_PUBLIC_MODULES_PATH}Actors/World.ixx
-	${CORE_PUBLIC_MODULES_PATH}Actors/GObject.ixx
-	${CORE_PUBLIC_MODULES_PATH}Actors/Actor2D.ixx
-	${CORE_PUBLIC_MODULES_PATH}Actors/Actor3D.ixx
-	${CORE_PUBLIC_MODULES_PATH}Actors/Actor.ixx
-	${CORE_PUBLIC_MODULES_PATH}Actors/KeyboardController.ixx
+	"${CORE_PUBLIC_MODULES_PATH}/Actors/Actors.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Actors/PlayerController.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Actors/GameMode.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Actors/World.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Actors/GObject.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Actors/Actor2D.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Actors/Actor3D.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Actors/Actor.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Actors/KeyboardController.ixx"
 	
-	${CORE_PUBLIC_MODULES_PATH}ActorComponents/ActorComponent.ixx
-	${CORE_PUBLIC_MODULES_PATH}ActorComponents/CameraComponent.ixx
-	${CORE_PUBLIC_MODULES_PATH}ActorComponents/MeshComponent.ixx
-	${CORE_PUBLIC_MODULES_PATH}ActorComponents/RenderActorTransform.ixx
+	"${CORE_PUBLIC_MODULES_PATH}/ActorComponents/ActorComponent.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/ActorComponents/CameraComponent.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/ActorComponents/MeshComponent.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/ActorComponents/RenderActorTransform.ixx"
 	
-	${CORE_PUBLIC_MODULES_PATH}Core/Types.ixx
-	${CORE_PUBLIC_MODULES_PATH}Utils/Debug.ixx
-	${CORE_PUBLIC_MODULES_PATH}Utils/ResourceManager.ixx
+	"${CORE_PUBLIC_MODULES_PATH}/Core/Types.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Utils/Debug.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Utils/ResourceManager.ixx"
 
-	${CORE_PUBLIC_MODULES_PATH}Events/Events.ixx
-	${CORE_PUBLIC_MODULES_PATH}Events/BaseEvent.ixx
-	${CORE_PUBLIC_MODULES_PATH}Events/MouseEvent.ixx
-	${CORE_PUBLIC_MODULES_PATH}Events/KeyEvent.ixx
-	${CORE_PUBLIC_MODULES_PATH}Events/ApplicationEvent.ixx
+	"${CORE_PUBLIC_MODULES_PATH}/Events/Events.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Events/BaseEvent.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Events/MouseEvent.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Events/KeyEvent.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Events/ApplicationEvent.ixx"
 	
-	${CORE_PUBLIC_MODULES_PATH}Layers/Layers.ixx
-	${CORE_PUBLIC_MODULES_PATH}Layers/Layer.ixx
-	${CORE_PUBLIC_MODULES_PATH}Layers/LayerStack.ixx
+	"${CORE_PUBLIC_MODULES_PATH}/Layers/Layers.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Layers/Layer.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/Layers/LayerStack.ixx"
 )
 set(CORE_MODULES_SOURCE
 	${CORE_PUBLIC_MODULES}
@@ -140,14 +140,14 @@ set(CORE_SOURCE
 	${CORE_PUBLIC_HEADERS}
 )
 
-add_library(${ECN} STATIC
+add_library(${ENGINE_CORE_NAME} STATIC
 	${CORE_SOURCE}
-	../External/stb_image.h
+	"../External/stb_image.h"
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES
 	${CORE_SOURCE}
 )
-target_sources(${ECN}
+target_sources(${ENGINE_CORE_NAME}
         PUBLIC
 		FILE_SET module_files_public TYPE CXX_MODULES
 		FILES
@@ -155,7 +155,7 @@ target_sources(${ECN}
 		${CORE_PUBLIC_MODULES}
 )
 target_sources(
-        ${ECN}
+        ${ENGINE_CORE_NAME}
 		PRIVATE
         FILE_SET module_files_private TYPE CXX_MODULES
         FILES
@@ -164,58 +164,27 @@ target_sources(
 		${CORE_PRIVATE_SOURCES}
 )
 
-target_include_directories(${ECN} PUBLIC public)
-target_include_directories(${ECN} PRIVATE private)
+target_include_directories(${ENGINE_CORE_NAME} PUBLIC public)
+target_include_directories(${ENGINE_CORE_NAME} PRIVATE private)
 
 #include external libs
 
 #start include glfw
-#GLFW (maybe temp)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
-option(GLFW_USE_STATIC_VULKAN_LOADER "Use the static Vulkan loader" ON)
-
-add_subdirectory(../External/glfw ${CMAKE_CURRENT_BINARY_DIR}/glfw)
-target_link_libraries(${ECN} PRIVATE glfw)
+add_subdirectory("../External/glfw" "${CMAKE_CURRENT_BINARY_DIR}/glfw")
+target_link_libraries(${ENGINE_CORE_NAME} PRIVATE glfw)
 #end include glfw
 
 #start inlude glm
-add_subdirectory(../External/glm ${CMAKE_CURRENT_BINARY_DIR}/glm)
-target_link_libraries(${ECN} PRIVATE glm)
+add_subdirectory("../External/glm" "${CMAKE_CURRENT_BINARY_DIR}/glm")
+target_link_libraries(${ENGINE_CORE_NAME} PRIVATE glm)
 #end include glm
 
-#start ImGui include
-set(IMGUI_INCLUDES 
-	../External/imgui/imgui.h
-	../External/imgui/backends/imgui_impl_glfw.h
-	#../External/imgui/backends/imgui_impl_opengl3.h
-	)
-	
-set(IMGUI_SOURCES
-	../External/imgui/imgui.cpp
-	../External/imgui/imgui_draw.cpp
-	../External/imgui/imgui_tables.cpp
-	../External/imgui/imgui_widgets.cpp
-	../External/imgui/imgui_demo.cpp
-	../External/imgui/backends/imgui_impl_glfw.cpp
-	#../External/imgui/backends/imgui_impl_opengl3.cpp
-	)
-
-add_library(ImGui STATIC
-	${IMGUI_INCLUDES}
-	${IMGUI_SOURCES}
-	)
-	
-#target_include_directories(ImGui PRIVATE ../External)
-target_include_directories(ImGui PRIVATE ../External/imgui)
-target_include_directories(${ECN} PRIVATE ../External)#???
-
-target_link_libraries(ImGui PRIVATE glfw)
-target_link_libraries(${ECN} PRIVATE ImGui)
-#end ImGui include
+option(GLFW_USE_STATIC_VULKAN_LOADER "Use the static Vulkan loader" ON)
 
 #start Vulkan include
 if (DEFINED VULKAN_SDK_PATH)
@@ -231,35 +200,56 @@ if (NOT Vulkan_FOUND)
 else()
     message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
 endif()
-target_link_libraries(${ECN} PUBLIC Vulkan::Vulkan)
+target_link_libraries(${ENGINE_CORE_NAME} PUBLIC Vulkan::Vulkan)
 
 if(GLFW_USE_STATIC_VULKAN_LOADER)
-    target_compile_definitions(${ECN} PRIVATE GLFW_INCLUDE_NONE GLFW_USE_STATIC_VULKAN_LOADER)
+    target_compile_definitions(${ENGINE_CORE_NAME} PRIVATE GLFW_INCLUDE_NONE GLFW_USE_STATIC_VULKAN_LOADER)
 else()
-    target_compile_definitions(${ECN} PRIVATE GLFW_INCLUDE_VULKAN)
+    target_compile_definitions(${ENGINE_CORE_NAME} PRIVATE GLFW_INCLUDE_VULKAN)
 endif()
 #end Vulkan include
 
-#start Vulkan-hpp include
-#add_subdirectory(../External/vulkanhpp ${CMAKE_CURRENT_BINARY_DIR}/vulkanhpp)
-#target_link_libraries(${ECN} PUBLIC vulkanhpp)
-#end Vulkan-hpp include
+#start ImGui include
+set(IMGUI_INCLUDES 
+	"../External/imgui/imgui.h"
+	"../External/imgui/imconfig.h"
+	"../External/imgui/imgui_internal.h"
+	"../External/imgui/imstb_rectpack.h"
+	"../External/imgui/imstb_textedit.h"
+	"../External/imgui/imstb_truetype.h"
+	"../External/imgui/backends/imgui_impl_glfw.h"
+	"../External/imgui/backends/imgui_impl_vulkan.h"
+	)
+	
+set(IMGUI_SOURCES
+	"../External/imgui/imgui.cpp"
+	"../External/imgui/imgui_draw.cpp"
+	"../External/imgui/imgui_tables.cpp"
+	"../External/imgui/imgui_widgets.cpp"
+	"../External/imgui/imgui_demo.cpp"
+	"../External/imgui/backends/imgui_impl_glfw.cpp"
+	"../External/imgui/backends/imgui_impl_vulkan.cpp"
+	)
+set(IMGUI_MICS
+	"../External/imgui/misc/debuggers/imgui.natvis"
+	"../External/imgui/misc/debuggers/imgui.natstepfilter"
+	)
 
-#etc.
-set_target_properties(${ECN} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
+add_library(ImGui STATIC
+	${IMGUI_INCLUDES}
+	${IMGUI_SOURCES}
+	${IMGUI_MICS}
+	)
+	
+target_include_directories(ImGui PRIVATE "../External/imgui")
+target_include_directories(${ENGINE_CORE_NAME} PRIVATE "../External")#???
 
-function(ge_copy_directory OUTPUT_DIRECTORY)
-add_custom_command(TARGET ${ECN} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/Resources ${OUTPUT_DIRECTORY})
-endfunction()
-
-ge_copy_directory(${CMAKE_BINARY_DIR}/bin/Debug/Resources)
-ge_copy_directory(${CMAKE_BINARY_DIR}/bin/Release/Resources)
-ge_copy_directory($<TARGET_FILE_DIR:${ECN}>/Resources)
+target_link_libraries(ImGui PRIVATE Vulkan::Vulkan)
+target_link_libraries(ImGui PRIVATE glfw)
+target_link_libraries(${ENGINE_CORE_NAME} PRIVATE ImGui)
+#end ImGui include
 
 #start compile .glsl shaders
-
 if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "AMD64")
   set(GLSL_VALIDATOR "$ENV{VULKAN_SDK}/Bin/glslangValidator.exe")
 else()
@@ -272,43 +262,34 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
     )
 
 find_program(GLSLC_EXECUTABLE NAMES glslc HINTS Vulkan::glslc)
+target_link_libraries(${ENGINE_CORE_NAME} PUBLIC GuelderEngineEditor)
 
 foreach(SHADER ${GLSL_SOURCE_FILES})
-	#TODO: remake this loop
+
     get_filename_component(FILE_NAME ${SHADER} NAME)
-	#Debug
-	set(DEBUG_SHADER_BIN "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/${FILE_NAME}.spv")
-	#Release
-	set(RELEASE_SHADER_BIN "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/${FILE_NAME}.spv")
+	set(SHADER_BIN "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/Resources/Shaders/Compiled/${FILE_NAME}.spv")
 
     add_custom_command(
-		OUTPUT ${DEBUG_SHADER_BIN}
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/"
-		COMMAND ${GLSL_VALIDATOR} -V ${SHADER} -o ${DEBUG_SHADER_BIN}
-        DEPENDS ${SHADER} "${CMAKE_BINARY_DIR}/bin/Debug/Resources/Shaders/Compiled/"
+		OUTPUT ${SHADER_BIN}
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/Resources/Shaders/Compiled/"
+		COMMAND ${GLSL_VALIDATOR} -V ${SHADER} -o ${SHADER_BIN}
+        DEPENDS ${SHADER} "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/Resources/Shaders/Compiled/"
+		MESSAGE "Outputting ${FILE_NAME} into ${SHADER_BIN}"
     )
-	add_custom_command(
-		OUTPUT ${RELEASE_SHADER_BIN}
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
-		COMMAND ${GLSL_VALIDATOR} -V ${SHADER} -o ${RELEASE_SHADER_BIN}
-        DEPENDS ${SHADER} "${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
-    )
-	
-	message("Processing " ${SHADER} " Putting into " ${DEBUG_SHADER_BIN} "\n")
-	
-list(APPEND SPIRV_BINARY_FILES ${DEBUG_SHADER_BIN})
-list(APPEND SPIRV_BINARY_FILES ${RELEASE_SHADER_BIN})
+
+list(APPEND SPIRV_BINARY_FILES ${SHADER_BIN})
 
 endForeach(SHADER)
 
 add_custom_target(Shaders ALL DEPENDS ${SPIRV_BINARY_FILES})
-
-add_dependencies(${ECN} Shaders)
-
-add_custom_command(TARGET ${ECN} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${ECN}>/Resources/Shaders/Compiled/"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-	"${CMAKE_BINARY_DIR}/bin/Release/Resources/Shaders/Compiled/"
-	$<TARGET_FILE_DIR:${ECN}>/Resources/Shaders/Compiled/
-	)
+add_dependencies(${ENGINE_CORE_NAME} Shaders)
 #end compile .glsl shaders
+
+#copying Resources directory
+add_custom_command(TARGET ${ENGINE_CORE_NAME} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	"${CMAKE_SOURCE_DIR}/Resources"
+	"${CMAKE_BINARY_DIR}/bin/$<CONFIG>/Resources"
+	)
+
+set_target_properties(${ENGINE_CORE_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
