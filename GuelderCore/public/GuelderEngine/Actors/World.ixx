@@ -15,7 +15,8 @@ import <vector>;
 
 export namespace GuelderEngine
 {
-    DECLARE_LOG_CATEGORY_EXTERN(World, All, true);
+    DECLARE_LOG_CATEGORY_EXTERN(World, All, true, false);
+
     class World final
     {
     public:

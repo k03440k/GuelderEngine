@@ -25,7 +25,7 @@ import <unordered_set>;
 import <iostream>;
 #include <random>
 
-DECLARE_LOG_CATEGORY_EXTERN(Editor, All, true);
+DECLARE_LOG_CATEGORY_EXTERN(Editor, All, true, false);
 DEFINE_LOG_CATEGORY(Editor);
 
 #include "CustomGame.hpp"
@@ -62,10 +62,10 @@ int main(int argc, char** argv)
             )
         );
 
-        //GE_LOG(Editor, Info, "Input number of 3D cubes to be spawned");
-        uint countOfNewActors = 500;
+        uint countOfNewActors = 5;
 
 #ifndef GE_DEBUG
+        GE_LOG(Editor, Info, "Input number of 3D cubes to be spawned");
         std::cin >> countOfNewActors;
 #endif
         SpawnALotOfStuff(world.get(), countOfNewActors);

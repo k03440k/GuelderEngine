@@ -7,11 +7,8 @@ import GuelderEngine.Debug;
 
 export namespace GuelderEngine::Vulkan
 {
-#ifdef GE_DEBUG_VULKAN
-    DECLARE_LOG_CATEGORY_EXTERN(VulkanCore, All, true);
-#else
-    DECLARE_LOG_CATEGORY_EXTERN(VulkanCore, All, false);
-#endif
+
+    DECLARE_LOG_CATEGORY_EXTERN(VulkanCore, All, true, false);
 
     class IVulkanObject
     {

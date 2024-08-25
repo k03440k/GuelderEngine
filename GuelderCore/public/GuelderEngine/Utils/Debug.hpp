@@ -2,10 +2,14 @@
 
 import GuelderEngine.Debug;
 
+//#define NO_DEBUG
+
 #ifdef _DEBUG
+#ifndef NO_DEBUG
 
 #define GE_DEBUG
 
+#endif
 #endif
 
 #ifdef GE_DEBUG
@@ -59,21 +63,37 @@ import GuelderEngine.Debug;
 #define LOG_CATEGORY_VARIABLE(name) name##LoggingCategoryVar
 #define LOG_CATEGORY(name) name##LoggingCategory
 
-#define DECLARE_LOG_CATEGORY_EXTERN(name, loggingLevels, enable)\
-    struct LOG_CATEGORY(name) final : ::GuelderEngine::Debug::LoggingCategory<::GuelderEngine::Debug::LogLevel::##loggingLevels, enable>\
+#define DECLARE_LOG_CATEGORY_EXTERN(name, loggingLevels, enable, debugOnly)\
+    struct LOG_CATEGORY(name) final : ::GuelderEngine::Debug::LoggingCategory<::GuelderEngine::Debug::LogLevel::##loggingLevels, enable, debugOnly>\
     {\
-    LOG_CATEGORY(name)() : ::GuelderEngine::Debug::LoggingCategory<::GuelderEngine::Debug::LogLevel::##loggingLevels, enable>(GE_TO_STRING(name)) {}\
+    LOG_CATEGORY(name)() : ::GuelderEngine::Debug::LoggingCategory<::GuelderEngine::Debug::LogLevel::##loggingLevels, enable, debugOnly>(GE_TO_STRING(name)) {}\
     };\
     extern LOG_CATEGORY(name) LOG_CATEGORY_VARIABLE(name)
 
 
 #ifdef GE_DEBUG
+#ifndef NO_DEBUG
 
 #define DEFINE_LOG_CATEGORY(name) LOG_CATEGORY(name) LOG_CATEGORY_VARIABLE(name)
 
-#define GE_LOG(categoryName, level, ...) ::GuelderEngine::Debug::Log<LOG_CATEGORY(categoryName)::supportedLoggingLevels, LOG_CATEGORY(categoryName)::enable>(LOG_CATEGORY_VARIABLE(categoryName), ::GuelderEngine::Debug::LogLevel::##level, __VA_ARGS__)
+#define GE_LOG(categoryName, level, ...) ::GuelderEngine::Debug::Log<LOG_CATEGORY(categoryName)::enable && !LOG_CATEGORY(categoryName)::debugOnly, LOG_CATEGORY(categoryName)::supportedLoggingLevels, LOG_CATEGORY(categoryName)::enable, LOG_CATEGORY(categoryName)::debugOnly>(LOG_CATEGORY_VARIABLE(categoryName), ::GuelderEngine::Debug::LogLevel::##level, __VA_ARGS__)
 
-#else
+#endif
+#endif
+
+#ifndef GE_DEBUG
+#ifndef NO_DEBUG
+
+#define DEFINE_LOG_CATEGORY(name) LOG_CATEGORY(name) LOG_CATEGORY_VARIABLE(name)
+
+#define GE_LOG(categoryName, level, ...) ::GuelderEngine::Debug::Log<LOG_CATEGORY(categoryName)::enable && !LOG_CATEGORY(categoryName)::debugOnly, LOG_CATEGORY(categoryName)::supportedLoggingLevels, LOG_CATEGORY(categoryName)::enable, LOG_CATEGORY(categoryName)::debugOnly>(LOG_CATEGORY_VARIABLE(categoryName), ::GuelderEngine::Debug::LogLevel::##level, __VA_ARGS__)
+
+#endif
+#endif
+
+#ifdef NO_DEBUG
+
 #define DEFINE_LOG_CATEGORY(...)
 #define GE_LOG(...)
-#endif
+
+#endif // NO_DEBUG

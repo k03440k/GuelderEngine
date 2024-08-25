@@ -184,9 +184,9 @@ add_subdirectory("../External/glm" "${CMAKE_CURRENT_BINARY_DIR}/glm")
 target_link_libraries(${ENGINE_CORE_NAME} PRIVATE glm)
 #end include glm
 
+#start Vulkan include
 option(GLFW_USE_STATIC_VULKAN_LOADER "Use the static Vulkan loader" ON)
 
-#start Vulkan include
 if (DEFINED VULKAN_SDK_PATH)
   set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
   set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
@@ -267,7 +267,7 @@ target_link_libraries(${ENGINE_CORE_NAME} PUBLIC GuelderEngineEditor)
 foreach(SHADER ${GLSL_SOURCE_FILES})
 
     get_filename_component(FILE_NAME ${SHADER} NAME)
-	set(SHADER_BIN "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/Resources/Shaders/Compiled/${FILE_NAME}.spv")
+	set(SHADER_BIN "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/Resources/Shaders/Compiled/${FILE_NAME}.spv")#shader binary
 
     add_custom_command(
 		OUTPUT ${SHADER_BIN}
@@ -292,4 +292,5 @@ add_custom_command(TARGET ${ENGINE_CORE_NAME} POST_BUILD
 	"${CMAKE_BINARY_DIR}/bin/$<CONFIG>/Resources"
 	)
 
+#etc
 set_target_properties(${ENGINE_CORE_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
