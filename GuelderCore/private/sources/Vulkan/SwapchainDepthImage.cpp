@@ -5,7 +5,7 @@ module GuelderEngine.Vulkan;
 import :SwapchainDepthImage;
 
 import :IVulkanObject;
-import :IBuffer;
+import :Buffer;
 import GuelderEngine.Core.Types;
 
 namespace GuelderEngine::Vulkan
@@ -43,7 +43,7 @@ namespace GuelderEngine::Vulkan
 
         const vk::MemoryAllocateInfo allocateInfo{
         memoryRequirements.size,
-        Buffers::IBuffer::FindMemoryType(physicalDevice, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal)
+        Buffers::Buffer::FindMemoryType(physicalDevice, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal)
         };
 
         GE_CLASS_ASSERT(device.allocateMemory(&allocateInfo, nullptr, &memory) == vk::Result::eSuccess, "cannot allocate memory for depth image");

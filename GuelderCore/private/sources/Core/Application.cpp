@@ -139,18 +139,18 @@ namespace GuelderEngine
                     std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer, &projectionView](const SharedPtr<Actor3D>& actor)
                         {
                             if(actor->IsComplete())
-                            m_RenderSystem3D->Render
-                            (
-                                commandBuffer,
-                                MeshComponent3D::GetVertexBuffer(),
-                                MeshComponent3D::GetIndexBuffer(),
-                                actor->meshComponent->GetVertexSector() ? actor->meshComponent->GetVertexSector()->GetSize() : 0,
-                                actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetIndexSector()->GetSize() : 0,
-                                actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetVertexSector()->starts : 0,
-                                actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetIndexSector()->starts : 0,
-                                MatFromRenderActorTransform<3, 4>(actor->transform),
-                                projectionView
-                            );
+                                m_RenderSystem3D->Render
+                                (
+                                    commandBuffer,
+                                    MeshComponent3D::GetVertexBuffer(),
+                                    MeshComponent3D::GetIndexBuffer(),
+                                    actor->meshComponent->GetVertexSector() ? actor->meshComponent->GetVertexSector()->GetSize() : 0,
+                                    actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetIndexSector()->GetSize() : 0,
+                                    actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetVertexSector()->starts : 0,
+                                    actor->meshComponent->GetIndexSector() ? actor->meshComponent->GetIndexSector()->starts : 0,
+                                    MatFromRenderActorTransform<3, 4>(actor->transform),
+                                    projectionView
+                                );
                         });
                     std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer](const SharedPtr<Actor2D>& actor)
                         {

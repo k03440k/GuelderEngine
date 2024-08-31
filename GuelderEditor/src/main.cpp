@@ -71,7 +71,7 @@ int main(int argc, char** argv)
         SpawnALotOfStuff(world.get(), countOfNewActors);
         //Spawn2Ds(world.get());
 
-        GE_LOG(Editor, Info, "Threre are ", world->GetAllActors().size(), " actors on the scene.");
+        GE_LOG(Editor, Info, "There are ", world->GetAllActors().size(), " actors on the scene.");
 
         app->Run();
     }

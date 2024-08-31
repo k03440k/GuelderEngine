@@ -48,7 +48,7 @@ export namespace GuelderEngine::Vulkan
         template<uint dimension>
         Buffers::VertexBuffer MakeVertexBuffer(const Vertices<dimension>& vertices) const
         {
-            return Buffers::VertexBuffer(m_Device, m_PhysicalDevice, m_QueueIndices, m_CommandPoolTransfer.GetCommandPool(), m_Queues.transfer, vertices.data(), sizeof(vertices[0]) * vertices.size());
+            return Buffers::VertexBuffer(m_Device, m_PhysicalDevice, m_QueueIndices, m_CommandPoolTransfer.GetCommandPool(), m_Queues.transfer, vertices.data(), sizeof(vertices[0]), vertices.size());
         }
         Buffers::IndexBuffer MakeIndexBuffer(const Indices& indices) const;
 

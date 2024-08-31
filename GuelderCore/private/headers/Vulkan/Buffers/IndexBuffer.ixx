@@ -3,15 +3,15 @@ module;
 #include "../../Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan:IndexBuffer;
 
-import :IBuffer;
+import :Buffer;
 import :Mesh;
 
 export namespace GuelderEngine::Vulkan::Buffers
 {
-    class IndexBuffer final : public IBuffer
+    class IndexBuffer final : public Buffer
     {
     public:
-        DECLARE_DEFAULT_CTOR_AND_DTOR(IndexBuffer);
+        DECLARE_DEFAULT(IndexBuffer);
 
         IndexBuffer(
             const vk::Device& device,
@@ -21,8 +21,6 @@ export namespace GuelderEngine::Vulkan::Buffers
             const vk::Queue& transferQueue,
             const Indices& indices
         );
-        IndexBuffer(const IndexBuffer& other) noexcept;
-        IndexBuffer& operator=(const IndexBuffer& other) noexcept;
 
         void Reset() noexcept override;
 

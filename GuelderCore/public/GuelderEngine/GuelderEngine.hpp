@@ -5,12 +5,6 @@
 #include <glm/glm.hpp>
 
 import GuelderEngine;
-//import GuelderEngine.Debug;
-//import GuelderEngine.Core;
-//import GuelderEngine.Core.Types;
-//import GuelderEngine.Events;
-//import GuelderEngine.Vulkan;
-//import GuelderEngine.Actors;
 
 #ifdef GE_USING_NAMESPACES
 using namespace GuelderEngine;

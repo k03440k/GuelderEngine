@@ -55,7 +55,7 @@ import GuelderEngine.Debug;
 */
 #define GE_ASSERT(condition, ...) ::GuelderEngine::Debug::Logger::Assert(condition, ::GuelderEngine::Debug::Logger::Format(__VA_ARGS__), __FILE__, __LINE__)
 
-#define GE_ASSERT_FN(condition, ...) GE_ASSERT(condition, FUNC_NAME, ": ", __VA_ARGS__)
+#define GE_ASSERT_FUNCTION(condition, ...) GE_ASSERT(condition, FUNC_NAME, ": ", __VA_ARGS__)
 
 #define GE_TO_STRING(arg) #arg
 #define CONCATENATE(lhs, rhs) GE_TO_STRING(lhs ## rhs)

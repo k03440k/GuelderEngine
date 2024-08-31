@@ -57,7 +57,7 @@ set(CORE_PRIVATE_SOURCES
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/FrameBuffer.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/SwapchainFrame.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/SwapchainDepthImage.cpp"
-	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/IBuffer.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/Buffer.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/VertexBuffer.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/StagingBuffer.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/IndexBuffer.cpp"
@@ -80,7 +80,7 @@ set(CORE_PRIVATE_MODULES
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/FrameBuffer.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/SwapchainFrame.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/SwapchainDepthImage.ixx"
-	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/IBuffer.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/Buffer.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/VertexBuffer.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/StagingBuffer.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/IndexBuffer.ixx"
@@ -181,7 +181,7 @@ target_link_libraries(${ENGINE_CORE_NAME} PRIVATE glfw)
 
 #start inlude glm
 add_subdirectory("../External/glm" "${CMAKE_CURRENT_BINARY_DIR}/glm")
-target_link_libraries(${ENGINE_CORE_NAME} PRIVATE glm)
+target_link_libraries(${ENGINE_CORE_NAME} PUBLIC glm)
 #end include glm
 
 #start Vulkan include

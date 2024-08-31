@@ -9,7 +9,6 @@ import :VertexBuffer;
 import :IndexBuffer;
 import :Mesh;
 import :Manager;
-//import :SwapchainFrame;
 
 import <vector>;
 import <algorithm>;
@@ -45,7 +44,6 @@ export namespace GuelderEngine::Vulkan
     using MeshAllocator2D = MeshAllocator<2>;
     using MeshAllocator3D = MeshAllocator<3>;
 
-    //TODO: make this class universal like for 3D and 2D
     template<uint _dimension>
     class MeshAllocator
     {
@@ -66,11 +64,10 @@ export namespace GuelderEngine::Vulkan
             SharedPtr<MeshSector>& mVertices,
             const Vertices& vertices,
             SharedPtr<MeshSector>& mIndices = nullptr,
-            const Indices& indices = {}//,
-            //const std::vector<SwapchainFrame>& frames
+            const Indices& indices = {}
             )
         {
-            ////deleting
+            //deleting
             if(mVertices->IsComplete())
             {
                 uint verticesDeletingSize = mVertices->ends - mVertices->starts + 1;
@@ -110,15 +107,8 @@ export namespace GuelderEngine::Vulkan
                 {
                     m_Indices.erase(m_Indices.begin() + mIndices->starts, m_Indices.begin() + mIndices->ends + 1);
                     mIndices->Reset();
-                    //RecreateIndexBuffer(device, physicalDevice, queueFamilyIndices, transferPool, transferQueue);
                 }
             }
-            //RecreateVertexBuffer(device, physicalDevice, queueFamilyIndices, transferPool, transferQueue);
-
-            /*if(m_Vertices.empty())
-                AllocateMesh(device, physicalDevice, queueFamilyIndices, transferPool, transferQueue, mVertices, vertices, mIndices, indices);
-            else
-                DeleteMesh(device, physicalDevice, queueFamilyIndices, transferPool, transferQueue, mVertices, mIndices);*/
 
             //allocation
             {
@@ -151,8 +141,7 @@ export namespace GuelderEngine::Vulkan
             SharedPtr<MeshSector>& mVertices,
             const Vertices& vertices,
             SharedPtr<MeshSector>& mIndices = nullptr,
-            const Indices& indices = {}//,
-            //const std::vector<SwapchainFrame>& frames
+            const Indices& indices = {}
         )
         {
             uint _verticesStart = m_Vertices.end() - m_Vertices.begin();
@@ -181,8 +170,7 @@ export namespace GuelderEngine::Vulkan
             const vk::CommandPool& transferPool,
             const vk::Queue& transferQueue,
             SharedPtr<MeshSector>& vertices,
-            SharedPtr<MeshSector>& indices = nullptr//,
-            //const std::vector<SwapchainFrame>& frames
+            SharedPtr<MeshSector>& indices = nullptr
         )
         {
             if(vertices->IsComplete())
@@ -230,18 +218,16 @@ export namespace GuelderEngine::Vulkan
             }
         }
 
-        //TODO: somehow wait for FRAMES
         void RecreateVertexBuffer(
             const vk::Device& device,
             const vk::PhysicalDevice& physicalDevice,
             const QueueFamilyIndices& queueFamilyIndices,
             const vk::CommandPool& transferPool,
-            const vk::Queue& transferQueue//,
-            //const std::vector<SwapchainFrame>& frames
+            const vk::Queue& transferQueue
         )
         {
             auto prevBuffer = (m_VertexBuffer);
-            m_VertexBuffer = Buffers::VertexBuffer(device, physicalDevice, queueFamilyIndices, transferPool, transferQueue, m_Vertices.data(), sizeof(Vertex) * m_Vertices.size());
+            m_VertexBuffer = Buffers::VertexBuffer(device, physicalDevice, queueFamilyIndices, transferPool, transferQueue, m_Vertices.data(), sizeof(Vertex), m_Vertices.size());
             auto& queues = Vulkan::VulkanManager::Get().GetDevice().GetQueues();
             prevBuffer.Cleanup(device, { queues.graphics, queues.present, queues.transfer });
         }
@@ -250,8 +236,7 @@ export namespace GuelderEngine::Vulkan
             const vk::PhysicalDevice& physicalDevice,
             const QueueFamilyIndices& queueFamilyIndices,
             const vk::CommandPool& transferPool,
-            const vk::Queue& transferQueue//,
-            //const std::vector<SwapchainFrame>& frames
+            const vk::Queue& transferQueue
         )
         {
             auto prevBuffer = std::move(m_IndexBuffer);
