@@ -9,12 +9,13 @@ import <vector>;
 
 namespace GuelderEngine::Vulkan
 {
-    DescriptorSetLayout(
+    DescriptorSetLayout::DescriptorSetLayout(
         const vk::Device& device,
-        const std::vector<vk::DescriptorSetLayoutBinding>& bindings
+        const std::vector<vk::DescriptorSetLayoutBinding>& bindings,
+        const vk::DescriptorSetLayoutCreateFlags& flags
     )
     {   
-        const vk::DescriptorSetLayoutCreateInfo info{(uint)bindings.size(), bindings.data()};
+        const vk::DescriptorSetLayoutCreateInfo info{flags, (uint)bindings.size(), bindings.data()};
         
         m_Layout = device.createDescriptorSetLayout(info);
     }

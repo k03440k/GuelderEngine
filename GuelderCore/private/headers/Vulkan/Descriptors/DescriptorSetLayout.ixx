@@ -18,7 +18,8 @@ export namespace GuelderEngine::Vulkan
             
             DescriptorSetLayout(
                 const vk::Device& device,
-                const std::vector<vk::DescriptorSetLayoutBinding>& bindings
+                const std::vector<vk::DescriptorSetLayoutBinding>& bindings,
+                const vk::DescriptorSetLayoutCreateFlags& flags = vk::DescriptorSetLayoutCreateFlags{}
             );
             
             void Reset() noexcept override;

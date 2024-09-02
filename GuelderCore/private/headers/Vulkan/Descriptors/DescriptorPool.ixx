@@ -17,6 +17,7 @@ export namespace GuelderEngine::Vulkan
             DECLARE_MOVING(DescriptorPool);
             
             DescriptorPool(
+                const vk::Device& device,
                 const std::vector<vk::DescriptorPoolSize>& poolSizes,
                 const uint& maxSets,
                 const vk::DescriptorPoolCreateFlags& flags = vk::DescriptorPoolCreateFlags{}
