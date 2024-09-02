@@ -16,3 +16,5 @@ export import :IndexBuffer;
 export import :Surface;
 export import :IVulkanObject;
 export import :MeshAllocator;
+export import :DescriptorPool;
+export import :DescriptorSetLayout;
