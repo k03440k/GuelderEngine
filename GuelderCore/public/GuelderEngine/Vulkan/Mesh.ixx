@@ -78,25 +78,17 @@ export namespace GuelderEngine::Vulkan
         consteval static VertexFormat GetVertexFormat()
         {
             if constexpr(_dimension == 2)
-            {
                 return VertexFormat::Vec2Float;
-            }
             else if constexpr(_dimension == 3)
-            {
                 return VertexFormat::Vec3Float;
-            }
             else
-            {
                 GE_THROW("wrong dimension");
-            }
         }
     public:
         using PositionVector = Vector<_dimension>;
     public:
         
-        DECLARE_DEFAULT_CTOR_AND_DTOR(Vertex);
-        DECLARE_DEFAULT_COPYING(Vertex);
-        DECLARE_DEFAULT_MOVING(Vertex);
+        DECLARE_DEFAULT(Vertex);
 
         Vertex(const PositionVector& pos, const Vector3& color = {1.f, 1.f, 1.f})
             : position(pos), color(color) {}

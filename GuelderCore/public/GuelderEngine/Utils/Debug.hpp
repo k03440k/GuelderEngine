@@ -21,31 +21,20 @@ import GuelderEngine.Debug;
 #define FUNC_NAME __func__
 
 #ifdef _MSC_VER
-#define METHOD_NAME __FUNCSIG__
+#define FULL_FUNC_NAME __FUNCSIG__
 #elif __GNUC__ || __clang__
-#define METHOD_NAME __PRETTY_FUNCTION__
+#define FULL_FUNC_NAME __PRETTY_FUNCTION__
 #else
-#define METHOD_NAME FUNC_NAME
+#define FULL_FUNC_NAME FUNC_NAME
 #endif
 
-#define MSG_METHOD_LOGGING(...) ::GuelderEngine::Debug::Logger::Format(METHOD_NAME, ": ", __VA_ARGS__)
+#define MSG_METHOD_LOGGING(...) ::GuelderEngine::Debug::Logger::Format(FULL_FUNC_NAME, ": ", __VA_ARGS__)
 
 /**
 * @brief guelder engine error log
 * @param all debug info(it can be chars, ints, floats, and other types which support '<<' operator)
 */
-#define GE_THROW(...) ::GuelderEngine::Debug::Logger::Throw(Debug::Logger::Format(__VA_ARGS__), __FILE__, __LINE__)
-
-/**
-* @brief This macro is used in core classes which are inherited from GuelderEngine::Core::GClass.
-* If condition(param) is false then it will throw exception. Prints the path of the file and msg(param).
-*
-* @param condition - bool
-* @param ... - message, any type that supports "<<" operator
-*/
-#define GE_CLASS_ASSERT(condition, ...) ::GuelderEngine::Debug::Logger::Assert(condition, MSG_METHOD_LOGGING(__VA_ARGS__), __FILE__, __LINE__)
-
-#define GE_CLASS_THROW(...) ::GuelderEngine::Debug::Logger::Throw(MSG_METHOD_LOGGING(__VA_ARGS__), __FILE__, __LINE__)
+#define GE_THROW(...) ::GuelderEngine::Debug::Logger::Throw(Debug::Logger::Format(FULL_FUNC_NAME, ": ", __VA_ARGS__), __FILE__, __LINE__)
 
 /**
 * @brief If condition(param) is false then it will throw exception. Prints the path of the file and message(msg).
@@ -53,9 +42,7 @@ import GuelderEngine.Debug;
 * @param condition - bool
 * @param ... - message, any type that supports "<<" operator
 */
-#define GE_ASSERT(condition, ...) ::GuelderEngine::Debug::Logger::Assert(condition, ::GuelderEngine::Debug::Logger::Format(__VA_ARGS__), __FILE__, __LINE__)
-
-#define GE_ASSERT_FUNCTION(condition, ...) GE_ASSERT(condition, FUNC_NAME, ": ", __VA_ARGS__)
+#define GE_ASSERT(condition, ...) ::GuelderEngine::Debug::Logger::Assert(condition, ::GuelderEngine::Debug::Logger::Format(FULL_FUNC_NAME, ": ", __VA_ARGS__), __FILE__, __LINE__)
 
 #define GE_TO_STRING(arg) #arg
 #define CONCATENATE(lhs, rhs) GE_TO_STRING(lhs ## rhs)

@@ -38,7 +38,7 @@ namespace GuelderEngine
         {
             std::ifstream file;
             file.open(path + "/" + relativeFilePath.data(), std::ios::in | std::ios::binary);
-            GE_CLASS_ASSERT(file.is_open(), "cannot open file at location: ", path, '/', relativeFilePath);
+            GE_ASSERT(file.is_open(), "cannot open file at location: ", path, '/', relativeFilePath);
             std::stringstream source;//istringstream or stringstream?
             source << file.rdbuf();
 
@@ -50,7 +50,7 @@ namespace GuelderEngine
         {
             std::ifstream file;
             file.open(filePath.data(), std::ios::in | std::ios::binary);
-            GE_CLASS_ASSERT(file.is_open(), "cannot open file at location: ", filePath);
+            GE_ASSERT(file.is_open(), "cannot open file at location: ", filePath);
             std::stringstream source;//istringstream or stringstream?
             source << file.rdbuf();
 
@@ -61,7 +61,7 @@ namespace GuelderEngine
         std::string_view ResourceManager::FindResourcesVariableContent(const std::string_view& name) const
         {
             const auto found = m_Vars.find(name.data());
-            GE_CLASS_ASSERT(found != m_Vars.end(), "cannot find \"", name, "\" variable, in \"", path, '/', resourcesPath, "\"");
+            GE_ASSERT(found != m_Vars.end(), "cannot find \"", name, "\" variable, in \"", path, '/', resourcesPath, "\"");
             return found->second;
         }
         std::string ResourceManager::FindResourcesVariableFileContent(const std::string_view& name) const

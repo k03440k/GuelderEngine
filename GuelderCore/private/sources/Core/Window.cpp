@@ -154,7 +154,7 @@ namespace GuelderEngine
         if(!m_GLFWWindow)
         {
             glfwTerminate();
-            GE_CLASS_THROW("window is nullptr");
+            GE_THROW("window is nullptr");
         }
 
         glfwMakeContextCurrent(m_GLFWWindow);
@@ -274,7 +274,7 @@ namespace GuelderEngine
             {
                 glfwSetErrorCallback(Events::GLFWErrorCallback);
                 glfwTerminate();
-                GE_CLASS_THROW("cannot initialise glfw");
+                GE_THROW("cannot initialise glfw");
             }
 
             is_GLFW_init = true;

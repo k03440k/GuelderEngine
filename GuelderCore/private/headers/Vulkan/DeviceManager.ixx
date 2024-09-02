@@ -28,7 +28,7 @@ export namespace GuelderEngine::Vulkan
     /**
      * @brief You must manually call .Cleanup() func instead of dtor
     */
-    class DeviceManager final : public IVulkanObject//, INHERIT_GClass(DeviceManager)
+    class DeviceManager final : public IVulkanObject
     {
     public:
         DECLARE_DEFAULT_CTOR_AND_DTOR(DeviceManager);

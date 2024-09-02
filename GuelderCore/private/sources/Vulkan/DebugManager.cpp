@@ -55,11 +55,11 @@ namespace GuelderEngine::Vulkan
     DebugLayersManager::DebugLayersManager(const std::vector<ValidationLayer>& layers)
         : m_Layers(layers)
     {
-        GE_CLASS_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
+        GE_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
     }
     bool DebugLayersManager::AreValidationLayersSupported(const std::vector<ValidationLayer>& layers)
     {
-        GE_CLASS_ASSERT(layers.size() > 0, "layers size is zero");
+        GE_ASSERT(layers.size() > 0, "layers size is zero");
 
         const std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 

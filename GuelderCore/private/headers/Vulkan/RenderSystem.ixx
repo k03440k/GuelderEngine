@@ -51,8 +51,8 @@ export namespace GuelderEngine::Vulkan
             const Buffers::IndexBuffer& indexBuffer,
             const uint& verticesCount,
             const uint& indicesCount,
-            uint firstVertexIndex,
-            uint firstIndex,
+            const uint& firstVertexIndex,
+            const uint& firstIndex,
             const Mat<4>& actorTransform,
             const Mat<4>& viewProjection
         ) const

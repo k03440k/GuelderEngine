@@ -36,7 +36,7 @@ namespace GuelderEngine::Vulkan
             vk::ImageLayout::eUndefined
         };
         
-        GE_CLASS_ASSERT(device.createImage(&imageInfo, nullptr, &image) == vk::Result::eSuccess, "cannot create depth image");
+        GE_ASSERT(device.createImage(&imageInfo, nullptr, &image) == vk::Result::eSuccess, "cannot create depth image");
 
         vk::MemoryRequirements memoryRequirements;
         device.getImageMemoryRequirements(image, &memoryRequirements);
@@ -46,7 +46,7 @@ namespace GuelderEngine::Vulkan
         Buffers::Buffer::FindMemoryType(physicalDevice, memoryRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal)
         };
 
-        GE_CLASS_ASSERT(device.allocateMemory(&allocateInfo, nullptr, &memory) == vk::Result::eSuccess, "cannot allocate memory for depth image");
+        GE_ASSERT(device.allocateMemory(&allocateInfo, nullptr, &memory) == vk::Result::eSuccess, "cannot allocate memory for depth image");
         device.bindImageMemory(image, memory, 0);
 
         const vk::ImageViewCreateInfo imageViewInfo{
@@ -58,7 +58,7 @@ namespace GuelderEngine::Vulkan
             {vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1}
         };
 
-        GE_CLASS_ASSERT(device.createImageView(&imageViewInfo, nullptr, &imageView) == vk::Result::eSuccess, "cannot create depth image view");
+        GE_ASSERT(device.createImageView(&imageViewInfo, nullptr, &imageView) == vk::Result::eSuccess, "cannot create depth image view");
     }
     SwapchainDepthImage::SwapchainDepthImage(SwapchainDepthImage&& other) noexcept
     {

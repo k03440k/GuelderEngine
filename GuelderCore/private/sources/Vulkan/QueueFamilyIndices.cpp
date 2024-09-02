@@ -40,7 +40,7 @@ namespace GuelderEngine::Vulkan
                 break;
         }
 
-        GE_CLASS_ASSERT(IsComplete(), "Cannot complete Queue Family(device doesn't support requirements)");
+        GE_ASSERT(IsComplete(), "Cannot complete Queue Family(device doesn't support requirements)");
     }
     QueueFamilyIndices::QueueFamilyIndices(const QueueFamilyIndices& other)
     {

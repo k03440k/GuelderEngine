@@ -23,7 +23,7 @@ namespace GuelderEngine::Vulkan
             familyIndex = queueFamilyIndices.GetTransferFamily();
             break;
             default:
-                GE_CLASS_THROW("invalid queue type");
+                GE_THROW("invalid queue type");
         }
         const vk::CommandPoolCreateInfo poolInfo(
             vk::CommandPoolCreateFlags() | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,

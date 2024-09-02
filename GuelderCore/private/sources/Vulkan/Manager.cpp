@@ -82,7 +82,7 @@ namespace GuelderEngine::Vulkan
     vk::Instance VulkanManager::CreateVkInstance(const char* name)
     {
         uint version{};
-        GE_CLASS_ASSERT(vk::enumerateInstanceVersion(&version) == vk::Result::eSuccess, "cannot enumerateInstanceVersion");
+        GE_ASSERT(vk::enumerateInstanceVersion(&version) == vk::Result::eSuccess, "cannot enumerateInstanceVersion");
 
 #ifdef GE_DEBUG_VULKAN
         GE_LOG(VulkanCore, Info, "System must support Vulkan version: ",
@@ -111,7 +111,7 @@ namespace GuelderEngine::Vulkan
         }
 #endif // GE_DEBUG_VULKAN
 
-        GE_CLASS_ASSERT(AreExtensionsSupported(extensions), "extensions are not supported");
+        GE_ASSERT(AreExtensionsSupported(extensions), "extensions are not supported");
 
 #ifdef GE_DEBUG_VULKAN
 
@@ -131,7 +131,7 @@ namespace GuelderEngine::Vulkan
     }
     bool VulkanManager::AreExtensionsSupported(const std::vector<const char*>& extensions)
     {
-        GE_CLASS_ASSERT(extensions.size() > 0, "extensions size is zero");
+        GE_ASSERT(extensions.size() > 0, "extensions size is zero");
 
         const std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
 

@@ -24,6 +24,7 @@ import <functional>;
 import <thread>;
 import <ranges>;
 import <chrono>;
+import <execution>;
 
 namespace GuelderEngine
 {
@@ -64,7 +65,7 @@ namespace GuelderEngine
                     resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName3D),
                     shaderInfo3D
                 }
-        );
+            );
         m_RenderSystem2D = std::make_unique<RenderSystem2D>
             (
                 m_VulkanManager.GetDevice().GetDevice(),
@@ -75,7 +76,7 @@ namespace GuelderEngine
                     resourceManager.GetFullPathToRelativeFileViaVar(fragmentShaderVarName2D),
                     shaderInfo2D
                 }
-        );
+            );
         gameMode = std::make_unique<GameMode>();
         m_World = std::make_unique<World>();
     }
@@ -104,7 +105,7 @@ namespace GuelderEngine
 
         auto currentTime = std::chrono::high_resolution_clock::now();
 
-        while(!m_CloseWindow)
+        while (!m_CloseWindow)
         {
             m_Window->OnUpdate();
 
@@ -114,12 +115,14 @@ namespace GuelderEngine
 
             m_World->UpdateActors(frameTime);
 
-            if(m_Window->GetData().width != 0 && m_Window->GetData().height != 0)
+            if (m_Window->GetData().width != 0 && m_Window->GetData().height != 0)
             {
                 gameMode->GetPlayerController()->Update(m_Window->GetGLFWWindow(), frameTime);
 
-                if(const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager.GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }))
+                if (const auto& commandBuffer = m_Renderer->BeginFrame(m_VulkanManager.GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }))
                 {
+                    m_Renderer->BeginSwapchainRenderPass(commandBuffer);
+
                     auto ratio = m_Renderer->GetSwapchain().GetAspectRatio();
                     //camera->SetOrthographicProjection(-ratio, ratio, -1, 1, -1, 1);
                     //camera.SetPerspectiveProjection(glm::radians(50.f), ratio, 0.1f, 10.f);
@@ -134,11 +137,9 @@ namespace GuelderEngine
 
                     auto projectionView = cameraComponent->GetProjection() * cameraComponent->GetViewMatrix();
 
-                    m_Renderer->BeginSwapchainRenderPass(commandBuffer);
-
-                    std::ranges::for_each(m_World->GetActors3D(), [this, &commandBuffer, &projectionView](const SharedPtr<Actor3D>& actor)
+                    std::for_each(m_World->GetActors3D().begin(), m_World->GetActors3D().end(), [this, &commandBuffer, &projectionView](const SharedPtr<Actor3D>& actor)
                         {
-                            if(actor->IsComplete())
+                            if (actor->IsComplete())
                                 m_RenderSystem3D->Render
                                 (
                                     commandBuffer,
@@ -151,8 +152,10 @@ namespace GuelderEngine
                                     MatFromRenderActorTransform<3, 4>(actor->transform),
                                     projectionView
                                 );
-                        });
-                    std::ranges::for_each(m_World->GetActors2D(), [this, &commandBuffer](const SharedPtr<Actor2D>& actor)
+                        }
+                    );
+
+                    std::for_each(m_World->GetActors2D().begin(), m_World->GetActors2D().end(), [this, &commandBuffer](const SharedPtr<Actor2D>& actor)
                         {
                             m_RenderSystem2D->Render
                             (
@@ -166,7 +169,8 @@ namespace GuelderEngine
                                 MatFromRenderActorTransform<2, 2>(actor->transform),
                                 actor->transform.position
                             );
-                        });
+                        }
+                    );
 
                     m_Renderer->EndSwapchainRenderPass(commandBuffer);
                     m_Renderer->EndFrame(m_VulkanManager.GetDevice(), { m_Window->GetData().width, m_Window->GetData().height }, m_Window->WasWindowResized());
@@ -185,10 +189,10 @@ namespace GuelderEngine
 
         //Utils::Log::Message(event.ToString());
 
-        for(auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
+        for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
         {
             (*--it)->OnEvent(event);
-            if(event.isHandled)
+            if (event.isHandled)
                 break;
         }
     }

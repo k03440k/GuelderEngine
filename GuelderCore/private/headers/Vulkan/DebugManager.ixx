@@ -10,7 +10,7 @@ import <vector>;
 
 export namespace GuelderEngine::Vulkan
 {
-    class DebugLayersManager final// : INHERIT_GClass(DebugLayersManager)
+    class DebugLayersManager final
     {
     public:
         using ValidationLayer = const char*;
@@ -24,7 +24,7 @@ export namespace GuelderEngine::Vulkan
 
         const std::vector<ValidationLayer> m_Layers;
     };
-    class DebugManager final : public IVulkanObject//, INHERIT_GClass(DebugManager)
+    class DebugManager final : public IVulkanObject
     {
     public:
         DECLARE_DCAD_AND_CAM(DebugManager);

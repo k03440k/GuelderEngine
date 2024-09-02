@@ -28,7 +28,7 @@ namespace GuelderEngine
     }
     void CameraComponent::SetPerspectiveProjection(float fovY, float aspect, float near, float far)
     {
-        GE_ASSERT(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
+        GE_ASSERT(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f, "");
         const float tanHalfFovY = tan(fovY / 2.f);
         m_ProjectionMatrix = glm::mat4{ 0.0f };
         m_ProjectionMatrix[0][0] = 1.f / (aspect * tanHalfFovY);

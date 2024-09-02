@@ -91,7 +91,7 @@ namespace GuelderEngine::Vulkan
                 return i;
         }
 
-        GE_CLASS_THROW("Failed to find suitable memory type");
+        GE_THROW("Failed to find suitable memory type");
     }*/
     vk::Format DeviceManager::FindSupportedFormat(const vk::PhysicalDevice& physicalDevice, const std::vector<vk::Format>& formats, const vk::ImageTiling& imageTiling, const vk::FormatFeatureFlagBits& features)
     {
@@ -173,7 +173,7 @@ namespace GuelderEngine::Vulkan
     {
         const std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 
-        GE_CLASS_ASSERT(physicalDevices.size() > 0, "there are no physical devices");
+        GE_ASSERT(physicalDevices.size() > 0, "there are no physical devices");
 
 #ifdef GE_DEBUG_VULKAN
         GE_LOG(VulkanCore, Info, "There are ", physicalDevices.size(), " detected physical devices:");
@@ -210,7 +210,7 @@ namespace GuelderEngine::Vulkan
             }
         }
 
-        GE_CLASS_ASSERT(theBiggestDeviceMemorySize > 0, "cannot choose device");
+        GE_ASSERT(theBiggestDeviceMemorySize > 0, "cannot choose device");
 
         return physicalDevices[idxToDeviceOftheBiggestMemory];
     }

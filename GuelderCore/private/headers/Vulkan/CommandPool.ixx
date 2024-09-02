@@ -13,7 +13,7 @@ export namespace GuelderEngine::Vulkan
     struct SwapchainFrame;
     struct QueueFamilyIndices;
 
-    class CommandPool : public IVulkanObject//, INHERIT_GClass(CommandPool)
+    class CommandPool : public IVulkanObject
     {
     public:
         DECLARE_DCAD_AND_CAM(CommandPool);

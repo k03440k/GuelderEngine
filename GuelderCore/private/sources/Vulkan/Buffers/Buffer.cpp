@@ -25,8 +25,8 @@ namespace GuelderEngine::Vulkan::Buffers
 
         const auto cBuffer = device.allocateCommandBuffers(allocInfo)[0];
 
-        const vk::CommandBufferBeginInfo beginInfo{ vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
-        GE_ASSERT_FUNCTION(cBuffer.begin(&beginInfo) == vk::Result::eSuccess, "cannot begin command buffer when copying buffer");
+        constexpr vk::CommandBufferBeginInfo beginInfo{ vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
+        GE_ASSERT(cBuffer.begin(&beginInfo) == vk::Result::eSuccess, "cannot begin command buffer when copying buffer");
 
         const vk::BufferCopy copy{ 0, 0, size };
         cBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &copy);
@@ -36,11 +36,12 @@ namespace GuelderEngine::Vulkan::Buffers
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &cBuffer;
 
-        GE_ASSERT_FUNCTION(transferQueue.submit(1, &submitInfo, nullptr) == vk::Result::eSuccess, "cannot submit on transfer queue");
+        GE_ASSERT(transferQueue.submit(1, &submitInfo, nullptr) == vk::Result::eSuccess, "cannot submit on transfer queue");
         transferQueue.waitIdle();
 
         device.freeCommandBuffers(transferPool, 1, &cBuffer);
     }
+
     Buffer::Buffer(
         const vk::Device& device,
         const vk::PhysicalDevice& physicalDevice,
@@ -51,12 +52,12 @@ namespace GuelderEngine::Vulkan::Buffers
         const uint& instanceCount,
         const uint& minOffsetAlignment
     )
-        : m_UsageFlags(usageFlags),
-        m_MemoryPropertyFlags(memoryProperty),
+        : m_MappedMemory(nullptr),
         m_InstanceSize(instanceSize),
         m_InstanceCount(instanceCount),
         m_AlignmentSize(minOffsetAlignment),
-        m_MappedMemory(nullptr)
+        m_UsageFlags(usageFlags),
+        m_MemoryPropertyFlags(memoryProperty)
     {
         m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
         m_Size = m_AlignmentSize * m_InstanceCount;
@@ -81,7 +82,7 @@ namespace GuelderEngine::Vulkan::Buffers
 
             const auto memRequirements = device.getBufferMemoryRequirements(m_Buffer);
 
-            vk::MemoryAllocateInfo allocInfo{
+            const vk::MemoryAllocateInfo allocInfo{
                 memRequirements.size,
                     FindMemoryType(
                         physicalDevice,
@@ -158,13 +159,7 @@ namespace GuelderEngine::Vulkan::Buffers
     }
     void Buffer::MapMemory(const vk::Device& device, const vk::DeviceSize& size, const vk::DeviceSize& offset)
     {
-        vk::Result result;
-        if (size == VK_WHOLE_SIZE)
-            result = device.mapMemory(m_BufferMemory, 0, m_Size, vk::MemoryMapFlagBits{}, &m_MappedMemory);
-        else
-            result = device.mapMemory(m_BufferMemory, offset, size, vk::MemoryMapFlagBits{}, &m_MappedMemory);
-
-        GE_ASSERT(result == vk::Result::eSuccess, "Failed to map buffer memory.");
+        GE_ASSERT(device.mapMemory(m_BufferMemory, offset, size, vk::MemoryMapFlagBits{}, &m_MappedMemory) == vk::Result::eSuccess, "Failed to map buffer memory.");
     }
     void Buffer::UnmapMemory(const vk::Device& device) const
     {
@@ -180,7 +175,7 @@ namespace GuelderEngine::Vulkan::Buffers
                 return i;
         }
 
-        GE_CLASS_THROW("Failed to find suitable memory type");
+        GE_THROW("Failed to find suitable memory type");
     }
     uint Buffer::GetAlignment(const uint& instanceSize, const uint& minOffsetAlignment)
     {

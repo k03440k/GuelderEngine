@@ -84,7 +84,7 @@ namespace GuelderEngine::Vulkan
         const QueueFamilyIndices& queueFamilyIndices
     )
     {
-        GE_CLASS_ASSERT(!m_IsFrameStarted, "Cannot start rendering while frame is already in progress");
+        GE_ASSERT(!m_IsFrameStarted, "Cannot start rendering while frame is already in progress");
 
         m_Swapchain.GetCurrentFrame().WaitForImage(device);
 
@@ -118,7 +118,7 @@ namespace GuelderEngine::Vulkan
         const QueueFamilyIndices& queueFamilyIndices
     )
     {
-        GE_CLASS_ASSERT(m_IsFrameStarted, "Cannot end frame when frame was not started");
+        GE_ASSERT(m_IsFrameStarted, "Cannot end frame when frame was not started");
 
         const auto& currentFrame = m_Swapchain.GetCurrentFrame();
         const auto& currentCommandBuffer = currentFrame.commandBuffer;
@@ -182,8 +182,8 @@ namespace GuelderEngine::Vulkan
     }
     void Renderer::BeginSwapchainRenderPass(const vk::CommandBuffer& commandBuffer) const
     {
-        GE_CLASS_ASSERT(m_IsFrameStarted, "Cannot start render pass when frame was not started");
-        GE_CLASS_ASSERT(commandBuffer == m_Swapchain.GetCurrentFrame().commandBuffer, "cannot begin render pass, when input buffer is different from the current one");
+        GE_ASSERT(m_IsFrameStarted, "Cannot start render pass when frame was not started");
+        GE_ASSERT(commandBuffer == m_Swapchain.GetCurrentFrame().commandBuffer, "cannot begin render pass, when input buffer is different from the current one");
 
         const float blueValue = /*(sin(glfwGetTime()) / 2.0f) + 0.5f*/.25f;
         std::array clearValues
@@ -217,8 +217,8 @@ namespace GuelderEngine::Vulkan
     }
     void Renderer::EndSwapchainRenderPass(const vk::CommandBuffer& commandBuffer) const
     {
-        GE_CLASS_ASSERT(m_IsFrameStarted, "Cannot start end pass when frame was not started");
-        GE_CLASS_ASSERT(commandBuffer == m_Swapchain.GetCurrentFrame().commandBuffer, "cannot end render pass, when input buffer is different from the current one");
+        GE_ASSERT(m_IsFrameStarted, "Cannot start end pass when frame was not started");
+        GE_ASSERT(commandBuffer == m_Swapchain.GetCurrentFrame().commandBuffer, "cannot end render pass, when input buffer is different from the current one");
 
         commandBuffer.endRenderPass();
     }

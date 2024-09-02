@@ -10,7 +10,7 @@ namespace GuelderEngine::Vulkan
     Surface::Surface(GLFWwindow* window, const vk::Instance& instance, const vk::PhysicalDevice& physicalDevice)
     {
         VkSurfaceKHR cStyle;
-        GE_CLASS_ASSERT(glfwCreateWindowSurface(instance, window, nullptr, &cStyle) == VK_SUCCESS, "cannot abstract GLFWwindow for vulkan surface");
+        GE_ASSERT(glfwCreateWindowSurface(instance, window, nullptr, &cStyle) == VK_SUCCESS, "cannot abstract GLFWwindow for vulkan surface");
         m_Surface = cStyle;
 
         m_Capabilities = physicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
@@ -56,6 +56,7 @@ namespace GuelderEngine::Vulkan
                 return format;
 
         GE_LOG(VulkanCore, Warning, "the device doesn't support: vk::Format::eB8G8R8A8Unorm and vk::ColorSpaceKHR::eSrgbNonlinear");
+
         return formats[0];
     }
     vk::PresentModeKHR Surface::ChoosePresentMode(const std::vector<vk::PresentModeKHR>& presentModes)
@@ -67,6 +68,7 @@ namespace GuelderEngine::Vulkan
         }
 
         GE_LOG(VulkanCore, Warning, "the device doesn't support Mailbox present mode. Choosing Fifo");
+
         return vk::PresentModeKHR::eFifo;
     }
 }
