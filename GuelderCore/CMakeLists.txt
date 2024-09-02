@@ -62,6 +62,8 @@ set(CORE_PRIVATE_SOURCES
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/StagingBuffer.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/IndexBuffer.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Surface.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Descriptors/DescriptorPool.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Descriptors/DescriptorSetLayout.cpp"
 )
 set(CORE_PRIVATE_MODULES
 	"${CORE_PRIVATE_MODULES_PATH}/Core/Window.ixx"
@@ -87,6 +89,8 @@ set(CORE_PRIVATE_MODULES
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Renderer.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/RenderSystem.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Surface.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Descriptors/DescriptorPool.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Descriptors/DescriptorSetLayout.ixx"
 	
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/MeshAllocator.ixx"
 )
