@@ -8,40 +8,6 @@ import :CommandPool;
 
 namespace GuelderEngine::Vulkan::Buffers
 {
-    void CopyBuffer(
-        const vk::Buffer& srcBuffer,
-        const vk::Buffer& dstBuffer,
-        const vk::DeviceSize& size,
-        const vk::Device& device,
-        const vk::CommandPool& transferPool,
-        const vk::Queue& transferQueue
-    )
-    {
-        const vk::CommandBufferAllocateInfo allocInfo(
-            transferPool,
-            vk::CommandBufferLevel::ePrimary,
-            1
-        );
-
-        const auto cBuffer = device.allocateCommandBuffers(allocInfo)[0];
-
-        constexpr vk::CommandBufferBeginInfo beginInfo{ vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
-        GE_ASSERT(cBuffer.begin(&beginInfo) == vk::Result::eSuccess, "cannot begin command buffer when copying buffer");
-
-        const vk::BufferCopy copy{ 0, 0, size };
-        cBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &copy);
-        cBuffer.end();
-
-        vk::SubmitInfo submitInfo{};
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &cBuffer;
-
-        GE_ASSERT(transferQueue.submit(1, &submitInfo, nullptr) == vk::Result::eSuccess, "cannot submit on transfer queue");
-        transferQueue.waitIdle();
-
-        device.freeCommandBuffers(transferPool, 1, &cBuffer);
-    }
-
     Buffer::Buffer(
         const vk::Device& device,
         const vk::PhysicalDevice& physicalDevice,
@@ -61,14 +27,14 @@ namespace GuelderEngine::Vulkan::Buffers
     {
         m_AlignmentSize = GetAlignment(m_InstanceSize, minOffsetAlignment);
         m_Size = m_AlignmentSize * m_InstanceCount;
-        if (m_Size)
+        if(m_Size)
         {
             vk::BufferCreateInfo info{ vk::BufferCreateFlagBits(),
                 m_Size,
                 usageFlags
             };
 
-            if (queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetTransferFamily())
+            if(queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetTransferFamily())
             {
                 const uint uniqueIndices[] = { queueFamilyIndices.GetGraphicsFamily(), queueFamilyIndices.GetTransferFamily() };
                 info.queueFamilyIndexCount = 2;
@@ -126,9 +92,62 @@ namespace GuelderEngine::Vulkan::Buffers
 
         return *this;
     }
+}
+namespace GuelderEngine::Vulkan::Buffers
+{
+    void CopyBuffer(
+        const vk::Buffer& srcBuffer,
+        const vk::Buffer& dstBuffer,
+        const vk::DeviceSize& size,
+        const vk::Device& device,
+        const vk::CommandPool& transferPool,
+        const vk::Queue& transferQueue
+    )
+    {
+        const auto cBuffer = CommandPool::BeginSingleTimeSubmitCommandBuffer(device, transferPool);
+
+        const vk::BufferCopy copy{ 0, 0, size };
+        cBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &copy);
+        cBuffer.end();
+
+        vk::SubmitInfo submitInfo{};
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cBuffer;
+
+        GE_ASSERT(transferQueue.submit(1, &submitInfo, nullptr) == vk::Result::eSuccess, "cannot submit on transfer queue");
+        transferQueue.waitIdle();
+
+        CommandPool::FreeCommandBuffer(device, transferPool, cBuffer);
+    }
+
+    void Buffer::Reset() noexcept
+    {
+        m_Buffer = nullptr;
+        m_BufferMemory = nullptr;
+        m_Size = 0;
+        m_MappedMemory = nullptr;
+        m_InstanceSize = 0;
+        m_InstanceCount = 0;
+        m_AlignmentSize = 0;
+        m_UsageFlags = vk::BufferUsageFlags{};
+        m_MemoryPropertyFlags = vk::MemoryPropertyFlags{};
+    }
+    void Buffer::Cleanup(const vk::Device& device) const noexcept
+    {
+        device.freeMemory(m_BufferMemory);
+        device.destroyBuffer(m_Buffer);
+    }
+    /*void Buffer::Cleanup(const vk::Device& device, const std::vector<vk::Queue>& queuesToWait) const noexcept
+    {
+        for (auto& queue : queuesToWait)
+            queue.waitIdle();
+
+        Cleanup(device);
+    }*/
+
     void Buffer::WriteToBuffer(const void* data, const vk::DeviceSize& size, const vk::DeviceSize& offset) const
     {
-        if (size == VK_WHOLE_SIZE)
+        if(size == VK_WHOLE_SIZE)
             memcpy(m_MappedMemory, data, m_Size);
         else
             memcpy(static_cast<char*>(m_MappedMemory) + offset, data, size);
@@ -169,9 +188,9 @@ namespace GuelderEngine::Vulkan::Buffers
     {
         const auto memProperties = physicalDevice.getMemoryProperties();
 
-        for (uint i = 0; i < memProperties.memoryTypeCount; ++i)
+        for(uint i = 0; i < memProperties.memoryTypeCount; ++i)
         {
-            if (typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+            if(typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
                 return i;
         }
 
@@ -179,36 +198,14 @@ namespace GuelderEngine::Vulkan::Buffers
     }
     uint Buffer::GetAlignment(const uint& instanceSize, const uint& minOffsetAlignment)
     {
-        if (minOffsetAlignment > 0)
+        if(minOffsetAlignment > 0)
             return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
         else
             return instanceSize;
     }
-    void Buffer::Reset() noexcept
-    {
-        m_Buffer = nullptr;
-        m_BufferMemory = nullptr;
-        m_Size = 0;
-        m_MappedMemory = nullptr;
-        m_InstanceSize = 0;
-        m_InstanceCount = 0;
-        m_AlignmentSize = 0;
-        m_UsageFlags = vk::BufferUsageFlags{};
-        m_MemoryPropertyFlags = vk::MemoryPropertyFlags{};
-    }
-    void Buffer::Cleanup(const vk::Device& device) const noexcept
-    {
-        device.freeMemory(m_BufferMemory);
-        device.destroyBuffer(m_Buffer);
-    }
-    void Buffer::Cleanup(const vk::Device& device, const std::vector<vk::Queue>& queuesToWait) const noexcept
-    {
-        for (auto& queue : queuesToWait)
-            queue.waitIdle();
-
-        device.freeMemory(m_BufferMemory);
-        device.destroyBuffer(m_Buffer);
-    }
+}
+namespace GuelderEngine::Vulkan::Buffers
+{
     const vk::Buffer& Buffer::GetBuffer() const noexcept
     {
         return m_Buffer;

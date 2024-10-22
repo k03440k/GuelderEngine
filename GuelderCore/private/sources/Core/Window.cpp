@@ -1,5 +1,6 @@
 module;
 #include "../public/GuelderEngine/Utils/Debug.hpp"
+#undef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
 #include <imgui/imgui.h>
 #include <glfw/glfw3.h>
 module GuelderEngine.Core;
@@ -11,22 +12,23 @@ import GuelderEngine.Debug;
 
 import <stdexcept>;
 import <thread>;
+import <string>;
+import <string_view>;
 
 namespace GuelderEngine
 {
-    Window::WindowData::WindowData(const ushort& width,
-        const ushort& height, const std::string& title, const bool& showFrameRate,
-        const EventCallbackFunc& callback) : title(title), width(width), height(height),
-        callback(callback), showFrameRate(showFrameRate) {}
-    Window::WindowData& Window::WindowData::operator=(const WindowData& other)
-    {
-        title = other.title;
-        width = other.width;
-        height = other.height;
-        callback = other.callback;
-
-        return *this;
-    }
+    Window::WindowData::WindowData(
+        const ushort& width,
+        const ushort& height,
+        const std::string& title,
+        const bool& showFrameRate,
+        const EventCallbackFunc& callback
+    )
+        : width(width), height(height), title(title), callback(callback), showFrameRate(showFrameRate),
+          m_LastTime(0.0), m_CurrentTime(0.0), m_NumFrames(0), m_FrameTime(0.f), m_FrameRate(0) {}
+}
+namespace GuelderEngine
+{
     void Window::WindowData::Reset() noexcept
     {
         width = 0;
@@ -40,6 +42,7 @@ namespace GuelderEngine
         m_FrameTime = 0.f;
         m_FrameRate = 0;
     }
+
     float Window::WindowData::UpdateFrameRate()
     {
         m_CurrentTime = glfwGetTime();
@@ -67,22 +70,26 @@ namespace GuelderEngine
         this->height = height;
     }
 }
-//ctors
+
+namespace GuelderEngine::Events
+{
+    [[noreturn]]
+    void GLFWErrorCallback(int errorCode, const char* description)
+    {
+        GE_THROW("GLFW error(", errorCode, "), description: ", description);
+    }
+}
+
 namespace GuelderEngine
 {
-    bool Window::is_GLFW_init = false;
+    bool Window::isGLFWInit = false;
 
-    namespace Events
-    {
-        [[noreturn]]
-        void GLFWErrorCallback(int errorCode, const char* description)
-        {
-            GE_THROW("GLFW error(", errorCode, "), description: ", description);
-        }
-    }
-    Window::Window(const ushort& windowWidth, const ushort& windowHeight,
-        const std::string& windowTitle) :
-        m_Data(windowWidth, windowHeight, windowTitle)
+    Window::Window(
+        const ushort& windowWidth,
+        const ushort& windowHeight,
+        const std::string_view& windowTitle
+    ) :
+        m_Data(windowWidth, windowHeight, windowTitle.data())
     {
         Init();
     }
@@ -110,6 +117,7 @@ namespace GuelderEngine
         m_Data = other.m_Data;
         m_WasResized = other.m_WasResized;
 
+        //TODO: remake copying
         if(m_GLFWWindow != other.m_GLFWWindow && m_GLFWWindow)
             glfwDestroyWindow(m_GLFWWindow);
 
@@ -135,11 +143,15 @@ namespace GuelderEngine
     {
         Shutdown();
     }
+}
+namespace GuelderEngine
+{
     void Window::Reset() noexcept
     {
         m_Data.Reset();
         m_GLFWWindow = nullptr;
     }
+
     void Window::Init()
     {
         m_WasResized = false;
@@ -241,10 +253,6 @@ namespace GuelderEngine
         glfwDestroyWindow(m_GLFWWindow);
         glfwTerminate();
     }
-}
-namespace GuelderEngine
-{
-#pragma region Window
 
     void Window::ShowFrameRate()
     {
@@ -264,11 +272,11 @@ namespace GuelderEngine
     }
     bool Window::IsGLFWInit()
     {
-        return is_GLFW_init;
+        return isGLFWInit;
     }
     void Window::InitGLFW()
     {
-        if(!is_GLFW_init)
+        if(!isGLFWInit)
         {
             if(!glfwInit())
             {
@@ -277,7 +285,7 @@ namespace GuelderEngine
                 GE_THROW("cannot initialise glfw");
             }
 
-            is_GLFW_init = true;
+            isGLFWInit = true;
         }
     }
     void Window::OnUpdate()
@@ -292,6 +300,9 @@ namespace GuelderEngine
     {
         return glfwWindowShouldClose(m_GLFWWindow);
     }
+}
+namespace GuelderEngine
+{
     const Window::WindowData& Window::GetData() const noexcept
     {
         return m_Data;
@@ -315,5 +326,4 @@ namespace GuelderEngine
         m_Data.height = height;
         glfwSetWindowSize(m_GLFWWindow, m_Data.width, m_Data.height);
     }
-#pragma endregion
 }

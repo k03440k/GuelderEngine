@@ -1,12 +1,6 @@
 #pragma once
 
-import GuelderEngine.Core.Types;
-
-#define INHERIT_GClass(className) /*public virtual ::GuelderEngine::GClass<className>*/
-
-#define GENERATE_DEBUG(className)\
-    const char* GGetClassName() override { return typeid(*this).name(); }\
-    const char* GGetClassRawName() override { return typeid(*this).raw_name(); }
+//deleting
 
 #define DELETE_COPYING(className)\
     className(const className&) = delete;\
@@ -20,14 +14,19 @@ import GuelderEngine.Core.Types;
     DELETE_COPYING(className);\
     DELETE_MOVING(className)
 
-#define NO_INSTANCE_CLASS(className)\
+#define DELETE_CTOR_AND_DTOR(className)\
     className() = delete;\
-    ~className() = delete;\
+    ~className() = delete
+
+/// <summary>
+/// Declares ctor, dtor, assignment operators as deleted
+/// </summary>
+#define NO_INSTANCE(className)\
+    DELETE_CTOR_AND_DTOR(className);\
     DELETE_COPYING_AND_MOVING(className)
 
-/**
- *@brief declares copy operator and ctor without "default" keyword
-*/
+//declarations
+
 #define DECLARE_COPYING(className)\
     className(const className& other);\
     className& operator=(const className& other)
@@ -40,19 +39,17 @@ import GuelderEngine.Core.Types;
     DECLARE_COPYING(className);\
     DECLARE_MOVING(className)
 
+/// <summary>
+/// Declares dtor as virtual
+/// </summary>
+#define DECLARE_INTERFACE(interfaceName)\
+    virtual ~interfaceName() = default
+
+//default declarations
+
 #define DECLARE_DEFAULT_CTOR_AND_DTOR(className)\
     className() = default;\
     ~className() = default
-
-/**
- *@brief declare default ctor and dtor and copying and moving
-*/
-#define DECLARE_DCAD_AND_CAM(className)\
-    DECLARE_DEFAULT_CTOR_AND_DTOR(className);\
-    DECLARE_COPYING_AND_MOVING(className)
-
-#define DEFINE_INTERFACE(interfaceName)\
-    virtual ~interfaceName() = default
 
 #define DECLARE_DEFAULT_COPYING(className)\
     className(const className&) = default;\
@@ -66,12 +63,14 @@ import GuelderEngine.Core.Types;
     DECLARE_DEFAULT_COPYING(className);\
     DECLARE_DEFAULT_MOVING(className)
 
-/**
- *@brief declares ctor, dtor, assignment operators as default
-*/
+/// <summary>
+/// Declares ctor, dtor, assignment operators as default
+/// </summary>
 #define DECLARE_DEFAULT(className)\
     DECLARE_DEFAULT_CTOR_AND_DTOR(className);\
     DECLARE_DEFAULT_COPYING(className);\
     DECLARE_DEFAULT_MOVING(className)
+
+//etc.
 
 #define FORCE_INLINE __forceinline

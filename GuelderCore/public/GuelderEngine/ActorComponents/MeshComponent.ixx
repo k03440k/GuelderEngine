@@ -46,11 +46,11 @@ export namespace GuelderEngine
         void SetMesh(const Mesh& mesh)
         {
             m_MeshAllocator.SetMesh(
-                Vulkan::VulkanManager::Get().GetDevice().GetDevice(),
-                Vulkan::VulkanManager::Get().GetDevice().GetPhysicalDevice(),
-                Vulkan::VulkanManager::Get().GetDevice().GetQueueIndices(),
-                Vulkan::VulkanManager::Get().GetDevice().GetCommandPoolTransfer().GetCommandPool(),
-                Vulkan::VulkanManager::Get().GetDevice().GetQueues().transfer,
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetDevice(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetPhysicalDevice(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetQueueIndices(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetCommandPoolTransfer().GetCommandPool(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetQueues().transfer,
                 m_Vertex,
                 mesh.GetVertices(),
                 m_Index,
@@ -83,11 +83,11 @@ export namespace GuelderEngine
         {
             m_MeshAllocator.AllocateMesh
             (
-                Vulkan::VulkanManager::Get().GetDevice().GetDevice(),
-                Vulkan::VulkanManager::Get().GetDevice().GetPhysicalDevice(),
-                Vulkan::VulkanManager::Get().GetDevice().GetQueueIndices(),
-                Vulkan::VulkanManager::Get().GetDevice().GetCommandPoolTransfer().GetCommandPool(),
-                Vulkan::VulkanManager::Get().GetDevice().GetQueues().transfer,
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetDevice(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetPhysicalDevice(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetQueueIndices(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetCommandPoolTransfer().GetCommandPool(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetQueues().transfer,
                 m_Vertex,
                 mesh.GetVertices(),
                 m_Index,
@@ -98,11 +98,11 @@ export namespace GuelderEngine
         {
             m_MeshAllocator.DeleteMesh
             (
-                Vulkan::VulkanManager::Get().GetDevice().GetDevice(),
-                Vulkan::VulkanManager::Get().GetDevice().GetPhysicalDevice(),
-                Vulkan::VulkanManager::Get().GetDevice().GetQueueIndices(),
-                Vulkan::VulkanManager::Get().GetDevice().GetCommandPoolTransfer().GetCommandPool(),
-                Vulkan::VulkanManager::Get().GetDevice().GetQueues().transfer,
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetDevice(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetPhysicalDevice(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetQueueIndices(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetCommandPoolTransfer().GetCommandPool(),
+                Vulkan::VulkanManager::Get().GetDeviceManager().GetQueues().transfer,
                 m_Vertex,
                 m_Index
             );

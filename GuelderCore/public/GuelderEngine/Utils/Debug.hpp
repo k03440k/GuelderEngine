@@ -30,18 +30,20 @@ import GuelderEngine.Debug;
 
 #define MSG_METHOD_LOGGING(...) ::GuelderEngine::Debug::Logger::Format(FULL_FUNC_NAME, ": ", __VA_ARGS__)
 
-/**
-* @brief guelder engine error log
-* @param all debug info(it can be chars, ints, floats, and other types which support '<<' operator)
-*/
+/// <summary>
+/// guelder engine error log
+/// </summary>
+/// <param name = "...">
+/// all debug info(it can be chars, ints, floats, and other types which support '<<' operator)
+/// </param>
 #define GE_THROW(...) ::GuelderEngine::Debug::Logger::Throw(Debug::Logger::Format(FULL_FUNC_NAME, ": ", __VA_ARGS__), __FILE__, __LINE__)
 
-/**
-* @brief If condition(param) is false then it will throw exception. Prints the path of the file and message(msg).
-*
-* @param condition - bool
-* @param ... - message, any type that supports "<<" operator
-*/
+/// <summary>
+/// brief If condition(param) is false then it will throw exception. Prints the path of the file and message(msg).
+/// </summary>
+/// <param name = "...">
+/// message, any type that supports "<<" operator
+/// </param>
 #define GE_ASSERT(condition, ...) ::GuelderEngine::Debug::Logger::Assert(condition, ::GuelderEngine::Debug::Logger::Format(FULL_FUNC_NAME, ": ", __VA_ARGS__), __FILE__, __LINE__)
 
 #define GE_TO_STRING(arg) #arg

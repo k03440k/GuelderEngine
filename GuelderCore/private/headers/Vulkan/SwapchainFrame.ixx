@@ -1,47 +1,53 @@
 module;
+#include <compare>
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:SwapchainFrame;
 
 import :IVulkanObject;
-import :SwapchainFrameSync;
+import :FrameContext;
+import :FrameSync;
 
 import <limits>;
 
 export namespace GuelderEngine::Vulkan
 {
-    struct SwapchainFrame final : public IVulkanObject
+    struct SwapchainFrame final : public FrameContext
     {
     public:
-        DECLARE_DCAD_AND_CAM(SwapchainFrame);
-        
-        SwapchainFrame(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo, const vk::CommandPool& pool);
+        DECLARE_DEFAULT_CTOR_AND_DTOR(SwapchainFrame);
+        DECLARE_DEFAULT_COPYING(SwapchainFrame);
+        DECLARE_MOVING(SwapchainFrame);
+
+        SwapchainFrame(
+            const vk::Device& device,
+            const vk::CommandPool& commandPool,
+            const vk::RenderPass& renderPass,
+            const vk::ImageViewCreateInfo& viewInfo,
+            const vk::ImageView& depthImageView,
+            const vk::Extent2D& extent,
+            const uint& layers = 1
+        );
 
         void Reset() noexcept override;
-        void Cleanup(const vk::Device& device, const vk::CommandPool& pool) const noexcept;
+        void Cleanup(const vk::Device& device, const vk::CommandPool& commandPool) const noexcept override;
 
-        void Recreate(const vk::Device& device, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent,
-            const vk::ImageViewCreateInfo& viewInfo, const vk::ImageView& depthImageView, const vk::CommandPool& pool);
+        void Recreate(
+            const vk::Device& device,
+            const vk::RenderPass& renderPass,
+            const vk::ImageViewCreateInfo& viewInfo,
+            const vk::ImageView& depthImageView,
+            const vk::CommandPool& commandPool,
+            const vk::Extent2D& swapchainExtent
+        );
 
-        /**
-         *@brief waits for fence
-        */
-        void WaitForImage(const vk::Device& device, const uint64_t& delay = std::numeric_limits<uint64_t>::max()) const;
+        void WaitForFence(const vk::Device& device, const uint64_t& delay = std::numeric_limits<uint64_t>::max()) const;
         void ResetFence(const vk::Device& device) const;
-        void FreeCommandBuffer(const vk::CommandPool& pool, const vk::Device& device) const noexcept;
 
         vk::Image image;
         vk::ImageView imageView;
-        vk::Framebuffer framebuffer;
-        vk::CommandBuffer commandBuffer;
-        SwapchainFrameSync sync;
-
+        FrameSync sync;
     private:
-        void CleanupImageView(const vk::Device& device) const noexcept;
-        void CleanupFramebuffer(const vk::Device& device) const noexcept;
-
-        void CreateFrameBuffer(const vk::Device& device, const vk::ImageView& depthImageView, const vk::RenderPass& renderPass, const vk::Extent2D& swapchainExtent);
-        void CreateImage(const vk::Device& device, const vk::ImageViewCreateInfo& viewInfo);
-        void CreateCommandBuffer(const vk::Device& device, const vk::CommandPool& pool);
+        using FrameContext::Recreate;
     };
 }

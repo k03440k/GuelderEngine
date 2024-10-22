@@ -1,6 +1,5 @@
 module;
 #include <vulkan/vulkan.hpp>
-#include "../../../headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan;
 import :IndexBuffer;
 
@@ -17,7 +16,7 @@ namespace GuelderEngine::Vulkan::Buffers
         const vk::Queue& transferQueue,
         const Indices& indices
     )
-    : Buffer(
+        : Buffer(
             device,
             physicalDevice,
             queueFamilyIndices,
@@ -36,15 +35,38 @@ namespace GuelderEngine::Vulkan::Buffers
             stagingBuffer.Cleanup(device);
         }
     }
+    IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept
+        : Buffer(std::move(other))
+    {
+        m_IndicesCount = other.m_IndicesCount;
+
+        other.m_IndicesCount = 0;
+    }
+    IndexBuffer& IndexBuffer::operator=(IndexBuffer&& other) noexcept
+    {
+        Buffer::operator=(std::move(other));
+        m_IndicesCount = other.m_IndicesCount;
+
+        other.m_IndicesCount = 0;
+
+        return *this;
+    }
+}
+namespace GuelderEngine::Vulkan::Buffers
+{
     void IndexBuffer::Reset() noexcept
     {
         Buffer::Reset();
         m_IndicesCount = 0;
     }
+
     void IndexBuffer::Bind(const vk::CommandBuffer& cmdBuffer, const vk::DeviceSize& offset) const
     {
         cmdBuffer.bindIndexBuffer(m_Buffer, offset, vk::IndexType::eUint32);
     }
+}
+namespace GuelderEngine::Vulkan::Buffers
+{
     uint IndexBuffer::GetIndicesCount() const noexcept
     {
         return m_IndicesCount;

@@ -35,7 +35,7 @@ namespace GuelderEngine::Vulkan
             queueFamilyIndices,
             vk::ImageLayout::eUndefined
         };
-        
+
         GE_ASSERT(device.createImage(&imageInfo, nullptr, &image) == vk::Result::eSuccess, "cannot create depth image");
 
         vk::MemoryRequirements memoryRequirements;
@@ -78,6 +78,9 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
+}
+namespace GuelderEngine::Vulkan
+{
     void SwapchainDepthImage::Reset() noexcept
     {
         image = nullptr;

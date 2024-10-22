@@ -191,7 +191,8 @@ public:
         auto found = world->GetActor("cube");
         cube = dynamic_cast<MyActor3D*>(found.get());
 
-        cube->transform.translation.y += sin(GEApplication::GetTime()) * deltaTime / 20;
+        if(cube)
+            cube->transform.translation.y += sin(GEApplication::GetTime()) * deltaTime / 20;
     }
     void DeleteActor(float)
     {

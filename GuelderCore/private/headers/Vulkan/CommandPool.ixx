@@ -1,5 +1,4 @@
 module;
-#include "../../../public/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:CommandPool;
@@ -16,28 +15,28 @@ export namespace GuelderEngine::Vulkan
     class CommandPool : public IVulkanObject
     {
     public:
-        DECLARE_DCAD_AND_CAM(CommandPool);
-        
-        CommandPool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices, const vk::QueueFlagBits& queueType = vk::QueueFlagBits::eGraphics);
-        /**
-         * @brief Allocates command buffers for frames
-        */
-        CommandPool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices, std::vector<SwapchainFrame>& frames);
+        DECLARE_DEFAULT_CTOR_AND_DTOR(CommandPool);
+        DECLARE_DEFAULT_COPYING(CommandPool);
+        DECLARE_MOVING(CommandPool);
 
-        virtual void Reset() noexcept override;
+        CommandPool(const vk::Device& device, const QueueFamilyIndices& queueFamilyIndices, const vk::QueueFlagBits& queueType = vk::QueueFlagBits::eGraphics);
+
+        void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
+        
+        static vk::CommandBuffer CreateCommandBuffer(const vk::Device& device, const vk::CommandPool& commandPool);
+        static vk::CommandBuffer BeginSingleTimeSubmitCommandBuffer(const vk::Device& device, const vk::CommandPool& commandPool);
+
+        static void FreeCommandBuffer(const vk::Device& device, const vk::CommandPool& commandPool, const vk::CommandBuffer& commandBuffer) noexcept;
 
         vk::CommandBuffer CreateCommandBuffer(const vk::Device& device) const;
-        static void MakeCommandBuffersForFrames(const vk::Device& device, const vk::CommandPool& pool, std::vector<SwapchainFrame>& frames);
-        void MakeCommandBuffersForFrames(const vk::Device& device, std::vector<SwapchainFrame>& frames) const;
-
+        vk::CommandBuffer BeginSingleTimeSubmitCommandBuffer(const vk::Device& device) const;
+        
         void FreeCommandBuffer(const vk::Device& device, const vk::CommandBuffer& commandBuffer) const noexcept;
 
         const vk::CommandPool& GetCommandPool() const noexcept;
 
     private:
-        static vk::CommandBuffer MakeCommandBuffer(const vk::Device& device, const vk::CommandPool& pool);
-
         vk::CommandPool m_CommandPool;
     };
 }

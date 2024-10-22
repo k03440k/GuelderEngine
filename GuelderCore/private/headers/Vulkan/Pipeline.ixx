@@ -4,16 +4,6 @@ module;
 #include "../../headers/Core/GObject/GClass.hpp"
 export module GuelderEngine.Vulkan:Pipeline;
 
-//import :IVulkanObject;
-//import :Swapchain;
-//import :ShaderManager;
-//import :Mesh;
-//import :ShaderManager;
-////import :VertexBuffer;
-//import :IndexBuffer;
-//import GuelderEngine.Core.Types;
-
-//import :Manager;
 import :ShaderManager;
 import :Swapchain;
 import :Mesh;
@@ -32,11 +22,10 @@ export namespace GuelderEngine::Vulkan
     struct QueueFamilyIndices;
 
     template<uint dimension>
-    class Pipeline : /*INHERIT_GClass(Pipeline),*/ public IVulkanObject
+    class Pipeline : public IVulkanObject
     {
     public:
         DECLARE_DEFAULT_CTOR_AND_DTOR(Pipeline);
-        //DECLARE_MOVING(Pipeline);
         DECLARE_DEFAULT_COPYING(Pipeline);
 
         Pipeline(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo)
@@ -44,8 +33,6 @@ export namespace GuelderEngine::Vulkan
             m_ShaderManager = ShaderManager(shaderInfo);
 
             Create(device, renderPass, shaderInfo);
-
-            //SetMesh(device, physicalDevice, queueFamilyIndices, {});
         }
         Pipeline(Pipeline&& other) noexcept
         {
@@ -66,8 +53,6 @@ export namespace GuelderEngine::Vulkan
             return *this;
         }
 
-        //Pipeline(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo);
-
         void Reset() noexcept override
         {
             m_GraphicsPipeline = nullptr;
@@ -79,23 +64,9 @@ export namespace GuelderEngine::Vulkan
             device.destroyPipeline(m_GraphicsPipeline);
         }
 
-        /*void Render(
-            const vk::Device& device,
-            const vk::PhysicalDevice& physicalDevice,
-            const vk::SurfaceKHR& surface,
-            const vk::RenderPass& renderPass,
-            const vk::Extent2D& extent,
-            bool& wasWindowResized,
-            const QueueFamilyIndices& queueFamilyIndices,
-            const Vulkan::Buffers::VertexBuffer& vertexBuffers,
-            const Vulkan::Buffers::IndexBuffer& indexBuffer,
-            const SimplePushConstantData& push
-        );*/
-
         /**
          * @brief Must be called before Render method
          */
-        //void SetMesh(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const QueueFamilyIndices& queueFamilyIndices, const Mesh2D& mesh);
         void SetShaderInfo(const vk::Device& device, const vk::RenderPass& renderPass, const ShaderInfo& shaderInfo)
         {
             m_ShaderManager = ShaderManager(shaderInfo);
@@ -160,9 +131,9 @@ export namespace GuelderEngine::Vulkan
             vk::PipelineViewportStateCreateInfo viewportInfo{
                 vk::PipelineViewportStateCreateFlags(),
                 1,          //viewports
-                nullptr,  //viewports
+                nullptr,    //viewports
                 1,          //scissors
-                nullptr    //scissors
+                nullptr     //scissors
             };
 
             //rasterizer
@@ -257,9 +228,6 @@ export namespace GuelderEngine::Vulkan
 
             Create(device, renderPass, m_ShaderManager.GetShaderInfo());
         }
-
-        /*void RecordDrawCommands(const vk::CommandBuffer& commandBuffer, const vk::RenderPass& renderPass, const uint& imageIndex, const Buffers::VertexBuffer& vertexBuffers,
-            const Buffers::IndexBuffer& indexBuffers, uint currentFrameNumber, const SimplePushConstantData& push) const;*/
 
         ShaderManager m_ShaderManager;
 

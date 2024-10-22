@@ -41,7 +41,7 @@ export namespace GuelderEngine::Vulkan::Buffers
 
         void Reset() noexcept override;
         virtual void Cleanup(const vk::Device& device) const noexcept;
-        virtual void Cleanup(const vk::Device& device, const std::vector<vk::Queue>& queuesToWait) const noexcept;
+        //virtual void Cleanup(const vk::Device& device, const std::vector<vk::Queue>& queuesToWait) const noexcept;
 
         void WriteToBuffer(const void* data, const vk::DeviceSize& size = VK_WHOLE_SIZE, const vk::DeviceSize& offset = 0) const;
         void WriteToIndex(const void* data, const uint& index) const;

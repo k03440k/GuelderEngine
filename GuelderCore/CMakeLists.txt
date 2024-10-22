@@ -51,10 +51,10 @@ set(CORE_PRIVATE_SOURCES
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/DeviceManager.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Swapchain.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/ShaderManager.cpp"
-	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/SwapchainFrameSync.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/FrameSync.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/QueueFamilyIndices.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/CommandPool.cpp"
-	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/FrameBuffer.cpp"
+	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/FrameContext.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/SwapchainFrame.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/SwapchainDepthImage.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Buffers/Buffer.cpp"
@@ -64,6 +64,8 @@ set(CORE_PRIVATE_SOURCES
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Surface.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Descriptors/DescriptorPool.cpp"
 	"${CORE_PRIVATE_SOURCES_PATH}/Vulkan/Descriptors/DescriptorSetLayout.cpp"
+	
+	"${CORE_PRIVATE_SOURCES_PATH}/UserInterface/UserInterfaceManager.cpp"
 )
 set(CORE_PRIVATE_MODULES
 	"${CORE_PRIVATE_MODULES_PATH}/Core/Window.ixx"
@@ -76,10 +78,10 @@ set(CORE_PRIVATE_MODULES
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Swapchain.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/ShaderManager.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Pipeline.ixx"
-	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/SwapchainFrameSync.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/FrameSync.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/QueueFamilyIndices.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/CommandPool.ixx"
-	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/FrameBuffer.ixx"
+	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/FrameContext.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/SwapchainFrame.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/SwapchainDepthImage.ixx"
 	"${CORE_PRIVATE_MODULES_PATH}/Vulkan/Buffers/Buffer.ixx"
@@ -132,6 +134,9 @@ set(CORE_PUBLIC_MODULES
 	"${CORE_PUBLIC_MODULES_PATH}/Layers/Layers.ixx"
 	"${CORE_PUBLIC_MODULES_PATH}/Layers/Layer.ixx"
 	"${CORE_PUBLIC_MODULES_PATH}/Layers/LayerStack.ixx"
+	
+	"${CORE_PUBLIC_MODULES_PATH}/UserInterface/UserInterface.ixx"
+	"${CORE_PUBLIC_MODULES_PATH}/UserInterface/UserInterfaceManager.ixx"
 )
 set(CORE_MODULES_SOURCE
 	${CORE_PUBLIC_MODULES}
@@ -245,12 +250,12 @@ add_library(ImGui STATIC
 	${IMGUI_MICS}
 	)
 	
-target_include_directories(ImGui PRIVATE "../External/imgui")
-target_include_directories(${ENGINE_CORE_NAME} PRIVATE "../External")#???
+target_include_directories(ImGui PUBLIC "../External/imgui")
+target_include_directories(${ENGINE_CORE_NAME} PUBLIC "../External")#???
 
-target_link_libraries(ImGui PRIVATE Vulkan::Vulkan)
-target_link_libraries(ImGui PRIVATE glfw)
-target_link_libraries(${ENGINE_CORE_NAME} PRIVATE ImGui)
+target_link_libraries(ImGui PUBLIC Vulkan::Vulkan)
+target_link_libraries(ImGui PUBLIC glfw)
+target_link_libraries(${ENGINE_CORE_NAME} PUBLIC ImGui)
 #end ImGui include
 
 #start compile .glsl shaders

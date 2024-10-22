@@ -9,6 +9,7 @@ import :VertexBuffer;
 import :IndexBuffer;
 import :Mesh;
 import :Manager;
+import :DeviceManager;
 
 import <vector>;
 import <algorithm>;
@@ -65,7 +66,7 @@ export namespace GuelderEngine::Vulkan
             const Vertices& vertices,
             SharedPtr<MeshSector>& mIndices = nullptr,
             const Indices& indices = {}
-            )
+        )
         {
             //deleting
             if(mVertices->IsComplete())
@@ -181,14 +182,14 @@ export namespace GuelderEngine::Vulkan
 
                 uint currentPos = m_MeshSectors.data() - std::addressof(*foundToDelete);
 
-                if(m_MeshSectors.size()-1 > currentPos)
+                if(m_MeshSectors.size() - 1 > currentPos)
                 {
                     for(uint i = currentPos + 1; i < m_MeshSectors.size(); i++)
                     {
                         auto& current = m_MeshSectors[i];
 
-                        current.vertex.lock()->starts -= verticesDeletingSize+1;
-                        current.vertex.lock()->ends -= verticesDeletingSize+1;
+                        current.vertex.lock()->starts -= verticesDeletingSize + 1;
+                        current.vertex.lock()->ends -= verticesDeletingSize + 1;
                     }
                     if(foundToDelete->index.lock())
                     {
@@ -197,20 +198,20 @@ export namespace GuelderEngine::Vulkan
                         {
                             auto& current = m_MeshSectors[i];
 
-                            current.index.lock()->starts -= indicesDeletingSize+1;
-                            current.index.lock()->ends -= indicesDeletingSize+1;
+                            current.index.lock()->starts -= indicesDeletingSize + 1;
+                            current.index.lock()->ends -= indicesDeletingSize + 1;
                         }
                     }
                 }
                 m_MeshSectors.erase(foundToDelete);
 
-                m_Vertices.erase(m_Vertices.begin() + vertices->starts, m_Vertices.begin() + vertices->ends+1);
+                m_Vertices.erase(m_Vertices.begin() + vertices->starts, m_Vertices.begin() + vertices->ends + 1);
 
                 vertices->Reset();
 
                 if(indices)
                 {
-                    m_Indices.erase(m_Indices.begin() + indices->starts, m_Indices.begin() + indices->ends+1);
+                    m_Indices.erase(m_Indices.begin() + indices->starts, m_Indices.begin() + indices->ends + 1);
                     RecreateIndexBuffer(device, physicalDevice, queueFamilyIndices, transferPool, transferQueue);
                     indices->Reset();
                 }
@@ -226,10 +227,13 @@ export namespace GuelderEngine::Vulkan
             const vk::Queue& transferQueue
         )
         {
-            auto prevBuffer = (m_VertexBuffer);
+            auto prevBuffer = m_VertexBuffer;
             m_VertexBuffer = Buffers::VertexBuffer(device, physicalDevice, queueFamilyIndices, transferPool, transferQueue, m_Vertices.data(), sizeof(Vertex), m_Vertices.size());
-            auto& queues = Vulkan::VulkanManager::Get().GetDevice().GetQueues();
-            prevBuffer.Cleanup(device, { queues.graphics, queues.present, queues.transfer });
+            //auto& queues = Vulkan::VulkanManager::Get().GetDeviceManager().GetQueues();
+
+            //queues.graphics.waitIdle();
+            //queues.transfer.waitIdle();
+            prevBuffer.Cleanup(device);
         }
         void RecreateIndexBuffer(
             const vk::Device& device,
@@ -241,8 +245,11 @@ export namespace GuelderEngine::Vulkan
         {
             auto prevBuffer = std::move(m_IndexBuffer);
             m_IndexBuffer = Buffers::IndexBuffer(device, physicalDevice, queueFamilyIndices, transferPool, transferQueue, m_Indices);
-            auto& queues = Vulkan::VulkanManager::Get().GetDevice().GetQueues();
-            prevBuffer.Cleanup(device, { queues.graphics, queues.present, queues.transfer });
+            //auto& queues = Vulkan::VulkanManager::Get().GetDeviceManager().GetQueues();
+
+            //queues.graphics.waitIdle();
+            //queues.transfer.waitIdle();
+            prevBuffer.Cleanup(device);
         }
 
         Mesh GetMesh(const SharedPtr<MeshSector>& vertices, const SharedPtr<MeshSector>& indices = {}) const
@@ -250,11 +257,11 @@ export namespace GuelderEngine::Vulkan
             Mesh result;
 
             if(vertices->IsComplete())
-                for(auto it = m_Vertices.begin() + vertices->starts; it != m_Vertices.begin() + vertices->ends+1; ++it)
+                for(auto it = m_Vertices.begin() + vertices->starts; it != m_Vertices.begin() + vertices->ends + 1; ++it)
                     result.m_Vertices.push_back(*it);
 
             if(indices->IsComplete())
-                for(auto it = m_Indices.begin() + indices->starts; it != m_Indices.begin() + indices->ends+1; ++it)
+                for(auto it = m_Indices.begin() + indices->starts; it != m_Indices.begin() + indices->ends + 1; ++it)
                     result.m_Indices.push_back(*it);
 
             return result;

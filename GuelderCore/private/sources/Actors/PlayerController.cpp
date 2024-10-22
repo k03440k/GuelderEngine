@@ -26,8 +26,8 @@ namespace GuelderEngine
     {
         //add multithreading?
         /*std::for_each(std::execution::par, m_KeyActionsMap.begin(), m_KeyActionsMap.end(), [&deltaTime, &window]
-        (const std::pair<std::string, InputKeyAction>& action) 
-            { 
+        (const std::pair<std::string, InputKeyAction>& action)
+            {
                 if(GetKeyValue(window, action.second.key, action.second.state))
                     action.second.callback(deltaTime);
             });

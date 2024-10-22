@@ -11,7 +11,9 @@ export namespace GuelderEngine::Vulkan::Buffers
     class IndexBuffer final : public Buffer
     {
     public:
-        DECLARE_DEFAULT(IndexBuffer);
+        DECLARE_DEFAULT_CTOR_AND_DTOR(IndexBuffer);
+        DECLARE_DEFAULT_COPYING(IndexBuffer);
+        DECLARE_MOVING(IndexBuffer);
 
         IndexBuffer(
             const vk::Device& device,

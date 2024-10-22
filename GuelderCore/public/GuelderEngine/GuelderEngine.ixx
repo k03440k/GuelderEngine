@@ -13,6 +13,7 @@ export import GuelderEngine.Debug;
 export import GuelderEngine.Actors;
 export import GuelderEngine.Vulkan;
 export import GuelderEngine.Events;
+export import GuelderEngine.UserInterface;
 
 std::mutex GuelderEngine::Debug::Logger::logMutex;
 HANDLE GuelderEngine::Debug::Logger::console = GetStdHandle(STD_OUTPUT_HANDLE);

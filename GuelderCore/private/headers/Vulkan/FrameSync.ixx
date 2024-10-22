@@ -1,21 +1,24 @@
 module;
+#include <compare>
 #include <vulkan/vulkan.hpp>
 #include "../../headers/Core/GObject/GClass.hpp"
-export module GuelderEngine.Vulkan:SwapchainFrameSync;
+export module GuelderEngine.Vulkan:FrameSync;
 
 import :IVulkanObject;
 import GuelderEngine.Core.Types;
 
 export namespace GuelderEngine::Vulkan
 {
-    class SwapchainFrameSync : public IVulkanObject
+    class FrameSync : public IVulkanObject
     {
     public:
-        DECLARE_DCAD_AND_CAM(SwapchainFrameSync);
+        DECLARE_DEFAULT_CTOR_AND_DTOR(FrameSync);
+        DECLARE_DEFAULT_COPYING(FrameSync);
+        DECLARE_MOVING(FrameSync);
 
-        SwapchainFrameSync(const vk::Device& device);
+        FrameSync(const vk::Device& device);
 
-        virtual void Reset() noexcept override;
+        void Reset() noexcept override;
         void Cleanup(const vk::Device& device) const noexcept;
 
         static vk::Semaphore MakeSemaphore(const vk::Device& device);

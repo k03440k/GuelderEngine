@@ -1,6 +1,5 @@
 module;
 #include <vulkan/vulkan.hpp>
-#include "../../../headers/Core/GObject/GClass.hpp"
 module GuelderEngine.Vulkan;
 import :VertexBuffer;
 
@@ -39,6 +38,17 @@ namespace GuelderEngine::Vulkan::Buffers
         CopyBuffer(stagingBuffer.GetBuffer(), m_Buffer, m_Size, device, transferPool, transferQueue);
         stagingBuffer.Cleanup(device);
     }
+    VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
+        : Buffer(std::move(other)) {}
+    VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept
+    {
+        Buffer::operator=(std::move(other));
+
+        return *this;
+    }
+}
+namespace GuelderEngine::Vulkan::Buffers
+{
     void VertexBuffer::Bind(const vk::CommandBuffer& cmdBuffer, const vk::DeviceSize& offset) const
     {
         cmdBuffer.bindVertexBuffers(0, 1, &m_Buffer, &offset);

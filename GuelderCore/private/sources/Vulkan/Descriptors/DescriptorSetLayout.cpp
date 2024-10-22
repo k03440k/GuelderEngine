@@ -14,25 +14,28 @@ namespace GuelderEngine::Vulkan
         const std::vector<vk::DescriptorSetLayoutBinding>& bindings,
         const vk::DescriptorSetLayoutCreateFlags& flags
     )
-    {   
-        const vk::DescriptorSetLayoutCreateInfo info{flags, (uint)bindings.size(), bindings.data()};
-        
+    {
+        const vk::DescriptorSetLayoutCreateInfo info{ flags, (uint)bindings.size(), bindings.data() };
+
         m_Layout = device.createDescriptorSetLayout(info);
     }
     DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
     {
         m_Layout = other.m_Layout;
-        
+
         other.Reset();
     }
     DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& other) noexcept
     {
         m_Layout = other.m_Layout;
-        
+
         other.Reset();
-        
+
         return *this;
     }
+}
+namespace GuelderEngine::Vulkan
+{
     void DescriptorSetLayout::Reset() noexcept
     {
         m_Layout = nullptr;

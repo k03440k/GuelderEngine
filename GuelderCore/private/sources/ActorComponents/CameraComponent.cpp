@@ -16,6 +16,9 @@ namespace GuelderEngine
         : m_ProjectionMatrix(1.f), m_ViewMatrix(1.f)
     {
     }
+}
+namespace GuelderEngine
+{
     void CameraComponent::SetOrthographicProjection(float left, float right, float top, float bottom, float near, float far)
     {
         m_ProjectionMatrix = glm::mat4{ 1.0f };
@@ -86,6 +89,9 @@ namespace GuelderEngine
         m_ViewMatrix[3][1] = -glm::dot(v, position);
         m_ViewMatrix[3][2] = -glm::dot(w, position);
     }
+}
+namespace GuelderEngine
+{
     const Mat4& CameraComponent::GetProjection() const
     {
         return m_ProjectionMatrix;

@@ -17,6 +17,9 @@ namespace GuelderEngine::Vulkan
         m_Format = ChooseSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(m_Surface));
         m_PresentMode = ChoosePresentMode(physicalDevice.getSurfacePresentModesKHR(m_Surface));
     }
+}
+namespace GuelderEngine::Vulkan
+{
     void Surface::Reset() noexcept
     {
         m_Surface = nullptr;
@@ -27,28 +30,7 @@ namespace GuelderEngine::Vulkan
     {
         instance.destroySurfaceKHR(m_Surface);
     }
-    void Surface::Recreate(const vk::PhysicalDevice& physicalDevice)
-    {
-        m_Capabilities = physicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
-        m_Format = ChooseSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(m_Surface));
-        m_PresentMode = ChoosePresentMode(physicalDevice.getSurfacePresentModesKHR(m_Surface));
-    }
-    const vk::SurfaceKHR& Surface::GetSurface() const
-    {
-        return m_Surface;
-    }
-    const vk::SurfaceCapabilitiesKHR& Surface::GetCapabilities() const
-    {
-        return m_Capabilities;
-    }
-    const vk::SurfaceFormatKHR& Surface::GetFormat() const
-    {
-        return m_Format;
-    }
-    const vk::PresentModeKHR& Surface::GetPresentMode() const
-    {
-        return m_PresentMode;
-    }
+
     vk::SurfaceFormatKHR Surface::ChooseSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
     {
         for(auto&& format : formats)
@@ -70,5 +52,30 @@ namespace GuelderEngine::Vulkan
         GE_LOG(VulkanCore, Warning, "the device doesn't support Mailbox present mode. Choosing Fifo");
 
         return vk::PresentModeKHR::eFifo;
+    }
+    void Surface::Recreate(const vk::PhysicalDevice& physicalDevice)
+    {
+        m_Capabilities = physicalDevice.getSurfaceCapabilitiesKHR(m_Surface);
+        m_Format = ChooseSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(m_Surface));
+        m_PresentMode = ChoosePresentMode(physicalDevice.getSurfacePresentModesKHR(m_Surface));
+    }
+}
+namespace GuelderEngine::Vulkan
+{
+    const vk::SurfaceKHR& Surface::GetSurface() const
+    {
+        return m_Surface;
+    }
+    const vk::SurfaceCapabilitiesKHR& Surface::GetCapabilities() const
+    {
+        return m_Capabilities;
+    }
+    const vk::SurfaceFormatKHR& Surface::GetFormat() const
+    {
+        return m_Format;
+    }
+    const vk::PresentModeKHR& Surface::GetPresentMode() const
+    {
+        return m_PresentMode;
     }
 }

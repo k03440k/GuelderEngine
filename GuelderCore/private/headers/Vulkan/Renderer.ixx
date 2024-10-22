@@ -21,8 +21,7 @@ export namespace GuelderEngine::Vulkan
     public:
         DECLARE_DEFAULT_CTOR_AND_DTOR(Renderer);
         DECLARE_MOVING(Renderer);
-
-        //for the swapchain initialization
+        
         Renderer(GLFWwindow* window, const vk::Instance& instance, const DeviceManager& deviceManager, uint width, uint height);
         Renderer(
             GLFWwindow* window,
@@ -38,40 +37,50 @@ export namespace GuelderEngine::Vulkan
         void Cleanup(const vk::Device& device, const vk::Instance& instance, const vk::CommandPool& commandPool) const noexcept;
         FORCE_INLINE void Cleanup(const DeviceManager& deviceManager, const vk::Instance& instance) const noexcept { Cleanup(deviceManager.GetDevice(), instance, deviceManager.GetCommandPool().GetCommandPool()); }
 
-        //could be reference, because the frame is stored inside the swapchain which doesn't remove them(I guess)
-        vk::CommandBuffer BeginFrame(
+        /// <returns>
+        /// bool whether to start frame
+        /// </returns>
+        bool BeginFrame(
             const vk::Device& device,
             const vk::PhysicalDevice& physicalDevice,
             const vk::CommandPool& commandPool,
+            const std::vector<vk::CommandBuffer>& commandBuffers,
             const vk::Extent2D& extent,
             const QueueFamilyIndices& queueFamilyIndices
         );
-        FORCE_INLINE vk::CommandBuffer BeginFrame(const DeviceManager& deviceManager, const vk::Extent2D& extent)
+        FORCE_INLINE bool BeginFrame(const DeviceManager& deviceManager, const std::vector<vk::CommandBuffer>& commandBuffers, const vk::Extent2D& extent)
         {
             return BeginFrame(
                 deviceManager.GetDevice(),
                 deviceManager.GetPhysicalDevice(),
                 deviceManager.GetCommandPool().GetCommandPool(),
+                commandBuffers,
                 extent,
                 deviceManager.GetQueueIndices()
             );
         }
-        void EndFrame(
+
+        /// <returns>
+        /// whether the recreation was done
+        /// </returns>
+        bool EndFrame(
             const vk::Device& device,
             const vk::PhysicalDevice& physicalDevice,
             const vk::CommandPool& commandPool,
+            const std::vector<vk::CommandBuffer>& commandBuffers,
             const vk::Queue& graphicsQueue,
             const vk::Queue& presentQueue,
             const vk::Extent2D& extent,
             bool& wasWindowResized,
             const QueueFamilyIndices& queueFamilyIndices
         );
-        FORCE_INLINE void EndFrame(const DeviceManager& deviceManager, const vk::Extent2D& extent, bool& wasWindowResized)
+        FORCE_INLINE bool EndFrame(const DeviceManager& deviceManager, const std::vector<vk::CommandBuffer>& commandBuffers, const vk::Extent2D& extent, bool& wasWindowResized)
         {
-            EndFrame(
+            return EndFrame(
                 deviceManager.GetDevice(),
                 deviceManager.GetPhysicalDevice(),
                 deviceManager.GetCommandPool().GetCommandPool(),
+                commandBuffers,
                 deviceManager.GetQueues().graphics,
                 deviceManager.GetQueues().present,
                 extent,
@@ -79,8 +88,11 @@ export namespace GuelderEngine::Vulkan
                 deviceManager.GetQueueIndices()
             );
         }
+
         void BeginSwapchainRenderPass(const vk::CommandBuffer& commandBuffer) const;
         void EndSwapchainRenderPass(const vk::CommandBuffer& commandBuffer) const;
+
+        void IncrementCurrentFrame();
 
         const Swapchain& GetSwapchain() const;
         const Surface& GetSurface() const;

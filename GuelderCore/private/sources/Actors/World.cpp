@@ -70,7 +70,7 @@ namespace GuelderEngine
     {
         actor->m_ID = GObject::currentID++;
         m_Actors.push_back(std::move(actor));
-        m_AllActors.push_back(m_Actors[m_Actors.size()-1]);
+        m_AllActors.push_back(m_Actors[m_Actors.size() - 1]);
     }
     void World::SpawnActor2D(SharedPtr<Actor2D>&& actor)
     {
@@ -80,7 +80,7 @@ namespace GuelderEngine
             GE_LOG(World, Warning, "the actor with id ", actor->GetID(), " is incomplete");
 
         m_Actors2D.push_back(std::move(actor));
-        m_AllActors.push_back(m_Actors2D[m_Actors2D.size()-1]);
+        m_AllActors.push_back(m_Actors2D[m_Actors2D.size() - 1]);
     }
     void World::SpawnActor3D(SharedPtr<Actor3D>&& actor)
     {
@@ -90,7 +90,7 @@ namespace GuelderEngine
             GE_LOG(World, Warning, "the actor with id ", actor->GetID(), " is incomplete");
 
         m_Actors3D.push_back(std::move(actor));
-        m_AllActors.push_back(m_Actors3D[m_Actors3D.size()-1]);
+        m_AllActors.push_back(m_Actors3D[m_Actors3D.size() - 1]);
     }
     SharedPtr<Actor> World::GetActor(const Actor::ID& id)
     {
@@ -115,49 +115,6 @@ namespace GuelderEngine
         if(tmp != m_AllActors.end())
             return tmp->lock();
         return nullptr;
-    }
-    /*SharedPtr<Actor>& World::GetActor(const Actor::ID& id)
-    {
-        return *std::ranges::find_if(m_Actors, [&id]
-        (const SharedPtr<Actor>& actor)
-            {
-                return actor->GetID() == id;
-            }
-        );
-    }
-    SharedPtr<Actor2D>& World::GetActor2D(const Actor::ID& id)
-    {
-        return *std::ranges::find_if(m_Actors2D, [&id]
-        (const SharedPtr<Actor2D>& actor)
-            {
-                return actor->GetID() == id;
-            }
-        );
-    }
-    SharedPtr<Actor3D>& World::GetActor3D(const Actor::ID& id)
-    {
-        return *std::ranges::find_if(m_Actors3D, [&id]
-        (const SharedPtr<Actor3D>& actor)
-            {
-                return actor->GetID() == id;
-            }
-        );
-    }*/
-    const std::vector<WeakPtr<Actor>>& World::GetAllActors() const
-    {
-        return m_AllActors;
-    }
-    const std::vector<SharedPtr<Actor>>& World::GetActors() const
-    {
-        return m_Actors;
-    }
-    const std::vector<SharedPtr<Actor2D>>& World::GetActors2D() const
-    {
-        return m_Actors2D;
-    }
-    const std::vector<SharedPtr<Actor3D>>& World::GetActors3D() const
-    {
-        return m_Actors3D;
     }
     void World::DeleteActor(const uint& id)
     {
@@ -211,5 +168,51 @@ namespace GuelderEngine
     {
         CleanupActors2D(device);
         CleanupActors3D(device);
+    }
+    /*SharedPtr<Actor>& World::GetActor(const Actor::ID& id)
+    {
+        return *std::ranges::find_if(m_Actors, [&id]
+        (const SharedPtr<Actor>& actor)
+            {
+                return actor->GetID() == id;
+            }
+        );
+    }
+    SharedPtr<Actor2D>& World::GetActor2D(const Actor::ID& id)
+    {
+        return *std::ranges::find_if(m_Actors2D, [&id]
+        (const SharedPtr<Actor2D>& actor)
+            {
+                return actor->GetID() == id;
+            }
+        );
+    }
+    SharedPtr<Actor3D>& World::GetActor3D(const Actor::ID& id)
+    {
+        return *std::ranges::find_if(m_Actors3D, [&id]
+        (const SharedPtr<Actor3D>& actor)
+            {
+                return actor->GetID() == id;
+            }
+        );
+    }*/
+}
+namespace GuelderEngine
+{
+    const std::vector<WeakPtr<Actor>>& World::GetAllActors() const
+    {
+        return m_AllActors;
+    }
+    const std::vector<SharedPtr<Actor>>& World::GetActors() const
+    {
+        return m_Actors;
+    }
+    const std::vector<SharedPtr<Actor2D>>& World::GetActors2D() const
+    {
+        return m_Actors2D;
+    }
+    const std::vector<SharedPtr<Actor3D>>& World::GetActors3D() const
+    {
+        return m_Actors3D;
     }
 }

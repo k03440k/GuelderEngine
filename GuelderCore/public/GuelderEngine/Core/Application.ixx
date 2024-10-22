@@ -10,6 +10,7 @@ import GuelderEngine.Debug;
 import GuelderEngine.Layers;
 import GuelderEngine.Actors;
 import GuelderEngine.Utils;
+import GuelderEngine.UserInterface;
 import :Window;
 
 import <functional>;
@@ -22,6 +23,7 @@ export namespace GuelderEngine
     //namespace Layers { class Layer; }
     namespace Utils { class ResourceManager; }
     using namespace Vulkan;
+    using namespace UserInterface;
     class IApplication
     {
     public:
@@ -34,18 +36,19 @@ export namespace GuelderEngine
         std::unique_ptr<Window> m_Window;
     };
 
-    //Guelder Engine Application
+    /// <summary>
+    /// Guelder Engine Application
+    /// </summary>
     class GEApplication : public IApplication
     {
     private:
         using RenderSystem3D = Vulkan::RenderSystem<3, 4>;
         using RenderSystem2D = Vulkan::RenderSystem<2, 2>;
     public:
-        /**
-         *@param executablePath - path where .exe file stores, can be found in main
-         *@param info - info about size of window, its name, etc
-         *@param shaderInfo - info about shader-related settings
-        */
+        /// <param name="executablePath">path where .exe file stores, can be found in main</param>
+        /// <param name="info">info about size of window, its name, etc</param>
+        ///  <param name="shaderInfo3D">info about shader-related settings</param>
+        ///  <param name="shaderInfo2D">info about shader-related settings</param>
         GEApplication(
             const std::string_view& executablePath,
             const Window::WindowData& info = {},
@@ -64,7 +67,7 @@ export namespace GuelderEngine
                 {Vulkan::VertexFormat::Vec3Float, 1 }
             }
         );
-        virtual ~GEApplication();
+        ~GEApplication() override;
 
         DELETE_COPYING_AND_MOVING(GEApplication);
 
@@ -80,12 +83,15 @@ export namespace GuelderEngine
 
         void SetShaderInfo3D(const Vulkan::ShaderInfo& shaderInfo);
         void SetShaderInfo2D(const Vulkan::ShaderInfo& shaderInfo);
+        void EnableUI(const bool& enable);
 
         const UniquePtr<World>& GetWorld();
+        const UniquePtr<UserInterfaceManager>& GetUserInterfaceManager();
+        bool GetEnableUI() const noexcept;
 
         static const Vulkan::VulkanManager& GetVulkanManager();
-        static const UniquePtr<Vulkan::MeshAllocator2D>& GetMeshAllocator2D();
-        static const UniquePtr<Vulkan::MeshAllocator3D>& GetMeshAllocator3D();
+        //static const UniquePtr<Vulkan::MeshAllocator2D>& GetMeshAllocator2D();
+        //static const UniquePtr<Vulkan::MeshAllocator3D>& GetMeshAllocator3D();
 
         UniquePtr<GameMode> gameMode;
 
@@ -99,11 +105,13 @@ export namespace GuelderEngine
         UniquePtr<RenderSystem3D> m_RenderSystem3D;
         UniquePtr<RenderSystem2D> m_RenderSystem2D;
         UniquePtr<World> m_World;
+        UniquePtr<UserInterfaceManager> m_UIManager;
 
         Layers::LayerStack m_LayerStack;
 
         const Debug::Logger m_Logger;
 
-        bool m_CloseWindow = false;
+        bool m_CloseWindow;
+        bool m_EnableUI;
     };
 }

@@ -4,13 +4,12 @@ module;
 export module GuelderEngine.Vulkan;
 import :Swapchain;
 
-//import :SwapchainFrameSync;//removed because of lnk1227
+//import :FrameSync;//removed because of lnk1227
 import :DeviceManager;
 import :QueueFamilyIndices;
 import :SwapchainFrame;
 import :SwapchainDepthImage;
 import :CommandPool;
-import :FrameBuffer;
 import :DebugManager;
 
 import <vector>;
@@ -35,13 +34,12 @@ namespace GuelderEngine::Vulkan
 
         const std::vector images = device.getSwapchainImagesKHR(m_Swapchain);
 
-        CreateFrames(device, m_Format, commandPool, images);
-        CreateDepthImages(device, physicalDevice, m_DepthFormat, queueFamilyIndices, images);
         m_RenderPass = CreateRenderPass(device, physicalDevice, m_Format);
-        FrameBuffer::Make(device, m_RenderPass, m_Extent, m_Frames, m_DepthImages);
+        CreateDepthImages(device, physicalDevice, m_DepthFormat, queueFamilyIndices, images);
+        CreateFrames(device, m_Format, commandPool, images);
 
         m_MaxFramesInFlight = m_Frames.size();
-        m_CurrentFrameNumber = 0;
+        currentFrameNumber = 0;
     }
     Swapchain::Swapchain(Swapchain&& other) noexcept
     {
@@ -52,9 +50,10 @@ namespace GuelderEngine::Vulkan
         m_DepthImages = other.m_DepthImages;
         m_Swapchain = other.m_Swapchain;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
-        m_CurrentFrameNumber = other.m_CurrentFrameNumber;
+        currentFrameNumber = other.currentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
         m_RenderPass = other.m_RenderPass;
+        m_MinImageCount = other.m_MinImageCount;
 
         other.Reset();
     }
@@ -67,9 +66,10 @@ namespace GuelderEngine::Vulkan
         m_DepthImages = other.m_DepthImages;
         m_Swapchain = other.m_Swapchain;
         m_MaxFramesInFlight = other.m_MaxFramesInFlight;
-        m_CurrentFrameNumber = other.m_CurrentFrameNumber;
+        currentFrameNumber = other.currentFrameNumber;
         m_IsSwapchain = other.m_IsSwapchain;
         m_RenderPass = other.m_RenderPass;
+        m_MinImageCount = other.m_MinImageCount;
 
         other.Reset();
 
@@ -89,12 +89,13 @@ namespace GuelderEngine::Vulkan
             vk::AttachmentLoadOp::eDontCare,
             vk::AttachmentStoreOp::eDontCare,
             vk::ImageLayout::eUndefined,
+            //vk::ImageLayout::eColorAttachmentOptimal
             vk::ImageLayout::ePresentSrcKHR
         );
         //TODO: subpass dependencies SETUP THIS SHIT
         const vk::AttachmentDescription depthAttachment{
             vk::AttachmentDescriptionFlags(),
-            DeviceManager::FindSupportedFormat(physicalDevice, 
+            DeviceManager::FindSupportedFormat(physicalDevice,
                 {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint}, vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment),
             vk::SampleCountFlagBits::e1,
             vk::AttachmentLoadOp::eClear,
@@ -124,7 +125,7 @@ namespace GuelderEngine::Vulkan
             0,
             vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
             vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
-            {},
+            vk::AccessFlagBits::eNone,
             vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
         };
 
@@ -156,11 +157,12 @@ namespace GuelderEngine::Vulkan
     {
         const auto chosenExtent = ChooseExtent(extent, surfaceCapabilities);
 
-        const uint imageCount = std::min(surfaceCapabilities.maxImageCount, surfaceCapabilities.minImageCount+1);
+        const uint imageCount = std::min(surfaceCapabilities.maxImageCount, surfaceCapabilities.minImageCount + 1);
+        m_MinImageCount = surfaceCapabilities.minImageCount;
 
         //GE_LOG(VulkanCore, Info, "max images count: ", m_Details.capabilities.maxImageCount, "; min images count: ", m_Details.capabilities.minImageCount);
 
-        vk::SwapchainCreateInfoKHR createInfo {vk::SwapchainCreateFlagsKHR()};
+        vk::SwapchainCreateInfoKHR createInfo{ vk::SwapchainCreateFlagsKHR() };
         createInfo.minImageCount = imageCount;
         createInfo.surface = surface;
         createInfo.imageFormat = surfaceFormat.format;
@@ -174,11 +176,12 @@ namespace GuelderEngine::Vulkan
         createInfo.clipped = VK_TRUE;
 
         if(!m_IsSwapchain)
-            createInfo.oldSwapchain = vk::SwapchainKHR(nullptr);
+            createInfo.oldSwapchain = nullptr;
         else
             createInfo.oldSwapchain = m_Swapchain;
 
-        std::vector<uint> queueIndices(2);
+        std::vector<uint> queueIndices;
+        queueIndices.reserve(2);
 
         if(queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetPresentFamily())
         {
@@ -196,7 +199,7 @@ namespace GuelderEngine::Vulkan
         if(queueFamilyIndices.GetGraphicsFamily() != queueFamilyIndices.GetTransferFamily())
             queueIndices.push_back(queueFamilyIndices.GetTransferFamily());
 
-        if(queueIndices.size())
+        //if(queueIndices.size())
         {
             createInfo.queueFamilyIndexCount = queueIndices.size();
             createInfo.pQueueFamilyIndices = queueIndices.data();
@@ -220,14 +223,14 @@ namespace GuelderEngine::Vulkan
 
         m_Format = surfaceFormat.format;
         m_DepthFormat = DeviceManager::FindSupportedFormat(
-            physicalDevice, {vk::Format::eD32Sfloat,vk::Format::eD32SfloatS8Uint,vk::Format::eD24UnormS8Uint},
+            physicalDevice, { vk::Format::eD32Sfloat,vk::Format::eD32SfloatS8Uint,vk::Format::eD24UnormS8Uint },
             vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 
-        if(m_IsSwapchain && oldFormat != m_Format && oldDepthFormat != m_DepthFormat)
-            GE_THROW("old swapchain formats are not equal to the new ones");//edge case. better to create a callback to handle this situation
+        GE_ASSERT(!(m_IsSwapchain && oldFormat != m_Format && oldDepthFormat != m_DepthFormat), "old swapchain formats are not equal to the new ones");
+        //if(m_IsSwapchain && oldFormat != m_Format && oldDepthFormat != m_DepthFormat) GE_THROW("old swapchain formats are not equal to the new ones");//edge case. better to create a callback to handle this situation
 
-        if(!m_IsSwapchain)
-            m_IsSwapchain = true;
+        //if(!m_IsSwapchain)
+        m_IsSwapchain = true;
 
         m_Extent = chosenExtent;
     }
@@ -245,7 +248,8 @@ namespace GuelderEngine::Vulkan
         m_Frames.clear();
         m_DepthImages.clear();
         m_MaxFramesInFlight = 0;
-        m_CurrentFrameNumber = 0;
+        currentFrameNumber = 0;
+        m_MinImageCount = 0;
     }
     void Swapchain::Cleanup(const vk::Device& device, const vk::CommandPool& commandPool) const noexcept
     {
@@ -281,7 +285,7 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.subresourceRange.layerCount = 1;
             imageViewInfo.format = format;
 
-            m_Frames[i] = SwapchainFrame(device, imageViewInfo, commandPool);
+            m_Frames[i] = SwapchainFrame(device, commandPool, m_RenderPass, imageViewInfo, m_DepthImages[i].imageView, m_Extent, 1);
         }
     }
     void Swapchain::CreateDepthImages(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::Format& format, const QueueFamilyIndices& queueFamilyIndices, const std::vector<vk::Image>& images)
@@ -302,7 +306,7 @@ namespace GuelderEngine::Vulkan
         else
             sharingMode = vk::SharingMode::eExclusive;
 
-        for (uint i = 0; i < images.size(); ++i)
+        for(uint i = 0; i < images.size(); ++i)
         {
             m_DepthImages[i] = SwapchainDepthImage(device, physicalDevice, m_Extent, format, sharingMode, queueFamilyIndexCount, pQueueFamilyIndices);
         }
@@ -330,7 +334,8 @@ namespace GuelderEngine::Vulkan
         const vk::PresentModeKHR& presentMode,
         const vk::Extent2D& extent,
         const vk::CommandPool& commandPool,
-        const QueueFamilyIndices& queueFamilyIndices)
+        const QueueFamilyIndices& queueFamilyIndices
+    )
     {
         Create(device, physicalDevice, surface, surfaceCapabilities, surfaceFormat, presentMode, extent, queueFamilyIndices);
 
@@ -357,8 +362,7 @@ namespace GuelderEngine::Vulkan
             imageViewInfo.subresourceRange.layerCount = 1;
             imageViewInfo.format = m_Format;
 
-            m_Frames[i].Recreate(device, m_RenderPass,
-                extent, imageViewInfo, m_DepthImages[i].imageView, commandPool);
+            m_Frames[i].Recreate(device, m_RenderPass, imageViewInfo, m_DepthImages[i].imageView, commandPool, extent);
         }
     }
     bool Swapchain::CompareSwapchainFormats(const Swapchain& other) const noexcept
@@ -370,11 +374,19 @@ namespace GuelderEngine::Vulkan
 {
     const SwapchainFrame& Swapchain::GetCurrentFrame() const
     {
-        return m_Frames[m_CurrentFrameNumber];
+        return m_Frames[currentFrameNumber];
+    }
+    std::vector<vk::Image> Swapchain::GetSwapchainImages(const vk::Device& device) const
+    {
+        return device.getSwapchainImagesKHR(m_Swapchain);
     }
     const std::vector<SwapchainFrame>& Swapchain::GetFrames() const
     {
         return m_Frames;
+    }
+	const std::vector<SwapchainDepthImage>& Swapchain::GetDepthImages() const
+    {
+        return m_DepthImages;
     }
     const vk::SwapchainKHR& Swapchain::GetSwapchain() const noexcept
     {
@@ -392,10 +404,6 @@ namespace GuelderEngine::Vulkan
     {
         return m_Extent;
     }
-    uint& Swapchain::GetCurrentFrameNumber() noexcept
-    {
-        return m_CurrentFrameNumber;
-    }
     uint Swapchain::GetMaxFramesInFlight() const noexcept
     {
         return m_MaxFramesInFlight;
@@ -407,5 +415,9 @@ namespace GuelderEngine::Vulkan
     float Swapchain::GetAspectRatio() const
     {
         return static_cast<float>(m_Extent.width) / static_cast<float>(m_Extent.height);
+    }
+    uint Swapchain::GetMinImageCount() const
+    {
+        return m_MinImageCount;
     }
 }

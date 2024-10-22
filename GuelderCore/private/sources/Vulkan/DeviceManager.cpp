@@ -20,13 +20,10 @@ import <ranges>;
 
 namespace GuelderEngine::Vulkan
 {
-    //vk::PhysicalDevice DeviceManager::m_PhysicalDevice = DeviceManager::ChoosePhysicalDevice(VulkanManager::GetInstance());
-    //make device static by some way
-
     DeviceManager::DeviceManager(const vk::Instance& instance, const std::vector<const char*>& extensions)
     {
         m_PhysicalDevice = ChoosePhysicalDevice(instance, extensions);
-        m_QueueIndices = QueueFamilyIndices(m_PhysicalDevice/*, m_Surface*/);
+        m_QueueIndices = QueueFamilyIndices(m_PhysicalDevice);
         m_Device = CreateDevice(m_PhysicalDevice, m_QueueIndices, extensions);
 
         m_Queues.graphics = m_Device.getQueue(m_QueueIndices.GetGraphicsFamily(), 0);
@@ -79,20 +76,8 @@ namespace GuelderEngine::Vulkan
         m_CommandPool.Cleanup(m_Device);
         m_CommandPoolTransfer.Cleanup(m_Device);
         m_Device.destroy();
-        //instance.destroySurfaceKHR(m_Surface);
     }
-    /*uint DeviceManager::FindMemType(const vk::PhysicalDevice& physicalDevice, const uint& typeFilter, const vk::MemoryPropertyFlags& properties)
-    {
-        const auto memProperties = physicalDevice.getMemoryProperties();
 
-        for (uint i = 0; i < memProperties.memoryTypeCount; ++i)
-        {
-            if(typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-                return i;
-        }
-
-        GE_THROW("Failed to find suitable memory type");
-    }*/
     vk::Format DeviceManager::FindSupportedFormat(const vk::PhysicalDevice& physicalDevice, const std::vector<vk::Format>& formats, const vk::ImageTiling& imageTiling, const vk::FormatFeatureFlagBits& features)
     {
         for(auto& format : formats)
@@ -106,45 +91,22 @@ namespace GuelderEngine::Vulkan
         }
         GE_THROW("failed to find supported format");
     }
-    Buffers::IndexBuffer DeviceManager::MakeIndexBuffer(const Indices& indices) const
+    Buffers::IndexBuffer DeviceManager::CreateIndexBuffer(const Indices& indices) const
     {
         return Buffers::IndexBuffer(m_Device, m_PhysicalDevice, m_QueueIndices, m_CommandPoolTransfer.GetCommandPool(), m_Queues.transfer, indices);
-    }
-    const vk::Device& DeviceManager::GetDevice() const
-    {
-        return m_Device;
-    }
-    const vk::PhysicalDevice& DeviceManager::GetPhysicalDevice() const
-    {
-        return m_PhysicalDevice;
-    }
-    const QueueFamilyIndices& DeviceManager::GetQueueIndices() const
-    {
-        return m_QueueIndices;
-    }
-    const CommandPool& DeviceManager::GetCommandPool() const
-    {
-        return m_CommandPool;
-    }
-    const CommandPool& DeviceManager::GetCommandPoolTransfer() const
-    {
-        return m_CommandPoolTransfer;
-    }
-    const Queues& DeviceManager::GetQueues() const
-    {
-        return m_Queues;
     }
     void DeviceManager::WaitIdle() const noexcept
     {
         m_Device.waitIdle();
     }
+
     bool DeviceManager::CheckDeviceExtensionsSupport(const vk::PhysicalDevice& physicalDevice, const std::vector<const char*>& requestedExtensions)
     {
         std::set<std::string> requiredExtensions(requestedExtensions.begin(), requestedExtensions.end());
 
         //GE_LOG(VulkanCore, Info, "Device can support following extensions:");
 
-        for (auto&& extension : physicalDevice.enumerateDeviceExtensionProperties())
+        for(auto&& extension : physicalDevice.enumerateDeviceExtensionProperties())
         {
             //GE_LOG(VulkanCore, Info, '\t', extension.extensionName);
 
@@ -161,7 +123,7 @@ namespace GuelderEngine::Vulkan
         if(!extensions.empty())
             std::ranges::copy(extensions, std::back_inserter(requestedExtensions));
 
-        if (!CheckDeviceExtensionsSupport(physicalDevice, requestedExtensions))
+        if(!CheckDeviceExtensionsSupport(physicalDevice, requestedExtensions))
         {
             //Debug::LogError("Device cannot support requested extensions");
             return false;
@@ -177,7 +139,7 @@ namespace GuelderEngine::Vulkan
 
 #ifdef GE_DEBUG_VULKAN
         GE_LOG(VulkanCore, Info, "There are ", physicalDevices.size(), " detected physical devices:");
-        for (const auto& device : physicalDevices)
+        for(const auto& device : physicalDevices)
         {
             DebugManager::LogDeviceProperties(device);
         }
@@ -187,7 +149,7 @@ namespace GuelderEngine::Vulkan
         double theBiggestDeviceMemorySize{};
         uint idxToDeviceOftheBiggestMemory{};
         //takes the most powerful device
-        for (uint i = 0; i < physicalDevices.size(); i++)
+        for(uint i = 0; i < physicalDevices.size(); i++)
         {
             const vk::PhysicalDeviceMemoryProperties& memoryProperties = physicalDevices[i].getMemoryProperties();
 
@@ -196,14 +158,16 @@ namespace GuelderEngine::Vulkan
             double memoryOfWholeDevice{};
 
             // Iterate over memory heaps to find the heap with the desired memory type
-            for (uint32_t heapIndex = 0; heapIndex < heapCount; ++heapIndex) {
+            for(uint32_t heapIndex = 0; heapIndex < heapCount; ++heapIndex)
+            {
                 // Check if the memory heap is for device local memory (typically used for graphics memory)
-                if (const auto& heap = memoryProperties.memoryHeaps[heapIndex]; heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal) {
+                if(const auto& heap = memoryProperties.memoryHeaps[heapIndex]; heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal)
+                {
                     // Convert the size to gigabytes
                     memoryOfWholeDevice += static_cast<double>(heap.size) / (1024 * 1024 * 1024);
                 }
             }
-            if (theBiggestDeviceMemorySize < memoryOfWholeDevice && IsDeviceSuitable(physicalDevices[i], extensions))
+            if(theBiggestDeviceMemorySize < memoryOfWholeDevice && IsDeviceSuitable(physicalDevices[i], extensions))
             {
                 theBiggestDeviceMemorySize = memoryOfWholeDevice;
                 idxToDeviceOftheBiggestMemory = i;
@@ -218,24 +182,26 @@ namespace GuelderEngine::Vulkan
     {
         constexpr float queuePriority = 1.0f;
 
-        std::vector uniqueIndices{indices.GetGraphicsFamily()};
-        if (indices.GetGraphicsFamily() != indices.GetPresentFamily())
+        std::vector uniqueIndices{ indices.GetGraphicsFamily() };
+        if(indices.GetGraphicsFamily() != indices.GetPresentFamily())
             uniqueIndices.push_back(indices.GetPresentFamily());
         if(indices.GetGraphicsFamily() != indices.GetTransferFamily())
             uniqueIndices.push_back(indices.GetTransferFamily());
 
         std::vector<vk::DeviceQueueCreateInfo> queueDeviceInfo;
-        for (auto&& queueFamilyIndex : uniqueIndices)
+        for(auto&& queueFamilyIndex : uniqueIndices)
         {
             queueDeviceInfo.push_back(
                 vk::DeviceQueueCreateInfo(
-                vk::DeviceQueueCreateFlags(),
-                queueFamilyIndex,
-                1,
-                &queuePriority));
+                    vk::DeviceQueueCreateFlags(),
+                    queueFamilyIndex,
+                    1,
+                    &queuePriority
+                )
+            );
         }
 
-        std::vector<const char*> deviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
         deviceExtensions.reserve(deviceExtensions.size() + extensions.size());
 
@@ -261,5 +227,32 @@ namespace GuelderEngine::Vulkan
         );
 
         return physicalDevice.createDevice(deviceInfo);
+    }
+}
+namespace GuelderEngine::Vulkan
+{
+    const vk::Device& DeviceManager::GetDevice() const
+    {
+        return m_Device;
+    }
+    const vk::PhysicalDevice& DeviceManager::GetPhysicalDevice() const
+    {
+        return m_PhysicalDevice;
+    }
+    const QueueFamilyIndices& DeviceManager::GetQueueIndices() const
+    {
+        return m_QueueIndices;
+    }
+    const CommandPool& DeviceManager::GetCommandPool() const
+    {
+        return m_CommandPool;
+    }
+    const CommandPool& DeviceManager::GetCommandPoolTransfer() const
+    {
+        return m_CommandPoolTransfer;
+    }
+    const Queues& DeviceManager::GetQueues() const
+    {
+        return m_Queues;
     }
 }

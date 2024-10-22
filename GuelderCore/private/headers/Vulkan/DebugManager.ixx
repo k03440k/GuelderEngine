@@ -1,5 +1,4 @@
 module;
-#include "../public/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
 export module GuelderEngine.Vulkan:DebugManager;
@@ -10,26 +9,16 @@ import <vector>;
 
 export namespace GuelderEngine::Vulkan
 {
-    class DebugLayersManager final
-    {
-    public:
-        using ValidationLayer = const char*;
+    bool AreValidationLayersSupported(const std::vector<const char*>& layers);
 
-        DebugLayersManager(const std::vector<ValidationLayer>& layers);
-        ~DebugLayersManager() = default;
-
-        const std::vector<ValidationLayer>& GetLayers() const { return m_Layers; }
-    private:
-        static bool AreValidationLayersSupported(const std::vector<ValidationLayer>&layers);
-
-        const std::vector<ValidationLayer> m_Layers;
-    };
     class DebugManager final : public IVulkanObject
     {
     public:
-        DECLARE_DCAD_AND_CAM(DebugManager);
-        DebugManager(const vk::Instance& instance/*,
-                const std::vector<const char* const> validationLayers*/);
+        DECLARE_DEFAULT_CTOR_AND_DTOR(DebugManager);
+        DECLARE_DEFAULT_COPYING(DebugManager);
+        DECLARE_MOVING(DebugManager);
+
+        DebugManager(const vk::Instance& instance);
 
         virtual void Reset() noexcept override;
         void Cleanup(const vk::Instance& instance) const noexcept;
@@ -43,7 +32,8 @@ export namespace GuelderEngine::Vulkan
             VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
             VkDebugUtilsMessageTypeFlagsEXT messageType,
             const VkDebugUtilsMessengerCallbackDataEXT * callbackData,
-            void* userData);
+            void* userData
+        );
 
         //debug callback
         vk::DebugUtilsMessengerEXT m_DebugMessenger;

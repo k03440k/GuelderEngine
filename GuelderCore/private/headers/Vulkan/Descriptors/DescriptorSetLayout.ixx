@@ -9,6 +9,7 @@ import <vector>;
 
 export namespace GuelderEngine::Vulkan
 {
+    //Is not completed
 	class DescriptorSetLayout : public IVulkanObject
     {
         public:

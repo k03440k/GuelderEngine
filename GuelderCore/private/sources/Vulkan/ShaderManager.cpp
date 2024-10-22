@@ -10,32 +10,14 @@ import GuelderEngine.Utils;
 namespace GuelderEngine::Vulkan
 {
     ShaderInfo::ShaderInfo(const std::string& vertexPath, const std::string& fragmentPath, const VertexAttributeDescriptionsInfo& info)
-        : info(info), vertexPath(vertexPath), fragmentPath(fragmentPath){}
-    ShaderManager::ShaderManager(const ShaderInfo& info)
-        : m_Info(info)
-    {
+        : info(info), vertexPath(vertexPath), fragmentPath(fragmentPath) {}
 
-    }
+    ShaderManager::ShaderManager(const ShaderInfo& info)
+        : m_Info(info) {}
     const ShaderInfo& ShaderManager::GetShaderInfo() const noexcept
     {
         return m_Info;
     }
-    //ShaderManager::ShaderManager(const ShaderManager& other)
-    //{
-    //    m_Info = other.m_Info;
-    //}
-    //ShaderManager::ShaderManager(ShaderManager&& other) noexcept
-    //{
-    //    m_Info = other.m_Info;
-    //}
-    //ShaderManager& ShaderManager::operator=(const ShaderManager& other)
-    //{
-    //    m_Info = other.m_Info;
-    //}
-    //ShaderManager& ShaderManager::operator=(ShaderManager&& other) noexcept
-    //{
-    //    m_Info = other.m_Info;
-    //}
 }
 namespace GuelderEngine::Vulkan
 {

@@ -2,8 +2,6 @@ module;
 #include "../public/GuelderEngine/Utils/Debug.hpp"
 #include "../Core/GObject/GClass.hpp"
 #include <vulkan/vulkan.hpp>
-#include <glfw/glfw3.h>
-#include <glm/glm.hpp>
 export module GuelderEngine.Vulkan:Manager;
 
 import :IVulkanObject;
@@ -12,12 +10,10 @@ import :DeviceManager;
 import :Mesh;
 import :Pipeline;
 import GuelderEngine.Core.Types;
-//import :VulkanSurfaceManager;
 
 import <string_view>;
 import <vector>;
 import <optional>;
-import <memory>;
 
 export namespace GuelderEngine::Vulkan
 {
@@ -36,29 +32,21 @@ export namespace GuelderEngine::Vulkan
         void Reset() noexcept override;
 
         static bool AreExtensionsSupported(const std::vector<const char*>& extensions);
-        //must be called before Render
-        //void SetMesh(const Mesh2D& mesh);
-        /**
-         * \param width window width
-         * \param height window height
-         */
-        //void Render(uint width, uint height, bool& wasWindowResized, const Vulkan::Buffers::VertexBuffer& vertexBuffer,
-        //const Vulkan::Buffers::IndexBuffer& indexBuffer, const SimplePushConstantData& push = {});
 
         template<uint dimension>
-        Buffers::VertexBuffer MakeVertexBuffer(const Mesh<dimension>& mesh) const
+        Buffers::VertexBuffer CreateVertexBuffer(const Mesh<dimension>& mesh) const
         {
-            return m_DeviceManager.MakeVertexBuffer<dimension>(mesh.GetVertices());
+            return m_DeviceManager.CreateVertexBuffer<dimension>(mesh.GetVertices());
         }
         template<uint dimension>
-        Buffers::IndexBuffer MakeIndexBuffer(const Mesh<dimension>& mesh) const
+        Buffers::IndexBuffer CreateIndexBuffer(const Mesh<dimension>& mesh) const
         {
-            return m_DeviceManager.MakeIndexBuffer(mesh.GetIndices());
+            return m_DeviceManager.CreateIndexBuffer(mesh.GetIndices());
         }
 
-        static const Vulkan::VulkanManager& Get();
+        static const VulkanManager& Get();
 
-        const DeviceManager& GetDevice() const;
+        const DeviceManager& GetDeviceManager() const;
         const vk::Instance& GetInstance() const;
     private:
         static vk::Instance CreateVkInstance(const char* name);

@@ -14,9 +14,12 @@ namespace GuelderEngine::Layers
     }
     LayerStack::~LayerStack()
     {
-        for (auto&& layerIt : m_Layers)
+        for(auto&& layerIt : m_Layers)
             delete layerIt;
     }
+}
+namespace GuelderEngine::Layers
+{
     void LayerStack::PushLayer(Layer* layer)
     {
         m_LayerInsert = m_Layers.emplace(m_LayerInsert, layer);
@@ -27,7 +30,7 @@ namespace GuelderEngine::Layers
     }
     void LayerStack::PopLayer(const Layer* layer)
     {
-        if (const auto layerIt = std::ranges::find(m_Layers, layer); layerIt != m_Layers.end())
+        if(const auto layerIt = std::ranges::find(m_Layers, layer); layerIt != m_Layers.end())
         {
             m_Layers.erase(layerIt);
             --m_LayerInsert;
@@ -35,7 +38,7 @@ namespace GuelderEngine::Layers
     }
     void LayerStack::PopOverlay(const Layer* overlay)
     {
-        if (const auto layerIt = std::ranges::find(m_Layers, overlay); layerIt != m_Layers.end())
+        if(const auto layerIt = std::ranges::find(m_Layers, overlay); layerIt != m_Layers.end())
             m_Layers.erase(layerIt);
     }
 }

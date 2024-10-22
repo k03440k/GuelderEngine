@@ -20,17 +20,17 @@ namespace GuelderEngine::Vulkan
         : Renderer(
             window,
             instance,
-            deviceManager.GetDevice(), 
-            deviceManager.GetPhysicalDevice(), 
-            {width, height}, 
-            deviceManager.GetCommandPool().GetCommandPool(), 
+            deviceManager.GetDevice(),
+            deviceManager.GetPhysicalDevice(),
+            { width, height },
+            deviceManager.GetCommandPool().GetCommandPool(),
             deviceManager.GetQueueIndices()
         ) {}
     Renderer::Renderer
     (
         GLFWwindow* window,
         const vk::Instance& instance,
-        const vk::Device& device, 
+        const vk::Device& device,
         const vk::PhysicalDevice& physicalDevice,
         const vk::Extent2D& extent,
         const vk::CommandPool& commandPool,
@@ -61,6 +61,9 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
+}
+namespace GuelderEngine::Vulkan
+{
     void Renderer::Reset() noexcept
     {
         m_Surface.Reset();
@@ -68,25 +71,24 @@ namespace GuelderEngine::Vulkan
         m_CurrentImageIndex = 0;
         m_IsFrameStarted = false;
     }
-    void Renderer::Cleanup(const vk::Device& device,const vk::Instance& instance, const vk::CommandPool& commandPool) const noexcept
+    void Renderer::Cleanup(const vk::Device& device, const vk::Instance& instance, const vk::CommandPool& commandPool) const noexcept
     {
         m_Swapchain.Cleanup(device, commandPool);
         m_Surface.Cleanup(instance);
     }
-}
-namespace GuelderEngine::Vulkan
-{
-    vk::CommandBuffer Renderer::BeginFrame(
+
+    bool Renderer::BeginFrame(
         const vk::Device& device,
         const vk::PhysicalDevice& physicalDevice,
-        const vk::CommandPool& commandPool, 
-        const vk::Extent2D& extent, 
+        const vk::CommandPool& commandPool,
+        const std::vector<vk::CommandBuffer>& commandBuffers,
+        const vk::Extent2D& extent,
         const QueueFamilyIndices& queueFamilyIndices
     )
     {
         GE_ASSERT(!m_IsFrameStarted, "Cannot start rendering while frame is already in progress");
 
-        m_Swapchain.GetCurrentFrame().WaitForImage(device);
+        m_Swapchain.GetCurrentFrame().WaitForFence(device);
 
         try
         {
@@ -94,23 +96,26 @@ namespace GuelderEngine::Vulkan
         }
         catch(const vk::OutOfDateKHRError&)
         {
+            GE_LOG(VulkanCore, Warning, "BeginFrame RECREATE");
             m_Surface.Recreate(physicalDevice);
             m_Swapchain.Recreate(device, physicalDevice, m_Surface.GetSurface(), m_Surface.GetCapabilities(), m_Surface.GetFormat(), m_Surface.GetPresentMode(), extent, commandPool, queueFamilyIndices);
-            return nullptr;
+            return false;
         }
 
         m_IsFrameStarted = true;
 
-        const auto& currentCommandBuffer = m_Swapchain.GetCurrentFrame().commandBuffer;
         constexpr vk::CommandBufferBeginInfo commandBufferBeginInfo{};
-        currentCommandBuffer.begin(commandBufferBeginInfo);
 
-        return currentCommandBuffer;
+        for(auto& commandBuffer : commandBuffers)
+            commandBuffer.begin(commandBufferBeginInfo);
+
+        return true;
     }
-    void Renderer::EndFrame(
+    bool Renderer::EndFrame(
         const vk::Device& device,
         const vk::PhysicalDevice& physicalDevice,
         const vk::CommandPool& commandPool,
+        const std::vector<vk::CommandBuffer>& commandBuffers,
         const vk::Queue& graphicsQueue,
         const vk::Queue& presentQueue,
         const vk::Extent2D& extent,
@@ -120,21 +125,23 @@ namespace GuelderEngine::Vulkan
     {
         GE_ASSERT(m_IsFrameStarted, "Cannot end frame when frame was not started");
 
-        const auto& currentFrame = m_Swapchain.GetCurrentFrame();
-        const auto& currentCommandBuffer = currentFrame.commandBuffer;
+        bool wasRecreated = false;
 
-        currentCommandBuffer.end();
+        const auto& currentFrame = m_Swapchain.GetCurrentFrame();
+
+        for(auto& commandBuffer : commandBuffers)
+            commandBuffer.end();
 
         const vk::Semaphore waitSemaphores[] = { currentFrame.sync.GetImageAvailableSemaphore() };
-        const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
         const vk::Semaphore signalSemaphores[] = { currentFrame.sync.GetImageRenderFinishedSemaphore() };
+        const vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
         const vk::SubmitInfo submitInfo(
             1,
             waitSemaphores,
             waitStages,
-            1,
-            &currentCommandBuffer,
+            (uint)commandBuffers.size(),
+            commandBuffers.data(),
             1,
             signalSemaphores
         );
@@ -164,26 +171,21 @@ namespace GuelderEngine::Vulkan
 
         if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR || wasWindowResized)
         {
+            wasRecreated = true;
             device.waitIdle();
             m_Surface.Recreate(physicalDevice);
             m_Swapchain.Recreate(device, physicalDevice, m_Surface.GetSurface(), m_Surface.GetCapabilities(), m_Surface.GetFormat(), m_Surface.GetPresentMode(), extent, commandPool, queueFamilyIndices);
             wasWindowResized = false;
         }
 
-        //for(auto& frame : m_Swapchain.GetFrames())
-        //{
-        //    //if(device.getFenceStatus(frame.sync.GetFlightFence()) != vk::Result::eSuccess)
-        //        //GE_LOG(VulkanCore, Info, device.getFenceStatus(frame.sync.GetFlightFence()));
-        //}
-
         m_IsFrameStarted = false;
 
-        m_Swapchain.GetCurrentFrameNumber() = (m_Swapchain.GetCurrentFrameNumber() + 1) % m_Swapchain.GetMaxFramesInFlight();
+        return wasRecreated;
     }
     void Renderer::BeginSwapchainRenderPass(const vk::CommandBuffer& commandBuffer) const
     {
         GE_ASSERT(m_IsFrameStarted, "Cannot start render pass when frame was not started");
-        GE_ASSERT(commandBuffer == m_Swapchain.GetCurrentFrame().commandBuffer, "cannot begin render pass, when input buffer is different from the current one");
+        //GE_ASSERT(commandBuffer == m_Swapchain.GetCurrentFrame().commandBuffer, "cannot begin render pass, when input buffer is different from the current one");
 
         const float blueValue = /*(sin(glfwGetTime()) / 2.0f) + 0.5f*/.25f;
         std::array clearValues
@@ -194,7 +196,7 @@ namespace GuelderEngine::Vulkan
 
         const vk::RenderPassBeginInfo renderPassBeginInfo(
             m_Swapchain.GetRenderPass(),
-            m_Swapchain.GetFrames()[m_CurrentImageIndex].framebuffer,
+            m_Swapchain.GetFrames()[m_CurrentImageIndex].frameBuffer,
             vk::Rect2D({ 0, 0 }, m_Swapchain.GetExtent2D()),
             clearValues.size(),
             clearValues.data()
@@ -210,7 +212,7 @@ namespace GuelderEngine::Vulkan
                 0.f,
                 1.0f
         };
-        const vk::Rect2D scissors{{0, 0}, m_Swapchain.GetExtent2D()};
+        const vk::Rect2D scissors{ {0, 0}, m_Swapchain.GetExtent2D() };
 
         commandBuffer.setViewport(0, 1, &viewport);
         commandBuffer.setScissor(0, 1, &scissors);
@@ -222,6 +224,13 @@ namespace GuelderEngine::Vulkan
 
         commandBuffer.endRenderPass();
     }
+    void Renderer::IncrementCurrentFrame()
+    {
+        m_Swapchain.currentFrameNumber = (m_Swapchain.currentFrameNumber + 1) % m_Swapchain.GetMaxFramesInFlight();
+    }
+}
+namespace GuelderEngine::Vulkan
+{
     const Swapchain& Renderer::GetSwapchain() const
     {
         return m_Swapchain;

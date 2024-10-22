@@ -10,10 +10,10 @@ import <optional>;
 
 namespace GuelderEngine::Vulkan
 {
-    QueueFamilyIndices::QueueFamilyIndices(const vk::PhysicalDevice& device/*, const vk::SurfaceKHR& surface*/)
+    QueueFamilyIndices::QueueFamilyIndices(const vk::PhysicalDevice& device)
     {
         const std::vector queueFamilies = device.getQueueFamilyProperties();
-        
+
         GE_LOG(VulkanCore, Info, "Device can support ", queueFamilies.size(), " Queue Families");
 
         for(size_t i = 0; i < queueFamilies.size(); i++)
@@ -27,13 +27,13 @@ namespace GuelderEngine::Vulkan
             if(queueFamilies[i].queueFlags & vk::QueueFlagBits::eGraphics)
             {
                 graphicsFamily = i;
-                
+
                 GE_LOG(VulkanCore, Info, "Queue Family at index ", i, " is suitable for graphics");
             }
-            if(/*device.getSurfaceSupportKHR(i, surface)*/queueFamilies[i].queueCount > 0)
+            if(queueFamilies[i].queueCount > 0)
             {
                 presentFamily = i;
-                
+
                 GE_LOG(VulkanCore, Info, "Queue Family at index ", i, " is suitable for presenting");
             }
             if(IsComplete())
@@ -59,10 +59,16 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
+}
+namespace GuelderEngine::Vulkan
+{
     bool QueueFamilyIndices::IsComplete() const
     {
         return graphicsFamily.has_value() && presentFamily.has_value() && transferFamily.has_value();
     }
+}
+namespace GuelderEngine::Vulkan
+{
     uint QueueFamilyIndices::GetGraphicsFamily() const
     {
         return graphicsFamily.value();

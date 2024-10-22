@@ -19,21 +19,21 @@ namespace GuelderEngine::Vulkan::Buffers
         const uint& minOffsetAlignment
     )
         : Buffer(
-                device,
-                physicalDevice,
-                indices,
-                vk::BufferUsageFlagBits::eTransferSrc,
-                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-                instanceSize,
-                instanceCount,
-                minOffsetAlignment
-            )
+            device,
+            physicalDevice,
+            indices,
+            vk::BufferUsageFlagBits::eTransferSrc,
+            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+            instanceSize,
+            instanceCount,
+            minOffsetAlignment
+        )
+    {
+        if(m_Size)
         {
-            if (m_Size)
-            {
-                MapMemory(device, m_Size);
-                WriteToBuffer(data, m_Size);
-                UnmapMemory(device);
-            }
+            MapMemory(device, m_Size);
+            WriteToBuffer(data, m_Size);
+            UnmapMemory(device);
         }
+    }
 }

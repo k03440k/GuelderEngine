@@ -11,18 +11,10 @@ import <vector>;
 
 namespace GuelderEngine::Vulkan
 {
-    //DEFINE_LOG_CATEGORY(VulkanCore);
-
-#pragma region operators_and_ctors
     DebugManager::DebugManager(const vk::Instance& instance)
     {
         m_DLDI = vk::DispatchLoaderDynamic(instance, vkGetInstanceProcAddr);
         m_DebugMessenger = CreateDebugMessenger(instance, m_DLDI);
-    }
-    DebugManager::DebugManager(const DebugManager& other)
-    {
-        m_DebugMessenger = other.m_DebugMessenger;
-        m_DLDI = other.m_DLDI;
     }
     DebugManager::DebugManager(DebugManager&& other) noexcept
     {
@@ -30,16 +22,6 @@ namespace GuelderEngine::Vulkan
         m_DLDI = other.m_DLDI;
 
         //other.Reset();//idk why error occurs
-    }
-    DebugManager& DebugManager::operator=(const DebugManager& other)
-    {
-        if(this == &other)
-            return *this;
-
-        m_DebugMessenger = other.m_DebugMessenger;
-        m_DLDI = other.m_DLDI;
-
-        return *this;
     }
     DebugManager& DebugManager::operator=(DebugManager&& other) noexcept
     {
@@ -50,14 +32,10 @@ namespace GuelderEngine::Vulkan
 
         return *this;
     }
-#pragma endregion
-
-    DebugLayersManager::DebugLayersManager(const std::vector<ValidationLayer>& layers)
-        : m_Layers(layers)
-    {
-        GE_ASSERT(AreValidationLayersSupported(layers), "validation layers are not supported");
-    }
-    bool DebugLayersManager::AreValidationLayersSupported(const std::vector<ValidationLayer>& layers)
+}
+namespace GuelderEngine::Vulkan
+{
+    bool AreValidationLayersSupported(const std::vector<const char*>& layers)
     {
         GE_ASSERT(layers.size() > 0, "layers size is zero");
 
@@ -72,19 +50,19 @@ namespace GuelderEngine::Vulkan
 #endif // GE_DEBUG_VULKAN
 
         bool found = false;
-        for (const auto& extension : layers)
+        for(const auto& extension : layers)
         {
             found = false;
-            for (const auto& supportedExtension : supportedLayers)
+            for(const auto& supportedExtension : supportedLayers)
             {
-                if (strcmp(extension, supportedExtension.layerName) == 0)
+                if(strcmp(extension, supportedExtension.layerName) == 0)
                 {
                     found = true;
 
                     //GE_LOG(VulkanCore, Info, "Layer \"", extension, "\" is supported");
                 }
             }
-            if (!found)
+            if(!found)
             {
                 //GE_LOG(VulkanCore, Info, "Layer \"", extension, "\" is not supported");
 
@@ -104,6 +82,7 @@ namespace GuelderEngine::Vulkan
     {
         instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr, m_DLDI);
     }
+
     void DebugManager::LogDeviceProperties(const vk::PhysicalDevice& device)
     {
         const vk::PhysicalDeviceProperties properties = device.getProperties();
@@ -138,14 +117,14 @@ namespace GuelderEngine::Vulkan
         const uint32_t heapCount = memoryProperties.memoryHeapCount;
 
         // Iterate over memory heaps to find the heap with the desired memory type
-        for (uint32_t heapIndex = 0; heapIndex < heapCount; ++heapIndex) {
+        for(uint32_t heapIndex = 0; heapIndex < heapCount; ++heapIndex)
             // Check if the memory heap is for device local memory (typically used for graphics memory)
-            if (const auto& heap = memoryProperties.memoryHeaps[heapIndex]; heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal) {
+            if(const auto& heap = memoryProperties.memoryHeaps[heapIndex]; heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal)
+            {
                 // Convert the size to gigabytes
                 const double memorySizeGB = static_cast<double>(heap.size) / (1024 * 1024 * 1024);
-                GE_LOG(VulkanCore, Info, "Memory size in ", heapIndex+1, " heap : ", memorySizeGB, " GB");
+                GE_LOG(VulkanCore, Info, "Memory size in ", heapIndex + 1, " heap : ", memorySizeGB, " GB");
             }
-        }
 
         GE_LOG(VulkanCore, Info, "Max push constants memory(in bytes) is ", properties.limits.maxPushConstantsSize);
     }
@@ -179,10 +158,12 @@ namespace GuelderEngine::Vulkan
 
         return instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
     }
-    VKAPI_ATTR VkBool32 VKAPI_CALL DebugManager::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                                     VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                                     const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
-                                                                     void* userData)
+    VKAPI_ATTR VkBool32 VKAPI_CALL DebugManager::DebugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+        void* userData
+    )
     {
         GE_LOG(VulkanCore, VulkanError, callbackData->pMessage);
 

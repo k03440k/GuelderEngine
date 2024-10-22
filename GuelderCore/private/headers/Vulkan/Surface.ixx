@@ -18,10 +18,9 @@ namespace GuelderEngine::Vulkan
         void Reset() noexcept override;
         void Cleanup(const vk::Instance& instance) const noexcept;
 
-        /*
-         *@brief Must be called before the swapchain recreation
-         *@brief This function just updates m_Capabilities, m_Format, m_PresentMode
-         */
+        /// <summary>
+        /// Must be called before the swapchain recreation. This function just updates m_Capabilities, m_Format and m_PresentMode
+        /// </summary>
         void Recreate(const vk::PhysicalDevice& physicalDevice);
 
         const vk::SurfaceKHR& GetSurface() const;

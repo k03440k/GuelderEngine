@@ -10,7 +10,7 @@ import <optional>;
 
 export namespace GuelderEngine::Vulkan
 {
-    struct QueueFamilyIndices// : INHERIT_GClass(QueueFamilyIndices)
+    struct QueueFamilyIndices
     {
     public:
         DECLARE_DEFAULT_CTOR_AND_DTOR(QueueFamilyIndices);

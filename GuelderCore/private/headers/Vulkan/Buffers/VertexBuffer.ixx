@@ -14,7 +14,9 @@ export namespace GuelderEngine::Vulkan::Buffers
     class VertexBuffer final : public Buffer
     {
     public:
-        DECLARE_DEFAULT(VertexBuffer);
+        DECLARE_DEFAULT_CTOR_AND_DTOR(VertexBuffer);
+        DECLARE_DEFAULT_COPYING(VertexBuffer);
+        DECLARE_MOVING(VertexBuffer);
 
         VertexBuffer(
             const vk::Device& device,
